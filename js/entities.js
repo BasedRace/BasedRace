@@ -19,7 +19,7 @@ export class Track {
     // 4. Initial X - Dihitung agar aspal tile pertama ada di tengah
     this.initialX = -(this.WIDTH / 2) + 600;
 
-    this.sequence = ['env2', 'start', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'finish', 'env2'];
+    this.sequence = ['env2', 'start', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'finish', 'env2', 'env2', 'env2'];
   }
 
   generate() {
