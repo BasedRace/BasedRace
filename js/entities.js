@@ -24,8 +24,9 @@ export class Racer {
     if (name === 'Deployer') { this.x = 475; this.y = 265; }
     if (name === 'Dish') { this.x = 795; this.y = 535; }
     
-    // Random speed boost for variety
-    this.speedBoost = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
+    // Random speed for variety (50 to 150)
+    const speedOptions = [50, 75, 100, 125];
+    this.racingSpeed = speedOptions[laneIndex] || 100;
     this.finished = false;
     this.finishTime = 0;
   }
@@ -34,19 +35,21 @@ export class Racer {
   update(trackSpeed, trackRatio, dt) {
     if (this.finished) return;
     
-    // Random base speed modifier (0.5 to 2.0)
-    const baseSpeedModifier = 0.5 + Math.random() * 1.5;
+    // Random burst - 10% chance every frame to get temporary speed boost
+    const burstMultiplier = Math.random() > 0.9 ? 1.5 : 1.0;
     
-    // Random turbo boost occasionally
-    const turboChance = Math.random();
-    const turboBoost = turboChance > 0.95 ? 2.0 : 1.0; // 5% chance for turbo
-    
-    // Total speed = track speed + personal boost + turbo
-    const totalSpeed = (trackSpeed * baseSpeedModifier * turboBoost) * (dt / 1000);
+    // Total vertical movement = track speed + racing speed
+    const racingSpeed = this.racingSpeed * burstMultiplier;
+    const vTotal = (trackSpeed + racingSpeed) * (dt / 1000);
     
     // Move up (decrease Y) and right (increase X) with diagonal ratio
-    this.y -= totalSpeed;
-    this.x += totalSpeed * trackRatio;
+    this.y -= vTotal;
+    this.x += vTotal * trackRatio;
+    
+    // Catch-up mechanism: if racer falls too far behind (y > 1600), push forward
+    if (this.y > 1600) {
+      this.y = 1200; // Move back to middle of screen
+    }
   }
   
   // Apply pre-scroll offset (disable for now - use debugger positions directly)
@@ -63,7 +66,10 @@ export class Racer {
     if (this.name === 'Barmstrong') { this.x = 195; this.y = 135; }
     if (this.name === 'Deployer') { this.x = 475; this.y = 265; }
     if (this.name === 'Dish') { this.x = 795; this.y = 535; }
-    this.speedBoost = 0.9 + Math.random() * 0.2;
+    
+    // Reset racing speed
+    const speedOptions = [50, 75, 100, 125];
+    this.racingSpeed = speedOptions[this.laneIndex] || 100;
     this.finished = false;
     this.finishTime = 0;
   }
