@@ -83,6 +83,7 @@ class Game {
     // Re-apply pre-scroll offset after reset
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
+    this.renderer.render(this.track);
     
     this.startBtn.style.display = 'none';
   }
