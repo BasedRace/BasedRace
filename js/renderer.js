@@ -53,10 +53,10 @@ export class Renderer {
     );
   }
 
-  // Draw all racers
+  // Draw all racers (keep displaying even after finish)
   drawRacers(racers) {
     for (const racer of racers) {
-      if (!racer.asset || racer.finished) continue;
+      if (!racer.asset) continue;
       
       // Use Math.floor for crisp rendering
       const drawX = Math.floor(racer.x);

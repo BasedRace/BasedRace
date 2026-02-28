@@ -141,7 +141,6 @@ class Game {
     // Update all racers with track movement
     // Finish line is at tile index 11 (finish tile + 1)
     const finishTile = this.track.tiles[11]; 
-    const allFinished = this.racers.every(r => r.finished);
     
     for (const racer of this.racers) {
       racer.update(movement, deltaTime);
@@ -154,17 +153,19 @@ class Game {
         // First racer to finish wins
         if (!this.winner) {
           this.winner = racer;
-          this.statusEl.textContent = `WINNER: ${racer.name}!`;
+          this.statusEl.textContent = `🏆 WINNER: ${racer.name}! 🏆`;
         }
       }
     }
     
     // Celebration when all racers finish
-    if (allFinished && this.racers.every(r => r.finished)) {
-      this.statusEl.textContent = 'RACE COMPLETE!';
+    const allFinished = this.racers.every(r => r.finished);
+    if (allFinished) {
+      this.statusEl.textContent = '🎉 RACE COMPLETE! 🎉';
+      this.statusEl.style.animation = 'pulse 0.5s infinite';
     }
     
-    // Cek Finish - End race when last tile passes screen
+    // Keep running until last tile passes screen
     const lastTile = this.track.tiles[this.track.tiles.length - 1];
     if (lastTile && lastTile.y < 600) {
       this.finishRace();
