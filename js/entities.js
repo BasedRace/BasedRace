@@ -31,8 +31,8 @@ export class Racer {
     // Progress tracking
     this.progress = 0;
     
-    // Dynamic AI - subtle organic movement
-    this.baseSpeed = 80 + Math.random() * 40;
+    // Dynamic AI - competitive organic movement
+    this.baseSpeed = 100 + Math.random() * 60; // Higher base speed
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.lastSpeedChange = 0;
@@ -45,28 +45,40 @@ export class Racer {
     this.finishTime = 0;
   }
   
-  // Update racer - subtle organic movement with soft guardrail
+  // Update racer - competitive organic movement
   update(trackSpeed, dt, allRacers) {
     if (this.finished) return;
     
-    // Oscillating bonus using sin wave
-    const bonus = Math.sin(Date.now() * 0.001 * this.oscillationFrequency + this.sinOffset) * 15;
+    // Stronger oscillating bonus for more competition
+    const bonus = Math.sin(Date.now() * 0.002 * this.oscillationFrequency + this.sinOffset) * 40;
     
-    // Soft guardrail - micro catchup in bottom 15% or slow down in top 15%
+    // Competitive zone - middle 70% of screen
     const screenHeight = 1800;
     const topZone = screenHeight * 0.15;
     const bottomZone = screenHeight * 0.85;
+    const midZone = screenHeight * 0.5;
     
     if (this.yPosOnScreen > bottomZone) {
-      this.targetSpeed = this.baseSpeed * 1.15; // 15% boost
+      // Behind - strong catchup boost
+      this.targetSpeed = this.baseSpeed * 1.4;
     } else if (this.yPosOnScreen < topZone) {
-      this.targetSpeed = this.baseSpeed * 0.85; // 15% slow
+      // Leading - slight slowdown
+      this.targetSpeed = this.baseSpeed * 0.8;
+    } else if (this.yPosOnScreen < midZone) {
+      // Top half - moderate speed
+      this.targetSpeed = this.baseSpeed + bonus * 0.5;
     } else {
-      this.targetSpeed = this.baseSpeed + bonus;
+      // Bottom half - push forward
+      this.targetSpeed = this.baseSpeed * 1.2 + bonus * 0.3;
+    }
+    
+    // Add competition bonus - random bursts
+    if (Math.random() < 0.02) {
+      this.targetSpeed *= 1.3;
     }
     
     // LERP for smooth acceleration
-    this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.05;
+    this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.08;
     
     // Y moves based on current speed
     this.yPosOnScreen -= this.currentSpeed * dt / 25000;
@@ -94,8 +106,8 @@ export class Racer {
     this.yPosOnScreen = pos.y;
     this.progress = 0;
     
-    // Reset dynamic AI
-    this.baseSpeed = 80 + Math.random() * 40;
+    // Reset dynamic AI - competitive
+    this.baseSpeed = 100 + Math.random() * 60;
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.sinOffset = Math.random() * Math.PI * 2;
