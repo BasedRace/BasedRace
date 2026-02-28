@@ -80,7 +80,7 @@ class Game {
     if (this.racers) {
       setTimeout(() => {
         for (let i = 0; i < this.racers.length; i++) {
-          this.updateRacerCoord(i);
+          window.updateRacerCoord(i);
         }
       }, 100);
     }
@@ -92,6 +92,11 @@ class Game {
     // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
       racer.applyOffset(preScrollOffset);
+    }
+    
+    // Update coordinate display after pre-scroll
+    for (let i = 0; i < this.racers.length; i++) {
+      window.updateRacerCoord(i);
     }
     
     this.renderer.render(this.track, this.racers);
