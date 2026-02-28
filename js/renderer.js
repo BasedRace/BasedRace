@@ -55,7 +55,10 @@ export class Renderer {
 
   // Draw all racers
   drawRacers(racers) {
-    for (const racer of racers) {
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00']; // Red, Green, Blue, Yellow
+    
+    for (let i = 0; i < racers.length; i++) {
+      const racer = racers[i];
       if (!racer.asset || racer.finished) continue;
       
       // Use Math.floor for crisp rendering
@@ -69,6 +72,16 @@ export class Renderer {
         racer.w,
         racer.h
       );
+      
+      // Draw colored indicator border
+      this.ctx.strokeStyle = colors[i] || '#ffffff';
+      this.ctx.lineWidth = 8;
+      this.ctx.strokeRect(drawX, drawY, racer.w, racer.h);
+      
+      // Draw racer index
+      this.ctx.fillStyle = colors[i] || '#ffffff';
+      this.ctx.font = 'bold 32px Arial';
+      this.ctx.fillText(i.toString(), drawX + 10, drawY + 40);
     }
   }
 
