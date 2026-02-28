@@ -11,12 +11,12 @@ export class Racer {
     this.w = 600;
     this.h = 600;
     
-    // Starting positions - higher to stay visible
+    // Starting positions from user
     const startPositions = {
-      'Jesse': { x: 50, y: 800 },
-      'Barmstrong': { x: 250, y: 900 },
-      'Deployer': { x: 450, y: 1000 },
-      'Dish': { x: 650, y: 1100 }
+      'Jesse': { x: -90, y: -30 },
+      'Barmstrong': { x: 190, y: 150 },
+      'Deployer': { x: 460, y: 300 },
+      'Dish': { x: 790, y: 530 }
     };
     
     const pos = startPositions[name] || { x: 0, y: 0 };
@@ -94,10 +94,10 @@ export class Racer {
   // Reset to start
   reset() {
     const startPositions = {
-      'Jesse': { x: 50, y: 800 },
-      'Barmstrong': { x: 250, y: 900 },
-      'Deployer': { x: 450, y: 1000 },
-      'Dish': { x: 650, y: 1100 }
+      'Jesse': { x: -90, y: -30 },
+      'Barmstrong': { x: 190, y: 150 },
+      'Deployer': { x: 460, y: 300 },
+      'Dish': { x: 790, y: 530 }
     };
     const pos = startPositions[this.name] || { x: 0, y: 0 };
     this.startX = pos.x;
