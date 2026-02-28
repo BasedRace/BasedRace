@@ -91,9 +91,9 @@ class Game {
     const movement = this.scrollSpeed * deltaTime / 1000;
     this.track.updateMovement(movement);
     
-    // Cek Finish - Menggunakan ambang batas 600 agar terasa pas saat garis finish muncul
-    const finishTile = this.track.getFinishTile();
-    if (finishTile && finishTile.y < 600) {
+    // Cek Finish - End race when last tile passes screen
+    const lastTile = this.track.tiles[this.track.tiles.length - 1];
+    if (lastTile && lastTile.y < 600) {
       this.finishRace();
     }
   }
