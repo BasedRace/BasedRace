@@ -17,9 +17,9 @@ export class Racer {
     const trackCenterX = 600; // Center of 1200px canvas
     this.laneOffsetX = trackCenterX - (totalLaneWidth / 2) + (laneIndex * laneSpacing) - (this.w / 2);
     
-    // Initial position (at start line)
+    // Initial position (at start line - aligned with start tile)
     this.x = this.laneOffsetX;
-    this.y = -200; // Slightly above start line
+    this.y = 250; // Aligned with start tile (tile index 1)
     
     // Random speed boost for variety
     this.speedBoost = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
@@ -47,7 +47,7 @@ export class Racer {
   // Reset to start position
   reset() {
     this.x = this.laneOffsetX;
-    this.y = -200;
+    this.y = 250; // Aligned with start tile
     this.speedBoost = 0.9 + Math.random() * 0.2;
     this.finished = false;
     this.finishTime = 0;
