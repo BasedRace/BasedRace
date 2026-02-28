@@ -81,7 +81,7 @@ export class Racer {
     this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.08;
     
     // Y moves forward (toward finish line at Y=7450)
-    this.yPosOnScreen += this.currentSpeed * dt / 1000;
+    this.yPosOnScreen += this.currentSpeed * dt / 500;
    
     // X calculated from Y using diagonal ratio from start points
     this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
@@ -107,7 +107,7 @@ export class Racer {
     this.progress = 0;
     
     // Reset dynamic AI - competitive
-    this.baseSpeed = 20 + Math.random() * 1;
+    this.baseSpeed = 10 + Math.random() * 1;
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.sinOffset = Math.random() * Math.PI * 2;
