@@ -17,7 +17,7 @@ class Game {
     this.startBtn = document.getElementById('start-btn');
     this.restartBtn = document.getElementById('restart-btn');
     
-    this.scrollSpeed = 400; // Kecepatan disesuaikan untuk skala zoom 1.5x
+    this.scrollSpeed = 600; // Kecepatan disesuaikan untuk skala zoom 1.5x
     this.state = 'loading';
     this.raceTime = 0;
     this.lastTime = 0;
