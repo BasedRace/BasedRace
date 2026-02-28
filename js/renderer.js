@@ -62,11 +62,8 @@ export class Renderer {
     
     this.clear();
     
-    // 4. Sorting berdasarkan koordinat Y (Depth Sorting)
-    // Memastikan potongan aspal yang di belakang tertutup oleh yang di depan
-    const sortedTiles = [...track.tiles].sort((a, b) => a.y - b.y);
-    
-    for (const tile of sortedTiles) {
+    // Tiles are already sorted during generate() - no need to sort every frame
+    for (const tile of this.track.tiles) {
       // Mengirimkan dimensi zoomed (WIDTH/HEIGHT) ke fungsi drawTile
       this.drawTile(tile, track.WIDTH, track.HEIGHT);
     }

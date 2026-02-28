@@ -36,16 +36,17 @@ class Game {
     
     this.track = new Track(this.assets);
     
-    // Pre-Scroll: Apply 1.25s offset so track appears as if already moving
-    const preScrollOffset = this.scrollSpeed * 1.25;
-    this.track.generateWithPreScroll(preScrollOffset);
-    
     this.startBtn.addEventListener('click', () => this.startRace());
     if (this.restartBtn) {
       this.restartBtn.addEventListener('click', () => this.reset());
     }
     
     this.setupDebugControls();
+    
+    // Pre-Scroll: Apply 1.25s offset so track is already positioned before menu shows
+    const preScrollOffset = this.scrollSpeed * 1.25;
+    this.track.generateWithPreScroll(preScrollOffset);
+    this.renderer.render(this.track);
     
     this.state = 'ready';
     this.statusEl.textContent = '';
@@ -79,6 +80,7 @@ class Game {
     if (this.state === 'racing') return;
     this.state = 'racing';
     this.raceTime = 0;
+    this.lastTime = performance.now(); // Reset delta time to prevent time spike
     
     // Re-apply pre-scroll offset after reset
     const preScrollOffset = this.scrollSpeed * 1.25;

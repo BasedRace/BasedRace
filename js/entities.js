@@ -41,6 +41,9 @@ export class Track {
       currentY = currentY + this.CHAIN_HEIGHT;
       currentX = currentX - (this.CHAIN_HEIGHT * this.OFFSET_X_RATIO);
     }
+    
+    // Sort once during generation for depth ordering
+    this.tiles.sort((a, b) => a.y - b.y);
     return this.tiles;
   }
 
@@ -48,6 +51,8 @@ export class Track {
   generateWithPreScroll(preScrollOffset) {
     this.generate();
     this.updateMovement(preScrollOffset);
+    // Re-sort after movement to maintain depth order
+    this.tiles.sort((a, b) => a.y - b.y);
   }
 
   updateMovement(speed) {
