@@ -77,18 +77,21 @@ export class Renderer {
     }
   }
   
-  // Confetti system
+  // Confetti system - more lively and boisterous
   confetti = [];
   startConfetti() {
     this.confetti = [];
-    for (let i = 0; i < 100; i++) {
+    const colors = ['#FFD700', '#FF6B00', '#FF1493', '#00FF7F', '#00BFFF', '#FF4500', '#7CFC00', '#DA70D6'];
+    for (let i = 0; i < 200; i++) {
       this.confetti.push({
-        x: Math.random() * 1200,
-        y: Math.random() * -1800,
-        vx: (Math.random() - 0.5) * 4,
-        vy: Math.random() * 3 + 2,
-        color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-        size: Math.random() * 8 + 4
+        x: Math.random() * 1200 - 100,
+        y: Math.random() * -2000 - 500,
+        vx: (Math.random() - 0.5) * 8,
+        vy: Math.random() * 5 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 12 + 6,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 20
       });
     }
   }
@@ -97,13 +100,33 @@ export class Renderer {
     for (const p of this.confetti) {
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.1;
+      p.vy += 0.15;
+      p.vx *= 0.99;
+      p.rotation += p.rotationSpeed;
       
+      this.ctx.save();
+      this.ctx.translate(p.x + p.size/2, p.y + p.size/2);
+      this.ctx.rotate(p.rotation * Math.PI / 180);
       this.ctx.fillStyle = p.color;
-      this.ctx.fillRect(p.x, p.y, p.size, p.size);
+      this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+      this.ctx.restore();
+    }
+    // Keep confetti coming
+    if (this.confetti.length < 150 && Math.random() > 0.8) {
+      const colors = ['#FFD700', '#FF6B00', '#FF1493', '#00FF7F', '#00BFFF'];
+      this.confetti.push({
+        x: Math.random() * 1200,
+        y: -50,
+        vx: (Math.random() - 0.5) * 6,
+        vy: Math.random() * 4 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 10 + 5,
+        rotation: 0,
+        rotationSpeed: (Math.random() - 0.5) * 15
+      });
     }
     // Remove confetti that fell off screen
-    this.confetti = this.confetti.filter(p => p.y < 1800);
+    this.confetti = this.confetti.filter(p => p.y < 1900);
   }
 
   // Merender semua tile track dengan urutan kedalaman (back to front)

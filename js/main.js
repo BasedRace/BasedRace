@@ -143,7 +143,7 @@ class Game {
     const finishTile = this.track.tiles[11]; 
     
     for (const racer of this.racers) {
-      racer.update(movement, deltaTime);
+      racer.update(movement, deltaTime, this.racers);
       
       // Check if racer crosses finish line (tile at index 11)
       if (!racer.finished && finishTile && racer.yPosOnScreen > finishTile.y) {
@@ -154,17 +154,10 @@ class Game {
         if (!this.winner) {
           this.winner = racer;
           this.statusEl.textContent = `🏆 WINNER: ${racer.name}! 🏆`;
+          this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1.5);font-size:48px;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;animation:pulse 0.3s ease-out;';
+          this.renderer.startConfetti();
         }
       }
-    }
-    
-    // Celebration when all racers finish
-    const allFinished = this.racers.every(r => r.finished);
-    if (allFinished) {
-      this.statusEl.textContent = '🎉 RACE COMPLETE! 🎉';
-      this.statusEl.style.animation = 'pulse 0.5s infinite';
-      // Start confetti
-      this.renderer.startConfetti();
     }
     
     // Keep running until last tile passes screen

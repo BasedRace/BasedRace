@@ -31,18 +31,45 @@ export class Racer {
     // Progress tracking
     this.progress = 0;
     
-    // Unique racing speed for random winner
-    this.racingSpeed = 80 + Math.random() * 80;
+    // Dynamic AI - base and target speed
+    this.baseSpeed = 80 + Math.random() * 40;
+    this.targetSpeed = this.baseSpeed;
+    this.currentSpeed = this.baseSpeed;
+    this.lastSpeedChange = 0;
+    
     this.finished = false;
     this.finishTime = 0;
   }
   
-  // Update racer - absolute screen-space locking (independent of track speed)
-  update(trackSpeed, dt) {
+  // Update racer - dynamic AI with rubber banding
+  update(trackSpeed, dt, allRacers) {
     if (this.finished) return;
     
-    // Y moves only based on racing speed (NOT track speed)
-    this.yPosOnScreen -= this.racingSpeed * dt / 25000;
+    // Change target speed every 2 seconds
+    this.lastSpeedChange += dt;
+    if (this.lastSpeedChange > 2000) {
+      this.lastSpeedChange = 0;
+      this.targetSpeed = this.baseSpeed + (Math.random() - 0.5) * 60;
+    }
+    
+    // Rubber banding - adjust speed based on position
+    if (allRacers && allRacers.length > 1) {
+      const positions = allRacers.map(r => r.yPosOnScreen);
+      const avgY = positions.reduce((a, b) => a + b, 0) / positions.length;
+      
+      // If ahead (lower Y), slow down; if behind, speed up
+      if (this.yPosOnScreen < avgY - 100) {
+        this.targetSpeed *= 0.95; // Slow down
+      } else if (this.yPosOnScreen > avgY + 100) {
+        this.targetSpeed *= 1.1; // Catch-up boost
+      }
+    }
+    
+    // Smooth speed transition
+    this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.1;
+    
+    // Y moves based on current speed
+    this.yPosOnScreen -= this.currentSpeed * dt / 25000;
    
     // X calculated from Y using diagonal ratio from start points
     this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
