@@ -81,6 +81,11 @@ class Game {
     this.state = 'racing';
     this.raceTime = 0;
     this.track.reset();
+    
+    // Re-apply pre-scroll offset after reset
+    const initialOffset = this.scrollSpeed * 1.5;
+    this.track.updateMovement(initialOffset);
+    
     this.startBtn.style.display = 'none';
   }
 
