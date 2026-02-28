@@ -41,8 +41,8 @@ export class Racer {
     // Y moves only based on racing speed (NOT track speed)
     this.yPosOnScreen -= this.racingSpeed * dt / 1000;
     
-    // X calculated from Y using 1.67 diagonal from start points
-    this.x = this.startX + ((this.yPosOnScreen - this.startY) * 1.67);
+    // X calculated from Y using 0.66 diagonal from start points
+    this.x = this.startX + ((this.yPosOnScreen - this.startY) * 0.66);
     
     // Boundary clamp
     if (this.yPosOnScreen < -500) this.yPosOnScreen = -500;
