@@ -153,8 +153,8 @@ class Game {
         // First racer to finish wins
         if (!this.winner) {
           this.winner = racer;
-          this.statusEl.textContent = `🏆 WINNER: ${racer.name}! 🏆`;
-          this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1.5);font-size:48px;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;animation:pulse 0.3s ease-out;';
+          this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
+          this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
           this.renderer.startConfetti();
         }
       }
