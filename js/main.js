@@ -61,6 +61,13 @@ class Game {
       if (direction === 'down') racer.yPosOnScreen += step;
       if (direction === 'left') racer.x -= step;
       if (direction === 'right') racer.x += step;
+      
+      // Update coordinate display
+      const coordEl = document.getElementById('racer' + racerIndex + '-coord');
+      if (coordEl) {
+        coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.yPosOnScreen) + ')';
+      }
+      
       game.renderer.render(game.track, game.racers);
     };
     
@@ -133,11 +140,14 @@ class Game {
     this.track.updateMovement(movement);
     
     // Update all racers with track movement
-    const finishTile = this.track.getFinishTile();
+    // Finish line is at tile index 11 (finish tile + 1)
+    const finishTile = this.track.tiles[11]; 
+    const allFinished = this.racers.every(r => r.finished);
+    
     for (const racer of this.racers) {
       racer.update(movement, deltaTime);
       
-      // Check if racer crosses finish line
+      // Check if racer crosses finish line (tile at index 11)
       if (!racer.finished && finishTile && racer.yPosOnScreen > finishTile.y) {
         racer.finished = true;
         racer.finishTime = this.raceTime;
@@ -148,6 +158,11 @@ class Game {
           this.statusEl.textContent = `WINNER: ${racer.name}!`;
         }
       }
+    }
+    
+    // Celebration when all racers finish
+    if (allFinished && this.racers.every(r => r.finished)) {
+      this.statusEl.textContent = 'RACE COMPLETE!';
     }
     
     // Cek Finish - End race when last tile passes screen
