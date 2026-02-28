@@ -53,21 +53,23 @@ class Game {
     
     // Expose moveRacer for debug buttons
     window.moveRacer = (racerIndex, direction) => {
-      const racer = this.racers[racerIndex];
-      if (!racer) return;
+      const game = window.gameInstance;
+      if (!game || !game.racers || !game.racers[racerIndex]) return;
+      const racer = game.racers[racerIndex];
       const step = 10;
       if (direction === 'up') racer.y -= step;
       if (direction === 'down') racer.y += step;
       if (direction === 'left') racer.x -= step;
       if (direction === 'right') racer.x += step;
-      this.updateRacerCoord(racerIndex);
-      this.renderer.render(this.track, this.racers);
+      game.updateRacerCoord(racerIndex);
+      game.renderer.render(game.track, game.racers);
     };
     
     // Update coordinate display
     window.updateRacerCoord = (racerIndex) => {
-      const racer = this.racers[racerIndex];
-      if (!racer) return;
+      const game = window.gameInstance;
+      if (!game || !game.racers || !game.racers[racerIndex]) return;
+      const racer = game.racers[racerIndex];
       const coordEl = document.getElementById('racer' + racerIndex + '-coord');
       if (coordEl) {
         coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.y) + ')';
@@ -75,11 +77,13 @@ class Game {
     };
     
     // Initial coordinate display
-    setTimeout(() => {
-      for (let i = 0; i < this.racers.length; i++) {
-        this.updateRacerCoord(i);
-      }
-    }, 100);
+    if (this.racers) {
+      setTimeout(() => {
+        for (let i = 0; i < this.racers.length; i++) {
+          this.updateRacerCoord(i);
+        }
+      }, 100);
+    }
     
     // Pre-Scroll: Apply 1.25s offset so track is already positioned before menu shows
     const preScrollOffset = this.scrollSpeed * 1.25;
