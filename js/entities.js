@@ -80,8 +80,8 @@ export class Racer {
     // LERP for smooth acceleration
     this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.08;
     
-    // Y moves based on current speed
-    this.yPosOnScreen -= this.currentSpeed * dt / 25000;
+    // Y moves based on current speed (faster movement)
+    this.yPosOnScreen -= this.currentSpeed * dt / 1000;
    
     // X calculated from Y using diagonal ratio from start points
     this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
