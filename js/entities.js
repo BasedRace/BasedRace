@@ -11,77 +11,55 @@ export class Racer {
     this.w = 600; // Racer width
     this.h = 600; // Racer height
     
-    // Calculate lane position - 4 lanes centered on track
-    const laneSpacing = 200;
-    const trackCenterX = 600; // Center of 1200px canvas
-    this.laneOffsetX = (laneIndex * laneSpacing);
+    // Lane offset for 4 parallel lanes
+    this.laneOffsetX = laneIndex * 200;
     
-    // Random racing speed for each racer (50-150)
-    this.racingSpeed = 50 + Math.random() * 100;
+    // Random racing speed (60-120) for balanced racing
+    this.racingSpeed = 60 + Math.random() * 60;
     this.finished = false;
     this.finishTime = 0;
     
-    // Initialize position
-    this.initializePosition(1000); // Start at y=1000 (visible on screen)
+    // Spawn at y=1100, perfectly aligned with track
+    this.y = 1100;
+    this.calculateXFromY();
   }
   
-  initializePosition(startY) {
-    // Track is offset by -550
-    const trackOffsetY = 550;
-    const trackOffsetX = 550 * 1.67;
+  calculateXFromY() {
+    // Track offset: -550
+    const trackOffsetY = -550;
+    const trackOffsetX = -550 * 1.67;
     
-    // Calculate Y relative to track offset
-    const relativeY = startY - trackOffsetY;
+    // Base X = center of canvas - half racer width
+    const baseX = 600 - (this.w / 2);
     
-    // Base X = center of canvas - half racer width + lane offset
-    const baseX = 600 - (this.w / 2) + this.laneOffsetX;
-    
-    // Add diagonal shift based on Y position
-    const diagonalShift = relativeY * 1.67;
-    
-    this.y = startY;
-    this.x = baseX + diagonalShift + trackOffsetX;
-    this.initialX = this.x;
-    this.initialY = startY;
+    // Calculate X based on current Y to stay on the diagonal road
+    const relativeY = this.y - trackOffsetY;
+    this.x = baseX + (relativeY * 1.67) + trackOffsetX + this.laneOffsetX;
   }
   
-  // Update racer position - strictly locked to 1.67 diagonal ratio
-  update(trackSpeed, trackRatio, dt) {
+  // Update racer position - locked to 1.67 diagonal slope
+  update(trackSpeed, dt) {
     if (this.finished) return;
     
-    // Small random variance each frame for natural overtaking
-    const speedVariance = 0.9 + Math.random() * 0.2;
-    
     // Total movement = track scroll + racing speed
-    const totalMoveY = (trackSpeed + (this.racingSpeed * speedVariance)) * (dt / 1000);
+    const totalDelta = (trackSpeed + this.racingSpeed) * (dt / 1000);
     
-    // Move vertically
-    this.y -= totalMoveY;
+    // Move Y
+    this.y -= totalDelta;
     
-    // Lock X to diagonal slope: X changes proportionally to Y movement
-    const relativeY = this.y - 550; // Relative to track offset
-    const baseX = 600 - (this.w / 2) + this.laneOffsetX;
-    this.x = baseX + (relativeY * 1.67) + 550 * 1.67;
+    // Lock X to same delta - mathematically locked to 1.67 slope
+    this.x += totalDelta * 1.67;
     
-    // Boundary safety: clamp Y to stay visible
+    // Boundary clamp
     if (this.y < -500) this.y = -500;
     if (this.y > 2000) this.y = 2000;
   }
   
-  // Apply pre-scroll offset (disable for now - use debugger positions directly)
-  applyOffset(offset) {
-    // Disabled - use debugger positions directly
-    // this.y -= offset;
-    // this.x += offset * this.track.OFFSET_X_RATIO;
-  }
-  
   // Reset to start position
   reset() {
-    // Re-initialize position at y=1000 (visible on screen)
-    this.initializePosition(1000);
-    
-    // Randomize racing speed for unpredictable winner
-    this.racingSpeed = 50 + Math.random() * 100;
+    this.y = 1100;
+    this.calculateXFromY();
+    this.racingSpeed = 60 + Math.random() * 60;
     this.finished = false;
     this.finishTime = 0;
   }
