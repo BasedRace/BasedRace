@@ -19,7 +19,7 @@ export class Racer {
     
     // Initial position (at start line - aligned with start tile)
     this.x = this.laneOffsetX;
-    this.y = 250; // Aligned with start tile (tile index 1)
+    this.y = 875; // Will be at Y=500 after pre-scroll (visible on screen)
     
     // Random speed boost for variety
     this.speedBoost = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
@@ -47,7 +47,7 @@ export class Racer {
   // Reset to start position
   reset() {
     this.x = this.laneOffsetX;
-    this.y = 250; // Aligned with start tile
+    this.y = 875; // Visible after pre-scroll
     this.speedBoost = 0.9 + Math.random() * 0.2;
     this.finished = false;
     this.finishTime = 0;
