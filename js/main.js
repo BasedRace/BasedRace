@@ -51,6 +51,19 @@ class Game {
     
     this.setupDebugControls();
     
+    // Expose moveRacer for debug buttons
+    window.moveRacer = (racerIndex, direction) => {
+      const game = window.gameInstance;
+      if (!game || !game.racers || !game.racers[racerIndex]) return;
+      const racer = game.racers[racerIndex];
+      const step = 10;
+      if (direction === 'up') racer.yPosOnScreen -= step;
+      if (direction === 'down') racer.yPosOnScreen += step;
+      if (direction === 'left') racer.x -= step;
+      if (direction === 'right') racer.x += step;
+      game.renderer.render(game.track, game.racers);
+    };
+    
     // Pre-Scroll: Apply 1.25s offset so track is already positioned before menu shows
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
@@ -172,21 +185,15 @@ class Game {
   }
 
   setupDebugControls() {
-    const diagonalRatioInput = document.getElementById('diagonal-ratio');
-    const racers = this.racers;
-    
-    if (!racers) return;
-
-    if (diagonalRatioInput) {
-      diagonalRatioInput.value = 0.66;
-      diagonalRatioInput.addEventListener('input', (e) => {
-        const value = parseFloat(e.target.value);
-        if (!isNaN(value)) {
-          for (const racer of racers) {
-            racer.diagonalRatio = value;
-          }
+    // Update coordinate display for debug buttons
+    if (this.racers) {
+      for (let i = 0; i < this.racers.length; i++) {
+        const racer = this.racers[i];
+        const coordEl = document.getElementById('racer' + i + '-coord');
+        if (coordEl) {
+          coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.yPosOnScreen) + ')';
         }
-      });
+      }
     }
   }
 }

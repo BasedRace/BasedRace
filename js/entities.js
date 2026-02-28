@@ -25,8 +25,8 @@ export class Racer {
     this.x = pos.x;
     this.yPosOnScreen = pos.y;
     
-    // Diagonal ratio (can be adjusted via debugger)
-    this.diagonalRatio = 0.66;
+    // Diagonal ratio
+    this.diagonalRatio = -1.67;
     
     // Progress tracking
     this.progress = 0;
