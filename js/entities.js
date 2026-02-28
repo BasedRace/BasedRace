@@ -57,8 +57,8 @@ export class Racer {
     const startPositions = {
       'Jesse': { x: -90, y: -30 },
       'Barmstrong': { x: 190, y: 150 },
-      'Deployer': { x: 470, y: 270 },
-      'Dish': { x: 820, y: 550 }
+      'Deployer': { x: 460, y: 300 },
+      'Dish': { x: 790, y: 530 }
     };
     const pos = startPositions[this.name] || { x: 0, y: 0 };
     this.startX = pos.x;
