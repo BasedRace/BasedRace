@@ -44,10 +44,31 @@ export class Track {
     return this.tiles;
   }
 
-  // Generate and apply pre-scroll atomically (no render in between)
+  // Generate and apply pre-scroll atomically (no intermediate state)
   generateWithPreScroll(preScrollOffset) {
-    this.generate();
-    this.updateMovement(preScrollOffset);
+    // First apply offset to initial position, then generate at final position
+    const offsetX = preScrollOffset * this.OFFSET_X_RATIO;
+    const offsetY = preScrollOffset;
+    
+    this.tiles = [];
+    let currentX = this.initialX + offsetX;
+    let currentY = -550 + offsetY;
+    
+    for (let i = 0; i < this.sequence.length; i++) {
+      const assetName = this.sequence[i];
+      this.tiles.push({
+        asset: this.assets[assetName],
+        name: assetName,
+        x: currentX,
+        y: currentY,
+        w: this.WIDTH,
+        h: this.HEIGHT
+      });
+      
+      // Update koordinat untuk tile berikutnya (berantai)
+      currentY = currentY + this.CHAIN_HEIGHT;
+      currentX = currentX - (this.CHAIN_HEIGHT * this.OFFSET_X_RATIO);
+    }
   }
 
   updateMovement(speed) {
