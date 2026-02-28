@@ -4,17 +4,16 @@ export class Track {
     this.assets = assets;
     this.tiles = [];
     
-    // 1. Zoom Factor - 1.5x agar rumput di samping aspal cukup lebar
-    this.ZOOM_FACTOR = 1.5; 
-    this.WIDTH = 1200 * this.ZOOM_FACTOR; // 1800px
-    this.HEIGHT = 1800 * this.ZOOM_FACTOR; // 2700px
+    // 1. Zoom Factor
+    this.ZOOM_FACTOR = 1.61; 
+    this.WIDTH = 1200 * this.ZOOM_FACTOR; // 1932px
+    this.HEIGHT = 1800 * this.ZOOM_FACTOR; // 2898px
     
     // 2. Konfigurasi diagonal
     this.OFFSET_X_RATIO = 1.67; 
     
-    // 3. Jarak antar tile - Gunakan nilai besar (1700-1900) untuk aset 2000px
-    // Jika masih ada celah, kurangi angka ini sedikit demi sedikit
-    this.CHAIN_HEIGHT = 1850; 
+    // 3. Jarak antar tile
+    this.CHAIN_HEIGHT = 800; 
     
     // 4. Initial X - Dihitung agar aspal tile pertama ada di tengah
     this.initialX = -(this.WIDTH / 2) + 600;
