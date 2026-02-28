@@ -44,6 +44,12 @@ export class Track {
     return this.tiles;
   }
 
+  // Generate and apply pre-scroll atomically (no render in between)
+  generateWithPreScroll(preScrollOffset) {
+    this.generate();
+    this.updateMovement(preScrollOffset);
+  }
+
   updateMovement(speed) {
     for (const tile of this.tiles) {
       tile.y -= speed; 

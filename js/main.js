@@ -39,8 +39,7 @@ class Game {
     
     // Pre-Scroll: Apply 1.25s offset so track appears as if already moving
     const preScrollOffset = this.scrollSpeed * 1.25;
-    this.track.generate();
-    this.track.updateMovement(preScrollOffset);
+    this.track.generateWithPreScroll(preScrollOffset);
     
     this.startBtn.addEventListener('click', () => this.startRace());
     if (this.restartBtn) {
@@ -84,8 +83,7 @@ class Game {
     
     // Re-apply pre-scroll offset after reset
     const preScrollOffset = this.scrollSpeed * 1.25;
-    this.track.generate();
-    this.track.updateMovement(preScrollOffset);
+    this.track.generateWithPreScroll(preScrollOffset);
     
     this.startBtn.style.display = 'none';
   }
