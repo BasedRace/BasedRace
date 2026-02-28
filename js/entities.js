@@ -8,13 +8,14 @@ export class Racer {
     this.asset = asset;
     this.laneIndex = laneIndex;
     this.track = track;
-    this.w = 400; // Racer width
-    this.h = 400; // Racer height
+    this.w = 600; // Racer width
+    this.h = 600; // Racer height
     
-    // Calculate lane position - 4 lanes, ~160px spacing, centered on track
-    const laneSpacing = 160;
+    // Calculate lane position - 4 lanes centered on track
+    const laneSpacing = 200;
     const totalLaneWidth = (4 - 1) * laneSpacing;
     const trackCenterX = 600; // Center of 1200px canvas
+    // Center each racer in its lane
     this.laneOffsetX = trackCenterX - (totalLaneWidth / 2) + (laneIndex * laneSpacing) - (this.w / 2);
     
     // Initial position (at start line - aligned with start tile)
