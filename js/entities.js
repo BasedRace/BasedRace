@@ -11,12 +11,12 @@ export class Racer {
     this.w = 600;
     this.h = 600;
     
-    // Starting positions from user
+    // Starting positions - higher on screen to stay visible longer
     const startPositions = {
-      'Jesse': { x: -90, y: -30 },
-      'Barmstrong': { x: 190, y: 150 },
-      'Deployer': { x: 460, y: 300 },
-      'Dish': { x: 790, y: 530 }
+      'Jesse': { x: 100, y: 1200 },
+      'Barmstrong': { x: 300, y: 1300 },
+      'Deployer': { x: 500, y: 1400 },
+      'Dish': { x: 700, y: 1500 }
     };
     
     const pos = startPositions[name] || { x: 0, y: 0 };
@@ -81,7 +81,7 @@ export class Racer {
     this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.08;
     
     // Y moves based on current speed (balanced)
-    this.yPosOnScreen -= this.currentSpeed * dt / 3000;
+    this.yPosOnScreen -= this.currentSpeed * dt / 8000;
    
     // X calculated from Y using diagonal ratio from start points
     this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
@@ -94,10 +94,10 @@ export class Racer {
   // Reset to start
   reset() {
     const startPositions = {
-      'Jesse': { x: -90, y: -30 },
-      'Barmstrong': { x: 190, y: 150 },
-      'Deployer': { x: 460, y: 300 },
-      'Dish': { x: 790, y: 530 }
+      'Jesse': { x: 100, y: 1200 },
+      'Barmstrong': { x: 300, y: 1300 },
+      'Deployer': { x: 500, y: 1400 },
+      'Dish': { x: 700, y: 1500 }
     };
     const pos = startPositions[this.name] || { x: 0, y: 0 };
     this.startX = pos.x;
