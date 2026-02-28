@@ -117,6 +117,9 @@ class Game {
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
     
+    // Store fixed finish line position (tile at index 10)
+    this.finishLineY = this.track.tiles[10].y;
+    
     // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
       racer.reset();
@@ -139,14 +142,12 @@ class Game {
     this.track.updateMovement(movement);
     
     // Update all racers with track movement
-    // Finish line is at tile index 11 (finish tile + 1)
-    const finishTile = this.track.tiles[11]; 
     
     for (const racer of this.racers) {
       racer.update(movement, deltaTime, this.racers);
       
       // Check if racer crosses finish line (tile at index 11)
-      if (!racer.finished && finishTile && racer.yPosOnScreen > finishTile.y) {
+      if (!racer.finished && this.finishLineY && racer.yPosOnScreen > this.finishLineY) {
         racer.finished = true;
         racer.finishTime = this.raceTime;
         
