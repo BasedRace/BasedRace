@@ -42,7 +42,7 @@ export class Racer {
     if (this.finished) return;
     
     // Y moves only based on racing speed (NOT track speed)
-    this.yPosOnScreen -= this.racingSpeed * dt / 2000;
+    this.yPosOnScreen -= this.racingSpeed * dt / 3200;
     
     // X calculated from Y using diagonal ratio from start points
     this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
