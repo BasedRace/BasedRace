@@ -18,11 +18,15 @@ export class Racer {
     // Center each racer in its lane
     this.laneOffsetX = trackCenterX - (totalLaneWidth / 2) + (laneIndex * laneSpacing) - (this.w / 2);
     
-    // Initial positions (from debugger)
-    if (name === 'Jesse') { this.initialX = -45; this.x = -45; this.y = -45; }
-    if (name === 'Barmstrong') { this.initialX = 195; this.x = 195; this.y = 135; }
-    if (name === 'Deployer') { this.initialX = 475; this.x = 475; this.y = 265; }
-    if (name === 'Dish') { this.initialX = 795; this.x = 795; this.y = 535; }
+    // Initial positions (from debugger) - adjusted for track's initial Y offset (-550)
+    // Track offset: Y = -550, X offset = 550 * 1.67 = 918.5
+    const trackOffsetY = 550;
+    const trackOffsetX = 550 * 1.67;
+    
+    if (name === 'Jesse') { this.initialX = -45 + trackOffsetX; this.x = -45 + trackOffsetX; this.y = -45 + trackOffsetY; }
+    if (name === 'Barmstrong') { this.initialX = 195 + trackOffsetX; this.x = 195 + trackOffsetX; this.y = 135 + trackOffsetY; }
+    if (name === 'Deployer') { this.initialX = 475 + trackOffsetX; this.x = 475 + trackOffsetX; this.y = 265 + trackOffsetY; }
+    if (name === 'Dish') { this.initialX = 795 + trackOffsetX; this.x = 795 + trackOffsetX; this.y = 535 + trackOffsetY; }
     
     // Random speed for variety (50 to 150)
     const speedOptions = [50, 75, 100, 125];
@@ -62,11 +66,14 @@ export class Racer {
   
   // Reset to start position
   reset() {
-    // Set initial positions per racer (from debugger)
-    if (this.name === 'Jesse') { this.initialX = -45; this.x = -45; this.y = -45; }
-    if (this.name === 'Barmstrong') { this.initialX = 195; this.x = 195; this.y = 135; }
-    if (this.name === 'Deployer') { this.initialX = 475; this.x = 475; this.y = 265; }
-    if (this.name === 'Dish') { this.initialX = 795; this.x = 795; this.y = 535; }
+    // Set initial positions per racer - adjusted for track's initial offset
+    const trackOffsetY = 550;
+    const trackOffsetX = 550 * 1.67;
+    
+    if (this.name === 'Jesse') { this.initialX = -45 + trackOffsetX; this.x = -45 + trackOffsetX; this.y = -45 + trackOffsetY; }
+    if (this.name === 'Barmstrong') { this.initialX = 195 + trackOffsetX; this.x = 195 + trackOffsetX; this.y = 135 + trackOffsetY; }
+    if (this.name === 'Deployer') { this.initialX = 475 + trackOffsetX; this.x = 475 + trackOffsetX; this.y = 265 + trackOffsetY; }
+    if (this.name === 'Dish') { this.initialX = 795 + trackOffsetX; this.x = 795 + trackOffsetX; this.y = 535 + trackOffsetY; }
     
     // Reset racing speed
     const speedOptions = [50, 75, 100, 125];
