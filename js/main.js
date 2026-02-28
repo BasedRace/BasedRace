@@ -146,8 +146,8 @@ class Game {
     for (const racer of this.racers) {
       racer.update(movement, deltaTime, this.racers);
       
-      // Check if racer crosses finish line
-      if (!racer.finished && racer.yPosOnScreen > 1800) {
+      // Check if racer crosses finish line (moving upward toward negative Y)
+      if (!racer.finished && racer.yPosOnScreen < -5000) {
         racer.finished = true;
         racer.finishTime = this.raceTime;
         
