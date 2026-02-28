@@ -19,22 +19,22 @@ export class Racer {
     this.finished = false;
     this.finishTime = 0;
     
-    // Spawn at y=1100, perfectly aligned with track
-    this.y = 1100;
-    this.calculateXFromY();
+    // Set initial position from debugger
+    this.setInitialPosition();
   }
   
-  calculateXFromY() {
-    // Track offset: -550
-    const trackOffsetY = -550;
-    const trackOffsetX = -550 * 1.67;
+  setInitialPosition() {
+    // Positions from debugger
+    const positions = {
+      'Jesse': { x: -45, y: -45 },
+      'Barmstrong': { x: 195, y: 135 },
+      'Deployer': { x: 475, y: 265 },
+      'Dish': { x: 795, y: 535 }
+    };
     
-    // Base X = center of canvas - half racer width
-    const baseX = 600 - (this.w / 2);
-    
-    // Calculate X based on current Y to stay on the diagonal road
-    const relativeY = this.y - trackOffsetY;
-    this.x = baseX + (relativeY * 1.67) + trackOffsetX + this.laneOffsetX;
+    const pos = positions[this.name] || { x: 0, y: 0 };
+    this.x = pos.x;
+    this.y = pos.y;
   }
   
   // Update racer position - locked to 1.67 diagonal slope
@@ -57,8 +57,7 @@ export class Racer {
   
   // Reset to start position
   reset() {
-    this.y = 1100;
-    this.calculateXFromY();
+    this.setInitialPosition();
     this.racingSpeed = 60 + Math.random() * 60;
     this.finished = false;
     this.finishTime = 0;
