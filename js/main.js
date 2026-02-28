@@ -54,10 +54,11 @@ class Game {
 
   async loadAssets() {
     const assetNames = ['env2', 'start', 'env1', 'finish'];
+    const version = Date.now(); // Cache busting
     const promises = assetNames.map(name => {
       return new Promise((resolve) => {
         const img = new Image();
-        img.src = `assets/${name}.png`;
+        img.src = `assets/${name}.png?v=${version}`;
         img.onload = () => {
           this.assets[name] = img;
           resolve();
