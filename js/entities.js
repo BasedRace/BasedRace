@@ -8,8 +8,8 @@ export class Racer {
     this.asset = asset;
     this.laneIndex = laneIndex;
     this.track = track;
-    this.w = 80; // Racer width
-    this.h = 120; // Racer height
+    this.w = 400; // Racer width
+    this.h = 400; // Racer height
     
     // Calculate lane position - 4 lanes, ~160px spacing, centered on track
     const laneSpacing = 160;
