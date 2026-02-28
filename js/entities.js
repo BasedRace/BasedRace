@@ -41,10 +41,11 @@ export class Racer {
     this.x += movement * this.track.OFFSET_X_RATIO;
   }
   
-  // Apply pre-scroll offset
+  // Apply pre-scroll offset (disable for now - use debugger positions directly)
   applyOffset(offset) {
-    this.y -= offset;
-    this.x += offset * this.track.OFFSET_X_RATIO;
+    // Disabled - use debugger positions directly
+    // this.y -= offset;
+    // this.x += offset * this.track.OFFSET_X_RATIO;
   }
   
   // Reset to start position
