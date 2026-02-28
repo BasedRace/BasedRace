@@ -31,42 +31,42 @@ export class Racer {
     // Progress tracking
     this.progress = 0;
     
-    // Dynamic AI - base and target speed
+    // Dynamic AI - subtle organic movement
     this.baseSpeed = 80 + Math.random() * 40;
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.lastSpeedChange = 0;
     
+    // Oscillation for natural movement
+    this.sinOffset = Math.random() * Math.PI * 2;
+    this.oscillationFrequency = 0.5 + Math.random(); // 0.5 to 1.5
+    
     this.finished = false;
     this.finishTime = 0;
   }
   
-  // Update racer - dynamic AI with rubber banding
+  // Update racer - subtle organic movement with soft guardrail
   update(trackSpeed, dt, allRacers) {
     if (this.finished) return;
     
-    // Change target speed every 2 seconds
-    this.lastSpeedChange += dt;
-    if (this.lastSpeedChange > 2000) {
-      this.lastSpeedChange = 0;
-      this.targetSpeed = this.baseSpeed + (Math.random() - 0.5) * 60;
+    // Oscillating bonus using sin wave
+    const bonus = Math.sin(Date.now() * 0.001 * this.oscillationFrequency + this.sinOffset) * 15;
+    
+    // Soft guardrail - micro catchup in bottom 15% or slow down in top 15%
+    const screenHeight = 1800;
+    const topZone = screenHeight * 0.15;
+    const bottomZone = screenHeight * 0.85;
+    
+    if (this.yPosOnScreen > bottomZone) {
+      this.targetSpeed = this.baseSpeed * 1.15; // 15% boost
+    } else if (this.yPosOnScreen < topZone) {
+      this.targetSpeed = this.baseSpeed * 0.85; // 15% slow
+    } else {
+      this.targetSpeed = this.baseSpeed + bonus;
     }
     
-    // Rubber banding - adjust speed based on position
-    if (allRacers && allRacers.length > 1) {
-      const positions = allRacers.map(r => r.yPosOnScreen);
-      const avgY = positions.reduce((a, b) => a + b, 0) / positions.length;
-      
-      // If ahead (lower Y), slow down; if behind, speed up
-      if (this.yPosOnScreen < avgY - 100) {
-        this.targetSpeed *= 0.95; // Slow down
-      } else if (this.yPosOnScreen > avgY + 100) {
-        this.targetSpeed *= 1.1; // Catch-up boost
-      }
-    }
-    
-    // Smooth speed transition
-    this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.1;
+    // LERP for smooth acceleration
+    this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.05;
     
     // Y moves based on current speed
     this.yPosOnScreen -= this.currentSpeed * dt / 25000;
@@ -93,7 +93,14 @@ export class Racer {
     this.x = pos.x;
     this.yPosOnScreen = pos.y;
     this.progress = 0;
-    this.racingSpeed = 80 + Math.random() * 80;
+    
+    // Reset dynamic AI
+    this.baseSpeed = 80 + Math.random() * 40;
+    this.targetSpeed = this.baseSpeed;
+    this.currentSpeed = this.baseSpeed;
+    this.sinOffset = Math.random() * Math.PI * 2;
+    this.oscillationFrequency = 0.5 + Math.random();
+    
     this.finished = false;
     this.finishTime = 0;
   }
