@@ -51,6 +51,18 @@ class Game {
     
     this.setupDebugControls();
     
+    // Expose moveRacer for debug buttons
+    window.moveRacer = (racerIndex, direction) => {
+      const racer = this.racers[racerIndex];
+      if (!racer) return;
+      const step = 10;
+      if (direction === 'up') racer.y -= step;
+      if (direction === 'down') racer.y += step;
+      if (direction === 'left') racer.x -= step;
+      if (direction === 'right') racer.x += step;
+      this.renderer.render(this.track, this.racers);
+    };
+    
     // Pre-Scroll: Apply 1.25s offset so track is already positioned before menu shows
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
