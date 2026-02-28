@@ -11,54 +11,62 @@ export class Racer {
     this.w = 600; // Racer width
     this.h = 600; // Racer height
     
-    // Progress-based rail system
-    this.progress = 0;
+    // Screen-space constants
+    this.SCREEN_CENTER_X = 600;
+    this.SCREEN_ANCHOR_Y = 1400;
     
-    // Starting positions from debugger
-    const positions = {
-      'Jesse': { x: -45, y: -45 },
-      'Barmstrong': { x: 195, y: 135 },
-      'Deployer': { x: 475, y: 265 },
-      'Dish': { x: 795, y: 535 }
+    // Lane offset for parallel lanes
+    this.laneOffset = (laneIndex - 1.5) * 200; // Centered around lane 1.5
+    
+    // Starting Y positions from debugger (screen space)
+    const startYPositions = {
+      'Jesse': 400,
+      'Barmstrong': 580,
+      'Deployer': 710,
+      'Dish': 980
     };
     
-    const pos = positions[name] || { x: 0, y: 0 };
-    this.startX = pos.x;
-    this.startY = pos.y;
-    this.x = this.startX;
-    this.y = this.startY;
+    // Screen-space Y position
+    this.yPosOnScreen = startYPositions[name] || 500;
+    this.x = this.calculateX(this.yPosOnScreen);
     
     // Unique racing speed for random winner
-    this.racingSpeed = 60 + Math.random() * 60;
+    this.racingSpeed = 80 + Math.random() * 80; // 80-160
     this.finished = false;
     this.finishTime = 0;
   }
   
-  // Update racer - track-locked movement with 1.67 diagonal sync
+  // Calculate X from Y - locked to 1.67 diagonal
+  calculateX(yPosOnScreen) {
+    return this.SCREEN_CENTER_X + ((yPosOnScreen - this.SCREEN_ANCHOR_Y) * 1.67) + this.laneOffset;
+  }
+  
+  // Update racer - screen-space dependent
   update(trackStep, dt) {
     if (this.finished) return;
     
-    // Total step = track movement + racing speed
-    const totalStep = trackStep + (this.racingSpeed * dt / 1000);
+    // Move Y position on screen
+    this.yPosOnScreen -= this.racingSpeed * dt / 1000;
     
-    // Add to progress
-    this.progress += totalStep;
-    
-    // Calculate visual coordinates from progress
-    this.y = this.startY - this.progress;
-    this.x = this.startX + (this.progress * 1.67);
+    // Calculate X from Y - mathematically locked to 1.67 slope
+    this.x = this.calculateX(this.yPosOnScreen);
     
     // Boundary clamp
-    if (this.y < -500) this.y = -500;
-    if (this.y > 2000) this.y = 2000;
+    if (this.yPosOnScreen < -500) this.yPosOnScreen = -500;
+    if (this.yPosOnScreen > 2000) this.yPosOnScreen = 2000;
   }
   
   // Reset to start
   reset() {
-    this.progress = 0;
-    this.x = this.startX;
-    this.y = this.startY;
-    this.racingSpeed = 60 + Math.random() * 60;
+    const startYPositions = {
+      'Jesse': 400,
+      'Barmstrong': 580,
+      'Deployer': 710,
+      'Dish': 980
+    };
+    this.yPosOnScreen = startYPositions[this.name] || 500;
+    this.x = this.calculateX(this.yPosOnScreen);
+    this.racingSpeed = 80 + Math.random() * 80;
     this.finished = false;
     this.finishTime = 0;
   }

@@ -57,8 +57,9 @@ class Game {
       if (!game || !game.racers || !game.racers[racerIndex]) return;
       const racer = game.racers[racerIndex];
       const step = 10;
-      if (direction === 'up') racer.y -= step;
-      if (direction === 'down') racer.y += step;
+      if (direction === 'up') racer.yPosOnScreen -= step;
+      if (direction === 'down') racer.yPosOnScreen += step;
+      racer.x = racer.calculateX(racer.yPosOnScreen);
       if (direction === 'left') racer.x -= step;
       if (direction === 'right') racer.x += step;
       window.updateRacerCoord(racerIndex);
@@ -72,7 +73,7 @@ class Game {
       const racer = game.racers[racerIndex];
       const coordEl = document.getElementById('racer' + racerIndex + '-coord');
       if (coordEl) {
-        coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.y) + ')';
+        coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.yPosOnScreen) + ')';
       }
     };
     
@@ -168,7 +169,7 @@ class Game {
       racer.update(movement, deltaTime);
       
       // Check if racer crosses finish line
-      if (!racer.finished && finishTile && racer.y > finishTile.y) {
+      if (!racer.finished && finishTile && racer.yPosOnScreen > finishTile.y) {
         racer.finished = true;
         racer.finishTime = this.raceTime;
         
