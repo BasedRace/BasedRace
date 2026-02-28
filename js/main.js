@@ -61,7 +61,7 @@ class Game {
       if (direction === 'down') racer.y += step;
       if (direction === 'left') racer.x -= step;
       if (direction === 'right') racer.x += step;
-      game.updateRacerCoord(racerIndex);
+      window.updateRacerCoord(racerIndex);
       game.renderer.render(game.track, game.racers);
     };
     
