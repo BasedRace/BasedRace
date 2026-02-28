@@ -145,13 +145,14 @@ class Game {
     
     for (const racer of this.racers) {
       racer.update(movement, deltaTime, this.racers);
-      
-      // Check if racer crosses finish line (moving upward toward negative Y)
+    }
+    
+    // Check for winner before race ends
+    for (const racer of this.racers) {
       if (!racer.finished && racer.yPosOnScreen < -1000) {
         racer.finished = true;
         racer.finishTime = this.raceTime;
         
-        // Show winner when first racer finishes
         if (!this.winner) {
           this.winner = racer;
           this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
@@ -163,6 +164,20 @@ class Game {
     
     // Keep running until last tile passes screen
     const lastTile = this.track.tiles[this.track.tiles.length - 1];
+    for (const racer of this.racers) {
+      if (!racer.finished && racer.yPosOnScreen < -1000) {
+        racer.finished = true;
+        racer.finishTime = this.raceTime;
+        
+        if (!this.winner) {
+          this.winner = racer;
+          this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
+          this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
+          this.renderer.startConfetti();
+        }
+      }
+    }
+    
     if (lastTile && lastTile.y < 600) {
       this.finishRace();
     }
