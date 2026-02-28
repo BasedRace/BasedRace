@@ -34,16 +34,15 @@ export class Racer {
     this.finishTime = 0;
   }
   
-  // Update racer - progress-based with 1.67 diagonal lock
+  // Update racer - absolute screen-space locking (independent of track speed)
   update(trackSpeed, dt) {
     if (this.finished) return;
     
-    // Progress = track movement + racing speed
-    this.progress += trackSpeed + (this.racingSpeed * dt / 1000);
+    // Y moves only based on racing speed (NOT track speed)
+    this.yPosOnScreen -= this.racingSpeed * dt / 1000;
     
-    // Calculate positions from progress
-    this.yPosOnScreen = this.startY - this.progress;
-    this.x = this.startX + (this.progress * 1.67);
+    // X calculated from Y using 1.67 diagonal from start points
+    this.x = this.startX + ((this.yPosOnScreen - this.startY) * 1.67);
     
     // Boundary clamp
     if (this.yPosOnScreen < -500) this.yPosOnScreen = -500;
