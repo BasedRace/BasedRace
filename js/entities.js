@@ -107,7 +107,7 @@ export class Racer {
     this.progress = 0;
     
     // Reset dynamic AI - competitive
-    this.baseSpeed = 100 + Math.random() * 120;
+    this.baseSpeed = 100 + Math.random() * 300;
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.sinOffset = Math.random() * Math.PI * 2;
