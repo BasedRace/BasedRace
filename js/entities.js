@@ -21,10 +21,10 @@ export class Track {
     this.sequence = ['env2', 'start', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'finish', 'env2', 'env2', 'env2'];
   }
 
-  generate(preScrollOffset = 0) {
+  generate() {
     this.tiles = [];
-    let currentX = this.initialX + preScrollOffset * this.OFFSET_X_RATIO;
-    let currentY = -550 + preScrollOffset;
+    let currentX = this.initialX;
+    let currentY = -550;
     
     for (let i = 0; i < this.sequence.length; i++) {
       const assetName = this.sequence[i];
