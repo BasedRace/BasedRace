@@ -19,10 +19,10 @@ export class Racer {
     this.laneOffsetX = trackCenterX - (totalLaneWidth / 2) + (laneIndex * laneSpacing) - (this.w / 2);
     
     // Initial positions (from debugger)
-    if (name === 'Jesse') { this.x = -45; this.y = -45; }
-    if (name === 'Barmstrong') { this.x = 195; this.y = 135; }
-    if (name === 'Deployer') { this.x = 475; this.y = 265; }
-    if (name === 'Dish') { this.x = 795; this.y = 535; }
+    if (name === 'Jesse') { this.initialX = -45; this.x = -45; this.y = -45; }
+    if (name === 'Barmstrong') { this.initialX = 195; this.x = 195; this.y = 135; }
+    if (name === 'Deployer') { this.initialX = 475; this.x = 475; this.y = 265; }
+    if (name === 'Dish') { this.initialX = 795; this.x = 795; this.y = 535; }
     
     // Random speed for variety (50 to 150)
     const speedOptions = [50, 75, 100, 125];
@@ -31,28 +31,26 @@ export class Racer {
     this.finishTime = 0;
   }
   
-  // Update racer position - strictly locked to 1.67 diagonal ratio
+  // Update racer position - strictly locked to 1.67 diagonal ratio (rails system)
   update(trackSpeed, trackRatio, dt) {
     if (this.finished) return;
     
     // Small random variance each frame for natural overtaking
     const speedVariance = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
     
-    // Total vertical movement = track scroll + racer driving speed
-    const totalYMovement = (trackSpeed + (this.racingSpeed * speedVariance)) * (dt / 1000);
+    // Total vertical delta = track scroll + racer driving speed
+    const totalYDelta = (trackSpeed + (this.racingSpeed * speedVariance)) * (dt / 1000);
     
-    // Lock to diagonal slope: X is calculated directly from Y movement
-    // Start positions per racer: Jesse=-45, Barmstrong=195, Deployer=475, Dish=795
-    const startXPositions = [-45, 195, 475, 795];
-    const startX = startXPositions[this.laneIndex] || -45;
+    // Move vertically
+    this.y -= totalYDelta;
     
-    this.y -= totalYMovement;
-    this.x = startX + (totalYMovement * 1.67);
+    // Rail equation: X moves proportionally to Y with 1.67 ratio
+    // Start from initial X and add delta-movement × ratio + lane offset
+    this.x = this.initialX + (totalYDelta * 1.67) + this.laneOffsetX;
     
-    // Catch-up mechanism: if racer falls too far behind, push forward
-    if (this.y > 1600) {
-      this.y = 1200;
-    }
+    // Boundary safety: clamp Y to stay on screen
+    if (this.y < -500) this.y = -500;
+    if (this.y > 2000) this.y = 2000;
   }
   
   // Apply pre-scroll offset (disable for now - use debugger positions directly)
@@ -65,10 +63,10 @@ export class Racer {
   // Reset to start position
   reset() {
     // Set initial positions per racer (from debugger)
-    if (this.name === 'Jesse') { this.x = -45; this.y = -45; }
-    if (this.name === 'Barmstrong') { this.x = 195; this.y = 135; }
-    if (this.name === 'Deployer') { this.x = 475; this.y = 265; }
-    if (this.name === 'Dish') { this.x = 795; this.y = 535; }
+    if (this.name === 'Jesse') { this.initialX = -45; this.x = -45; this.y = -45; }
+    if (this.name === 'Barmstrong') { this.initialX = 195; this.x = 195; this.y = 135; }
+    if (this.name === 'Deployer') { this.initialX = 475; this.x = 475; this.y = 265; }
+    if (this.name === 'Dish') { this.initialX = 795; this.x = 795; this.y = 535; }
     
     // Reset racing speed
     const speedOptions = [50, 75, 100, 125];
