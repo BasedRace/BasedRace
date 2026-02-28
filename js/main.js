@@ -167,7 +167,7 @@ class Game {
     // Update all racers
     const finishTile = this.track.getFinishTile();
     for (const racer of this.racers) {
-      racer.update(this.scrollSpeed, deltaTime);
+      racer.update(this.scrollSpeed, this.track.OFFSET_X_RATIO, deltaTime);
       
       // Check if racer crosses finish line
       if (!racer.finished && finishTile && racer.y > finishTile.y) {

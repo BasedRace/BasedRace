@@ -31,14 +31,22 @@ export class Racer {
   }
   
   // Update racer position - synced with diagonal track ratio
-  update(speed, deltaTime) {
+  update(trackSpeed, trackRatio, dt) {
     if (this.finished) return;
     
-    const movement = speed * deltaTime / 1000 * this.speedBoost;
+    // Random base speed modifier (0.5 to 2.0)
+    const baseSpeedModifier = 0.5 + Math.random() * 1.5;
     
-    // Diagonal movement: y decreases, x increases by ratio
-    this.y -= movement;
-    this.x += movement * this.track.OFFSET_X_RATIO;
+    // Random turbo boost occasionally
+    const turboChance = Math.random();
+    const turboBoost = turboChance > 0.95 ? 2.0 : 1.0; // 5% chance for turbo
+    
+    // Total speed = track speed + personal boost + turbo
+    const totalSpeed = (trackSpeed * baseSpeedModifier * turboBoost) * (dt / 1000);
+    
+    // Move up (decrease Y) and right (increase X) with diagonal ratio
+    this.y -= totalSpeed;
+    this.x += totalSpeed * trackRatio;
   }
   
   // Apply pre-scroll offset (disable for now - use debugger positions directly)
