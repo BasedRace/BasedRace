@@ -63,7 +63,7 @@ export class Renderer {
     this.clear();
     
     // Tiles are already sorted during generate() - no need to sort every frame
-    for (const tile of this.track.tiles) {
+    for (const tile of track.tiles) {
       // Mengirimkan dimensi zoomed (WIDTH/HEIGHT) ke fungsi drawTile
       this.drawTile(tile, track.WIDTH, track.HEIGHT);
     }
