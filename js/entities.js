@@ -18,12 +18,12 @@ export class Racer {
     // Lane offset for parallel lanes
     this.laneOffset = (laneIndex - 1.5) * 200; // Centered around lane 1.5
     
-    // Starting Y positions from debugger (screen space)
+    // Starting Y positions (calculated from user's coordinates)
     const startYPositions = {
-      'Jesse': 400,
-      'Barmstrong': 580,
-      'Deployer': 710,
-      'Dish': 980
+      'Jesse': 1193,
+      'Barmstrong': 1217,
+      'Deployer': 1265,
+      'Dish': 1337
     };
     
     // Screen-space Y position
@@ -59,12 +59,12 @@ export class Racer {
   // Reset to start
   reset() {
     const startYPositions = {
-      'Jesse': 400,
-      'Barmstrong': 580,
-      'Deployer': 710,
-      'Dish': 980
+      'Jesse': 1193,
+      'Barmstrong': 1217,
+      'Deployer': 1265,
+      'Dish': 1337
     };
-    this.yPosOnScreen = startYPositions[this.name] || 500;
+    this.yPosOnScreen = startYPositions[this.name] || 1000;
     this.x = this.calculateX(this.yPosOnScreen);
     this.racingSpeed = 80 + Math.random() * 80;
     this.finished = false;
