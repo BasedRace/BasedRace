@@ -143,7 +143,7 @@ class Game {
     const finishTile = this.track.tiles[11]; 
     
     for (const racer of this.racers) {
-      racer.update(movement, deltaTime);
+      racer.update(movement, deltaTime, this.racers);
       
       // Check if racer crosses finish line (tile at index 11)
       if (!racer.finished && finishTile && racer.yPosOnScreen > finishTile.y) {
