@@ -18,12 +18,12 @@ export class Racer {
     // Lane offset for parallel lanes
     this.laneOffset = (laneIndex - 1.5) * 200; // Centered around lane 1.5
     
-    // Starting positions from user - adjust to screen space for visibility
+    // Starting positions from user
     const startPositions = {
-      'Jesse': { x: 300, y: 400 },
-      'Barmstrong': { x: 500, y: 500 },
-      'Deployer': { x: 700, y: 600 },
-      'Dish': { x: 900, y: 700 }
+      'Jesse': { x: -90, y: -30 },
+      'Barmstrong': { x: 190, y: 150 },
+      'Deployer': { x: 470, y: 270 },
+      'Dish': { x: 820, y: 550 }
     };
     
     const pos = startPositions[name] || { x: 0, y: 0 };
@@ -57,10 +57,10 @@ export class Racer {
   // Reset to start
   reset() {
     const startPositions = {
-      'Jesse': { x: 300, y: 400 },
-      'Barmstrong': { x: 500, y: 500 },
-      'Deployer': { x: 700, y: 600 },
-      'Dish': { x: 900, y: 700 }
+      'Jesse': { x: -90, y: -30 },
+      'Barmstrong': { x: 190, y: 150 },
+      'Deployer': { x: 470, y: 270 },
+      'Dish': { x: 820, y: 550 }
     };
     const pos = startPositions[this.name] || { x: 0, y: 0 };
     this.x = pos.x;
