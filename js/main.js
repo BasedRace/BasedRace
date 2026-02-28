@@ -141,43 +141,22 @@ class Game {
     const movement = this.scrollSpeed * deltaTime / 1000;
     this.track.updateMovement(movement);
     
-    // Update all racers with track movement
-    
+    // Update all racers and check for winner
     for (const racer of this.racers) {
       racer.update(movement, deltaTime, this.racers);
-    }
-    
-    // Check for winner before race ends
-    for (const racer of this.racers) {
+      
+      // First racer to cross finish line wins
       if (!racer.finished && racer.yPosOnScreen < -1000) {
         racer.finished = true;
-        racer.finishTime = this.raceTime;
-        
-        if (!this.winner) {
-          this.winner = racer;
-          this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
-          this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
-          this.renderer.startConfetti();
-        }
+        this.winner = racer;
+        this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
+        this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
+        this.renderer.startConfetti();
       }
     }
     
     // Keep running until last tile passes screen
     const lastTile = this.track.tiles[this.track.tiles.length - 1];
-    for (const racer of this.racers) {
-      if (!racer.finished && racer.yPosOnScreen < -1000) {
-        racer.finished = true;
-        racer.finishTime = this.raceTime;
-        
-        if (!this.winner) {
-          this.winner = racer;
-          this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
-          this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
-          this.renderer.startConfetti();
-        }
-      }
-    }
-    
     if (lastTile && lastTile.y < 600) {
       this.finishRace();
     }
