@@ -163,6 +163,8 @@ class Game {
     if (allFinished) {
       this.statusEl.textContent = '🎉 RACE COMPLETE! 🎉';
       this.statusEl.style.animation = 'pulse 0.5s infinite';
+      // Start confetti
+      this.renderer.startConfetti();
     }
     
     // Keep running until last tile passes screen

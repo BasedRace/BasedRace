@@ -70,6 +70,40 @@ export class Renderer {
         racer.h
       );
     }
+    
+    // Draw confetti if active
+    if (this.confetti && this.confetti.length > 0) {
+      this.drawConfetti();
+    }
+  }
+  
+  // Confetti system
+  confetti = [];
+  startConfetti() {
+    this.confetti = [];
+    for (let i = 0; i < 100; i++) {
+      this.confetti.push({
+        x: Math.random() * 1200,
+        y: Math.random() * -1800,
+        vx: (Math.random() - 0.5) * 4,
+        vy: Math.random() * 3 + 2,
+        color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+        size: Math.random() * 8 + 4
+      });
+    }
+  }
+  
+  drawConfetti() {
+    for (const p of this.confetti) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.1;
+      
+      this.ctx.fillStyle = p.color;
+      this.ctx.fillRect(p.x, p.y, p.size, p.size);
+    }
+    // Remove confetti that fell off screen
+    this.confetti = this.confetti.filter(p => p.y < 1800);
   }
 
   // Merender semua tile track dengan urutan kedalaman (back to front)
