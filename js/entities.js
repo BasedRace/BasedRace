@@ -25,6 +25,9 @@ export class Racer {
     this.x = pos.x;
     this.yPosOnScreen = pos.y;
     
+    // Diagonal ratio (can be adjusted via debugger)
+    this.diagonalRatio = 0.66;
+    
     // Progress tracking
     this.progress = 0;
     
@@ -41,8 +44,8 @@ export class Racer {
     // Y moves only based on racing speed (NOT track speed)
     this.yPosOnScreen -= this.racingSpeed * dt / 1000;
     
-    // X calculated from Y using 0.66 diagonal from start points
-    this.x = this.startX + ((this.yPosOnScreen - this.startY) * 0.66);
+    // X calculated from Y using diagonal ratio from start points
+    this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
     
     // Boundary clamp
     if (this.yPosOnScreen < -500) this.yPosOnScreen = -500;

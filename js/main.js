@@ -51,53 +51,9 @@ class Game {
     
     this.setupDebugControls();
     
-    // Expose moveRacer for debug buttons
-    window.moveRacer = (racerIndex, direction) => {
-      const game = window.gameInstance;
-      if (!game || !game.racers || !game.racers[racerIndex]) return;
-      const racer = game.racers[racerIndex];
-      const step = 10;
-      if (direction === 'up') racer.yPosOnScreen -= step;
-      if (direction === 'down') racer.yPosOnScreen += step;
-      // Don't recalculate X - keep user's set position
-      if (direction === 'left') racer.x -= step;
-      if (direction === 'right') racer.x += step;
-      window.updateRacerCoord(racerIndex);
-      game.renderer.render(game.track, game.racers);
-    };
-    
-    // Update coordinate display
-    window.updateRacerCoord = (racerIndex) => {
-      const game = window.gameInstance;
-      if (!game || !game.racers || !game.racers[racerIndex]) return;
-      const racer = game.racers[racerIndex];
-      const coordEl = document.getElementById('racer' + racerIndex + '-coord');
-      if (coordEl) {
-        coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.yPosOnScreen) + ')';
-      }
-    };
-    
-    // Initial coordinate display
-    if (this.racers) {
-      setTimeout(() => {
-        for (let i = 0; i < this.racers.length; i++) {
-          window.updateRacerCoord(i);
-        }
-      }, 100);
-    }
-    
     // Pre-Scroll: Apply 1.25s offset so track is already positioned before menu shows
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
-    
-    // Sync racers with pre-scroll offset
-    for (const racer of this.racers) {
-    }
-    
-    // Update coordinate display after pre-scroll
-    for (let i = 0; i < this.racers.length; i++) {
-      window.updateRacerCoord(i);
-    }
     
     this.renderer.render(this.track, this.racers);
     
@@ -216,28 +172,19 @@ class Game {
   }
 
   setupDebugControls() {
-    const preScrollInput = document.getElementById('pre-scroll');
-    const track = this.track;
+    const diagonalRatioInput = document.getElementById('diagonal-ratio');
     const racers = this.racers;
-    const game = this;
     
-    if (!track) return;
+    if (!racers) return;
 
-    const applyPreScroll = (value) => {
-      const preScrollOffset = this.scrollSpeed * value;
-      track.generateWithPreScroll(preScrollOffset);
-      for (const racer of racers) {
-        racer.reset();
-      }
-      this.renderer.render(track, racers);
-    };
-    
-    if (preScrollInput) {
-      preScrollInput.value = 1.25;
-      preScrollInput.addEventListener('input', (e) => {
+    if (diagonalRatioInput) {
+      diagonalRatioInput.value = 0.66;
+      diagonalRatioInput.addEventListener('input', (e) => {
         const value = parseFloat(e.target.value);
-        if (!isNaN(value) && value >= 0) {
-          applyPreScroll(value);
+        if (!isNaN(value)) {
+          for (const racer of racers) {
+            racer.diagonalRatio = value;
+          }
         }
       });
     }
