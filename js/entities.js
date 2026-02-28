@@ -18,17 +18,17 @@ export class Racer {
     // Lane offset for parallel lanes
     this.laneOffset = (laneIndex - 1.5) * 200; // Centered around lane 1.5
     
-    // Starting Y positions (calculated from user's coordinates)
-    const startYPositions = {
-      'Jesse': 1193,
-      'Barmstrong': 1217,
-      'Deployer': 1265,
-      'Dish': 1337
+    // Starting positions from user (direct coordinates)
+    const startPositions = {
+      'Jesse': { x: -45, y: -45 },
+      'Barmstrong': { x: 195, y: 135 },
+      'Deployer': { x: 475, y: 265 },
+      'Dish': { x: 795, y: 535 }
     };
     
-    // Screen-space Y position
-    this.yPosOnScreen = startYPositions[name] || 500;
-    this.x = this.calculateX(this.yPosOnScreen);
+    const pos = startPositions[name] || { x: 0, y: 0 };
+    this.x = pos.x;
+    this.yPosOnScreen = pos.y;
     
     // Unique racing speed for random winner
     this.racingSpeed = 80 + Math.random() * 80; // 80-160
@@ -58,14 +58,15 @@ export class Racer {
   
   // Reset to start
   reset() {
-    const startYPositions = {
-      'Jesse': 1193,
-      'Barmstrong': 1217,
-      'Deployer': 1265,
-      'Dish': 1337
+    const startPositions = {
+      'Jesse': { x: -45, y: -45 },
+      'Barmstrong': { x: 195, y: 135 },
+      'Deployer': { x: 475, y: 265 },
+      'Dish': { x: 795, y: 535 }
     };
-    this.yPosOnScreen = startYPositions[this.name] || 1000;
-    this.x = this.calculateX(this.yPosOnScreen);
+    const pos = startPositions[this.name] || { x: 0, y: 0 };
+    this.x = pos.x;
+    this.yPosOnScreen = pos.y;
     this.racingSpeed = 80 + Math.random() * 80;
     this.finished = false;
     this.finishTime = 0;
