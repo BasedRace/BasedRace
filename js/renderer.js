@@ -60,7 +60,7 @@ export class Renderer {
       
       // Use Math.floor for crisp rendering
       const drawX = Math.floor(racer.x);
-      const drawY = Math.floor(racer.y);
+      const drawY = Math.floor(racer.yPosOnScreen);
       
       this.ctx.drawImage(
         racer.asset,
