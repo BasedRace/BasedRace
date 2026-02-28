@@ -28,7 +28,7 @@ export class Track {
 
   generate() {
     this.tiles = [];
-    let currentX = this.initialX * this.OFFSET_X_RATIO;
+    let currentX = this.initialX;
     let currentY = -550;
     
     for (let i = 0; i < this.sequence.length; i++) {
