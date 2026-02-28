@@ -35,7 +35,6 @@ class Game {
     await this.loadAssets();
     
     this.track = new Track(this.assets);
-    this.track.generate();
     
     // Pre-Scroll: Apply 1.25s offset so track appears as if already moving
     const preScrollOffset = this.scrollSpeed * 1.25;
