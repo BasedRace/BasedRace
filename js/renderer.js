@@ -55,33 +55,6 @@ export class Renderer {
 
   // Draw all racers
   drawRacers(racers) {
-    const laneColors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00']; // Lane position indicators
-    const laneSpacing = 200;
-    const totalLaneWidth = (4 - 1) * laneSpacing;
-    const trackCenterX = 600;
-    const trackWidth = 1932; // 1200 * 1.61
-    const trackLeftX = trackCenterX - (trackWidth / 2);
-    
-    // Draw lane position indicators
-    for (let i = 0; i < 4; i++) {
-      const laneX = trackCenterX - (totalLaneWidth / 2) + (i * laneSpacing) - 300;
-      
-      // Draw vertical lane line
-      this.ctx.strokeStyle = laneColors[i];
-      this.ctx.lineWidth = 4;
-      this.ctx.setLineDash([20, 10]);
-      this.ctx.beginPath();
-      this.ctx.moveTo(laneX + 300, 0);
-      this.ctx.lineTo(laneX + 300, 1800);
-      this.ctx.stroke();
-      this.ctx.setLineDash([]);
-      
-      // Draw lane label
-      this.ctx.fillStyle = laneColors[i];
-      this.ctx.font = 'bold 24px Arial';
-      this.ctx.fillText('Lane ' + i, laneX + 200, 50);
-    }
-    
     for (const racer of racers) {
       if (!racer.asset || racer.finished) continue;
       
