@@ -147,7 +147,7 @@ class Game {
       racer.update(movement, deltaTime, this.racers);
       
       // Check if racer crosses finish line
-      if (!racer.finished && racer.yPosOnScreen > 8000) {
+      if (!racer.finished && racer.yPosOnScreen > 5000) {
         racer.finished = true;
         racer.finishTime = this.raceTime;
         
