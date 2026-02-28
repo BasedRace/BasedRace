@@ -49,7 +49,6 @@ class Game {
       this.restartBtn.addEventListener('click', () => this.reset());
     }
     
-    this.setupDebugControls();
     
     // Expose moveRacer for debug buttons
     window.moveRacer = (racerIndex, direction) => {
@@ -199,18 +198,6 @@ class Game {
     requestAnimationFrame((t) => this.loop(t));
   }
 
-  setupDebugControls() {
-    // Update coordinate display for debug buttons
-    if (this.racers) {
-      for (let i = 0; i < this.racers.length; i++) {
-        const racer = this.racers[i];
-        const coordEl = document.getElementById('racer' + i + '-coord');
-        if (coordEl) {
-          coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.yPosOnScreen) + ')';
-        }
-      }
-    }
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => new Game());
