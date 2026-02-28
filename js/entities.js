@@ -32,7 +32,7 @@ export class Racer {
     this.progress = 0;
     
     // Dynamic AI - competitive organic movement
-    this.baseSpeed = 1000 + Math.random() * 500; // Much higher base speed
+    this.baseSpeed = 600 + Math.random() * 200; // Reduced base speed
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.lastSpeedChange = 0;
@@ -107,7 +107,7 @@ export class Racer {
     this.progress = 0;
     
     // Reset dynamic AI - competitive
-    this.baseSpeed = 1000 + Math.random() * 500;
+    this.baseSpeed = 600 + Math.random() * 200;
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.sinOffset = Math.random() * Math.PI * 2;
