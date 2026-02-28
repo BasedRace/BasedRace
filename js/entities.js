@@ -18,13 +18,18 @@ export class Track {
     // 4. Initial X - Dihitung agar aspal tile pertama ada di tengah
     this.initialX = -(this.WIDTH / 2) + 600;
 
+    // 5. Pre-Scroll - Track appears as if moving for 1.25 seconds at start
+    this.scrollSpeed = 300;
+    this.PRE_SCROLL_TIME = 1.25;
+    this.preScrollOffset = this.scrollSpeed * this.PRE_SCROLL_TIME;
+
     this.sequence = ['env2', 'start', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'finish', 'env2', 'env2', 'env2'];
   }
 
   generate() {
     this.tiles = [];
-    let currentX = this.initialX;
-    let currentY = -550;
+    let currentX = this.initialX + this.preScrollOffset * this.OFFSET_X_RATIO;
+    let currentY = -550 + this.preScrollOffset;
     
     for (let i = 0; i < this.sequence.length; i++) {
       const assetName = this.sequence[i];
