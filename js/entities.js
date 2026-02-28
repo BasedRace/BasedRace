@@ -25,7 +25,7 @@ export class Track {
   generate() {
     this.tiles = [];
     let currentX = this.initialX;
-    let currentY = 0;
+    let currentY = -550;
     
     for (let i = 0; i < this.sequence.length; i++) {
       const assetName = this.sequence[i];
