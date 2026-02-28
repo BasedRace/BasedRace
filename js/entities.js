@@ -32,7 +32,7 @@ export class Racer {
     this.progress = 0;
     
     // Dynamic AI - competitive organic movement
-    this.baseSpeed = 100 + Math.random() * 60;
+    this.baseSpeed = 100 + Math.random() * 150;
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.lastSpeedChange = 0;
@@ -81,7 +81,7 @@ export class Racer {
     this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.08;
     
     // Y moves based on current speed (balanced)
-    this.yPosOnScreen -= this.currentSpeed * dt / 2000;
+    this.yPosOnScreen -= this.currentSpeed * dt / 20000;
    
     // X calculated from Y using diagonal ratio from start points
     this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
