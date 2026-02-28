@@ -1,4 +1,58 @@
 // js/entities.js - Track class dengan Auto-Center Logic
+
+// Racer class for autonomous 4-racer system
+export class Racer {
+  constructor(id, name, asset, laneIndex, track) {
+    this.id = id;
+    this.name = name;
+    this.asset = asset;
+    this.laneIndex = laneIndex;
+    this.track = track;
+    this.w = 80; // Racer width
+    this.h = 120; // Racer height
+    
+    // Calculate lane position - 4 lanes, ~160px spacing, centered on track
+    const laneSpacing = 160;
+    const totalLaneWidth = (4 - 1) * laneSpacing;
+    const trackCenterX = 600; // Center of 1200px canvas
+    this.laneOffsetX = trackCenterX - (totalLaneWidth / 2) + (laneIndex * laneSpacing) - (this.w / 2);
+    
+    // Initial position (at start line)
+    this.x = this.laneOffsetX;
+    this.y = -200; // Slightly above start line
+    
+    // Random speed boost for variety
+    this.speedBoost = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
+    this.finished = false;
+    this.finishTime = 0;
+  }
+  
+  // Update racer position - synced with diagonal track ratio
+  update(speed, deltaTime) {
+    if (this.finished) return;
+    
+    const movement = speed * deltaTime / 1000 * this.speedBoost;
+    
+    // Diagonal movement: y decreases, x increases by ratio
+    this.y -= movement;
+    this.x += movement * this.track.OFFSET_X_RATIO;
+  }
+  
+  // Apply pre-scroll offset
+  applyOffset(offset) {
+    this.y -= offset;
+    this.x += offset * this.track.OFFSET_X_RATIO;
+  }
+  
+  // Reset to start position
+  reset() {
+    this.x = this.laneOffsetX;
+    this.y = -200;
+    this.speedBoost = 0.9 + Math.random() * 0.2;
+    this.finished = false;
+    this.finishTime = 0;
+  }
+}
 export class Track {
   constructor(assets) {
     this.assets = assets;

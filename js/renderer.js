@@ -53,8 +53,27 @@ export class Renderer {
     );
   }
 
+  // Draw all racers
+  drawRacers(racers) {
+    for (const racer of racers) {
+      if (!racer.asset || racer.finished) continue;
+      
+      // Use Math.floor for crisp rendering
+      const drawX = Math.floor(racer.x);
+      const drawY = Math.floor(racer.y);
+      
+      this.ctx.drawImage(
+        racer.asset,
+        drawX,
+        drawY,
+        racer.w,
+        racer.h
+      );
+    }
+  }
+
   // Merender semua tile track dengan urutan kedalaman (back to front)
-  render(track) {
+  render(track, racers = []) {
     if (!track || !track.tiles) return;
 
     // Pastikan pixel tetap tajam setiap frame (penting untuk iPad browser)
@@ -67,5 +86,8 @@ export class Renderer {
       // Mengirimkan dimensi zoomed (WIDTH/HEIGHT) ke fungsi drawTile
       this.drawTile(tile, track.WIDTH, track.HEIGHT);
     }
+    
+    // Draw racers on top of track
+    this.drawRacers(racers);
   }
 }

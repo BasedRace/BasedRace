@@ -1,6 +1,6 @@
 // js/main.js - Entry point game Based Race
 
-import { Track } from './entities.js';
+import { Track, Racer } from './entities.js';
 import { Renderer } from './renderer.js';
 
 class Game {
@@ -36,6 +36,14 @@ class Game {
     
     this.track = new Track(this.assets);
     
+    // Create 4 racers
+    this.racers = [
+      new Racer(0, 'Jesse', this.assets['jesse'], 0, this.track),
+      new Racer(1, 'Barmstrong', this.assets['barmstrong'], 1, this.track),
+      new Racer(2, 'Deployer', this.assets['deployer'], 2, this.track),
+      new Racer(3, 'Dish', this.assets['dish'], 3, this.track)
+    ];
+    
     this.startBtn.addEventListener('click', () => this.startRace());
     if (this.restartBtn) {
       this.restartBtn.addEventListener('click', () => this.reset());
@@ -46,7 +54,13 @@ class Game {
     // Pre-Scroll: Apply 1.25s offset so track is already positioned before menu shows
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
-    this.renderer.render(this.track);
+    
+    // Sync racers with pre-scroll offset
+    for (const racer of this.racers) {
+      racer.applyOffset(preScrollOffset);
+    }
+    
+    this.renderer.render(this.track, this.racers);
     
     this.state = 'ready';
     this.statusEl.textContent = '';
@@ -58,8 +72,10 @@ class Game {
 
   async loadAssets() {
     const assetNames = ['env2', 'start', 'env1', 'finish'];
+    const racerNames = ['jesse', 'barmstrong', 'deployer', 'dish'];
+    const allNames = [...assetNames, ...racerNames];
     const version = Date.now(); // Cache busting
-    const promises = assetNames.map(name => {
+    const promises = allNames.map(name => {
       return new Promise((resolve) => {
         const img = new Image();
         img.src = `assets/${name}.png?v=${version}`;
@@ -80,12 +96,20 @@ class Game {
     if (this.state === 'racing') return;
     this.state = 'racing';
     this.raceTime = 0;
+    this.winner = null; // Reset winner
     this.lastTime = performance.now(); // Reset delta time to prevent time spike
     
     // Re-apply pre-scroll offset after reset
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
-    this.renderer.render(this.track);
+    
+    // Sync racers with pre-scroll offset
+    for (const racer of this.racers) {
+      racer.reset();
+      racer.applyOffset(preScrollOffset);
+    }
+    
+    this.renderer.render(this.track, this.racers);
     
     this.startBtn.style.display = 'none';
   }
@@ -100,6 +124,24 @@ class Game {
     
     const movement = this.scrollSpeed * deltaTime / 1000;
     this.track.updateMovement(movement);
+    
+    // Update all racers
+    const finishTile = this.track.getFinishTile();
+    for (const racer of this.racers) {
+      racer.update(this.scrollSpeed, deltaTime);
+      
+      // Check if racer crosses finish line
+      if (!racer.finished && finishTile && racer.y > finishTile.y) {
+        racer.finished = true;
+        racer.finishTime = this.raceTime;
+        
+        // First racer to finish wins
+        if (!this.winner) {
+          this.winner = racer;
+          this.statusEl.textContent = `WINNER: ${racer.name}!`;
+        }
+      }
+    }
     
     // Cek Finish - End race when last tile passes screen
     const lastTile = this.track.tiles[this.track.tiles.length - 1];
@@ -120,7 +162,7 @@ class Game {
     if (this.track.smoothRender) {
         this.track.smoothRender();
     }
-    this.renderer.render(this.track);
+    this.renderer.render(this.track, this.racers);
   }
 
   loop(timestamp) {
