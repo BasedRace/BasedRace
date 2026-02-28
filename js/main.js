@@ -91,7 +91,6 @@ class Game {
     
     // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
-      racer.applyOffset(preScrollOffset);
     }
     
     // Update coordinate display after pre-scroll
@@ -145,7 +144,6 @@ class Game {
     // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
       racer.reset();
-      racer.applyOffset(preScrollOffset);
     }
     
     this.renderer.render(this.track, this.racers);
@@ -229,7 +227,6 @@ class Game {
       track.generateWithPreScroll(preScrollOffset);
       for (const racer of racers) {
         racer.reset();
-        racer.applyOffset(preScrollOffset);
       }
       this.renderer.render(track, racers);
     };

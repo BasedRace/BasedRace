@@ -13,46 +13,57 @@ export class Racer {
     
     // Calculate lane position - 4 lanes centered on track
     const laneSpacing = 200;
-    const totalLaneWidth = (4 - 1) * laneSpacing;
     const trackCenterX = 600; // Center of 1200px canvas
-    // Center each racer in its lane
-    this.laneOffsetX = trackCenterX - (totalLaneWidth / 2) + (laneIndex * laneSpacing) - (this.w / 2);
+    this.laneOffsetX = (laneIndex * laneSpacing);
     
-    // Initial positions (from debugger) - adjusted for track's initial Y offset (-550)
-    // Track offset: Y = -550, X offset = 550 * 1.67 = 918.5
+    // Random racing speed for each racer (50-150)
+    this.racingSpeed = 50 + Math.random() * 100;
+    this.finished = false;
+    this.finishTime = 0;
+    
+    // Initialize position
+    this.initializePosition(1000); // Start at y=1000 (visible on screen)
+  }
+  
+  initializePosition(startY) {
+    // Track is offset by -550
     const trackOffsetY = 550;
     const trackOffsetX = 550 * 1.67;
     
-    if (name === 'Jesse') { this.initialX = -45 + trackOffsetX; this.x = -45 + trackOffsetX; this.y = -45 + trackOffsetY; }
-    if (name === 'Barmstrong') { this.initialX = 195 + trackOffsetX; this.x = 195 + trackOffsetX; this.y = 135 + trackOffsetY; }
-    if (name === 'Deployer') { this.initialX = 475 + trackOffsetX; this.x = 475 + trackOffsetX; this.y = 265 + trackOffsetY; }
-    if (name === 'Dish') { this.initialX = 795 + trackOffsetX; this.x = 795 + trackOffsetX; this.y = 535 + trackOffsetY; }
+    // Calculate Y relative to track offset
+    const relativeY = startY - trackOffsetY;
     
-    // Random speed for variety (50 to 150)
-    const speedOptions = [50, 75, 100, 125];
-    this.racingSpeed = speedOptions[laneIndex] || 100;
-    this.finished = false;
-    this.finishTime = 0;
+    // Base X = center of canvas - half racer width + lane offset
+    const baseX = 600 - (this.w / 2) + this.laneOffsetX;
+    
+    // Add diagonal shift based on Y position
+    const diagonalShift = relativeY * 1.67;
+    
+    this.y = startY;
+    this.x = baseX + diagonalShift + trackOffsetX;
+    this.initialX = this.x;
+    this.initialY = startY;
   }
   
-  // Update racer position - strictly locked to 1.67 diagonal ratio (rails system)
+  // Update racer position - strictly locked to 1.67 diagonal ratio
   update(trackSpeed, trackRatio, dt) {
     if (this.finished) return;
     
     // Small random variance each frame for natural overtaking
-    const speedVariance = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
+    const speedVariance = 0.9 + Math.random() * 0.2;
     
-    // Total vertical delta = track scroll + racer driving speed
-    const totalYDelta = (trackSpeed + (this.racingSpeed * speedVariance)) * (dt / 1000);
+    // Total movement = track scroll + racing speed
+    const totalMoveY = (trackSpeed + (this.racingSpeed * speedVariance)) * (dt / 1000);
     
     // Move vertically
-    this.y -= totalYDelta;
+    this.y -= totalMoveY;
     
-    // Rail equation: X moves proportionally to Y with 1.67 ratio
-    // Start from initial X and add delta-movement × ratio + lane offset
-    this.x = this.initialX + (totalYDelta * 1.67) + this.laneOffsetX;
+    // Lock X to diagonal slope: X changes proportionally to Y movement
+    const relativeY = this.y - 550; // Relative to track offset
+    const baseX = 600 - (this.w / 2) + this.laneOffsetX;
+    this.x = baseX + (relativeY * 1.67) + 550 * 1.67;
     
-    // Boundary safety: clamp Y to stay on screen
+    // Boundary safety: clamp Y to stay visible
     if (this.y < -500) this.y = -500;
     if (this.y > 2000) this.y = 2000;
   }
@@ -66,18 +77,11 @@ export class Racer {
   
   // Reset to start position
   reset() {
-    // Set initial positions per racer - adjusted for track's initial offset
-    const trackOffsetY = 550;
-    const trackOffsetX = 550 * 1.67;
+    // Re-initialize position at y=1000 (visible on screen)
+    this.initializePosition(1000);
     
-    if (this.name === 'Jesse') { this.initialX = -45 + trackOffsetX; this.x = -45 + trackOffsetX; this.y = -45 + trackOffsetY; }
-    if (this.name === 'Barmstrong') { this.initialX = 195 + trackOffsetX; this.x = 195 + trackOffsetX; this.y = 135 + trackOffsetY; }
-    if (this.name === 'Deployer') { this.initialX = 475 + trackOffsetX; this.x = 475 + trackOffsetX; this.y = 265 + trackOffsetY; }
-    if (this.name === 'Dish') { this.initialX = 795 + trackOffsetX; this.x = 795 + trackOffsetX; this.y = 535 + trackOffsetY; }
-    
-    // Reset racing speed
-    const speedOptions = [50, 75, 100, 125];
-    this.racingSpeed = speedOptions[this.laneIndex] || 100;
+    // Randomize racing speed for unpredictable winner
+    this.racingSpeed = 50 + Math.random() * 100;
     this.finished = false;
     this.finishTime = 0;
   }
