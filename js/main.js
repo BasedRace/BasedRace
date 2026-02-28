@@ -149,15 +149,18 @@ class Game {
       if (!racer.finished && finishTile && racer.yPosOnScreen < finishTile.y && this.raceTime > 5000) {
         racer.finished = true;
         racer.finishTime = this.raceTime;
-        
-        // First racer to finish wins
-        if (!this.winner) {
-          this.winner = racer;
-          this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
-          this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
-          this.renderer.startConfetti();
-        }
       }
+    }
+    
+    // Check if ALL racers have finished
+    const allFinished = this.racers.every(r => r.finished);
+    if (allFinished && !this.winner) {
+      // Find winner - fastest finish time
+      const sortedRacers = [...this.racers].sort((a, b) => a.finishTime - b.finishTime);
+      this.winner = sortedRacers[0];
+      this.statusEl.textContent = `🏆 ${this.winner.name} WINS! 🏆`;
+      this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
+      this.renderer.startConfetti();
     }
     
     // Keep running until last tile passes screen
