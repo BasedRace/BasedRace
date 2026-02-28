@@ -145,8 +145,8 @@ class Game {
     for (const racer of this.racers) {
       racer.update(movement, deltaTime, this.racers);
       
-      // First racer to cross finish line wins
-      if (!racer.finished && this.finishLineY && racer.yPosOnScreen < this.finishLineY) {
+      // First racer to cross finish line wins (racer Y > finishLineY)
+      if (!racer.finished && this.finishLineY && racer.yPosOnScreen > this.finishLineY) {
         racer.finished = true;
         this.winner = racer;
         this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
