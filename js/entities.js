@@ -31,24 +31,27 @@ export class Racer {
     this.finishTime = 0;
   }
   
-  // Update racer position - synced with diagonal track ratio
+  // Update racer position - strictly locked to 1.67 diagonal ratio
   update(trackSpeed, trackRatio, dt) {
     if (this.finished) return;
     
-    // Random burst - 10% chance every frame to get temporary speed boost
-    const burstMultiplier = Math.random() > 0.9 ? 1.5 : 1.0;
+    // Small random variance each frame for natural overtaking
+    const speedVariance = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
     
-    // Total vertical movement = track speed + racing speed
-    const racingSpeed = this.racingSpeed * burstMultiplier;
-    const vTotal = (trackSpeed + racingSpeed) * (dt / 1000);
+    // Total vertical movement = track scroll + racer driving speed
+    const totalYMovement = (trackSpeed + (this.racingSpeed * speedVariance)) * (dt / 1000);
     
-    // Move up (decrease Y) and right (increase X) with diagonal ratio
-    this.y -= vTotal;
-    this.x += vTotal * trackRatio;
+    // Lock to diagonal slope: X is calculated directly from Y movement
+    // Start positions per racer: Jesse=-45, Barmstrong=195, Deployer=475, Dish=795
+    const startXPositions = [-45, 195, 475, 795];
+    const startX = startXPositions[this.laneIndex] || -45;
     
-    // Catch-up mechanism: if racer falls too far behind (y > 1600), push forward
+    this.y -= totalYMovement;
+    this.x = startX + (totalYMovement * 1.67);
+    
+    // Catch-up mechanism: if racer falls too far behind, push forward
     if (this.y > 1600) {
-      this.y = 1200; // Move back to middle of screen
+      this.y = 1200;
     }
   }
   
