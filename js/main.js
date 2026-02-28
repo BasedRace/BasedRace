@@ -178,66 +178,32 @@ class Game {
   }
 
   setupDebugControls() {
-    const chainInput = document.getElementById('chain-height');
-    const offsetInput = document.getElementById('offset-x-ratio');
-    const zoomInput = document.getElementById('zoom-factor');
+    const preScrollInput = document.getElementById('pre-scroll');
     const track = this.track;
+    const racers = this.racers;
+    const game = this;
     
     if (!track) return;
 
-    const refreshTrack = () => {
-        // Recalculate Width & Height based on Zoom
-        track.WIDTH = 1200 * track.ZOOM_FACTOR;
-        track.HEIGHT = 1800 * track.ZOOM_FACTOR;
-        // Recalculate InitialX to keep it centered: $-(WIDTH / 2) + 600$
-        track.initialX = -(track.WIDTH / 2) + 600;
-        track.generate();
+    const applyPreScroll = (value) => {
+      const preScrollOffset = this.scrollSpeed * value;
+      track.generateWithPreScroll(preScrollOffset);
+      for (const racer of racers) {
+        racer.reset();
+        racer.applyOffset(preScrollOffset);
+      }
+      this.renderer.render(track, racers);
     };
     
-    if (chainInput) {
-      chainInput.value = track.CHAIN_HEIGHT;
-      chainInput.addEventListener('input', (e) => {
+    if (preScrollInput) {
+      preScrollInput.value = 1.25;
+      preScrollInput.addEventListener('input', (e) => {
         const value = parseFloat(e.target.value);
-        if (!isNaN(value)) {
-          track.CHAIN_HEIGHT = value;
-          refreshTrack();
+        if (!isNaN(value) && value >= 0) {
+          applyPreScroll(value);
         }
       });
     }
-
-    if (offsetInput) {
-      offsetInput.value = track.OFFSET_X_RATIO;
-      offsetInput.addEventListener('input', (e) => {
-        const value = parseFloat(e.target.value);
-        if (!isNaN(value)) {
-          track.OFFSET_X_RATIO = value;
-          refreshTrack();
-        }
-      });
-    }
-    
-    if (zoomInput) {
-      zoomInput.value = track.ZOOM_FACTOR;
-      zoomInput.addEventListener('input', (e) => {
-        const value = parseFloat(e.target.value);
-        if (!isNaN(value) && value > 0) {
-          track.ZOOM_FACTOR = value;
-          refreshTrack();
-          console.log('ZOOM_FACTOR updated:', track.ZOOM_FACTOR);
-        }
-      });
-    }
-    
-    document.addEventListener('keydown', (e) => {
-      if (!this.track) return;
-      let changed = false;
-      if (e.key === 'ArrowUp') { this.track.CHAIN_HEIGHT += 2; changed = true; }
-      if (e.key === 'ArrowDown') { this.track.CHAIN_HEIGHT -= 2; changed = true; }
-      if (e.key === 'ArrowRight') { this.track.OFFSET_X_RATIO += 0.005; changed = true; }
-      if (e.key === 'ArrowLeft') { this.track.OFFSET_X_RATIO -= 0.005; changed = true; }
-      
-      if (changed) refreshTrack();
-    });
   }
 }
 
