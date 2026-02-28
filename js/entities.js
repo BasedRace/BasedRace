@@ -34,12 +34,12 @@ export class Racer {
     this.finishTime = 0;
   }
   
-  // Update racer - progress-based rail system
-  update(trackSpeed, dt) {
+  // Update racer - track-locked movement with 1.67 diagonal sync
+  update(trackStep, dt) {
     if (this.finished) return;
     
-    // Total step = track scroll + racing speed
-    const totalStep = (trackSpeed + this.racingSpeed) * (dt / 1000);
+    // Total step = track movement + racing speed
+    const totalStep = trackStep + (this.racingSpeed * dt / 1000);
     
     // Add to progress
     this.progress += totalStep;

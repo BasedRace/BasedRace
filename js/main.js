@@ -162,10 +162,10 @@ class Game {
     const movement = this.scrollSpeed * deltaTime / 1000;
     this.track.updateMovement(movement);
     
-    // Update all racers
+    // Update all racers with track movement
     const finishTile = this.track.getFinishTile();
     for (const racer of this.racers) {
-      racer.update(this.scrollSpeed, deltaTime);
+      racer.update(movement, deltaTime);
       
       // Check if racer crosses finish line
       if (!racer.finished && finishTile && racer.y > finishTile.y) {
