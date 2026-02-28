@@ -29,7 +29,7 @@ export class Track {
   generate() {
     this.tiles = [];
     let currentX = this.initialX + this.preScrollOffset * this.OFFSET_X_RATIO;
-    let currentY = -550 + this.preScrollOffset;
+    let currentY = -550;
     
     for (let i = 0; i < this.sequence.length; i++) {
       const assetName = this.sequence[i];
