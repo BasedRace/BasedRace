@@ -18,9 +18,15 @@ export class Racer {
     // Center each racer in its lane
     this.laneOffsetX = trackCenterX - (totalLaneWidth / 2) + (laneIndex * laneSpacing) - (this.w / 2);
     
-    // Initial position (at start line - aligned with start tile)
+    // Initial positions (set from debugger)
     this.x = this.laneOffsetX;
-    this.y = 875; // Will be at Y=500 after pre-scroll (visible on screen)
+    this.y = -200; // Will be set by initial positions below
+    
+    // Set initial positions per racer
+    if (name === 'Jesse') { this.x = -45; this.y = -45; }
+    if (name === 'Barmstrong') { this.x = 195; this.y = 135; }
+    if (name === 'Deployer') { this.x = 475; this.y = 265; }
+    if (name === 'Dish') { this.x = 795; this.y = 535; }
     
     // Random speed boost for variety
     this.speedBoost = 0.9 + Math.random() * 0.2; // 0.9 to 1.1
@@ -47,8 +53,11 @@ export class Racer {
   
   // Reset to start position
   reset() {
-    this.x = this.laneOffsetX;
-    this.y = 875; // Visible after pre-scroll
+    // Set initial positions per racer
+    if (this.name === 'Jesse') { this.x = -45; this.y = -45; }
+    if (this.name === 'Barmstrong') { this.x = 195; this.y = 135; }
+    if (this.name === 'Deployer') { this.x = 475; this.y = 265; }
+    if (this.name === 'Dish') { this.x = 795; this.y = 535; }
     this.speedBoost = 0.9 + Math.random() * 0.2;
     this.finished = false;
     this.finishTime = 0;
