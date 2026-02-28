@@ -11,20 +11,10 @@ export class Racer {
     this.w = 600; // Racer width
     this.h = 600; // Racer height
     
-    // Lane offset for 4 parallel lanes
-    this.laneOffsetX = laneIndex * 200;
+    // Progress-based rail system
+    this.progress = 0;
     
-    // Random racing speed (60-120) for balanced racing
-    this.racingSpeed = 60 + Math.random() * 60;
-    this.finished = false;
-    this.finishTime = 0;
-    
-    // Set initial position from debugger
-    this.setInitialPosition();
-  }
-  
-  setInitialPosition() {
-    // Positions from debugger
+    // Starting positions from debugger
     const positions = {
       'Jesse': { x: -45, y: -45 },
       'Barmstrong': { x: 195, y: 135 },
@@ -32,32 +22,42 @@ export class Racer {
       'Dish': { x: 795, y: 535 }
     };
     
-    const pos = positions[this.name] || { x: 0, y: 0 };
-    this.x = pos.x;
-    this.y = pos.y;
+    const pos = positions[name] || { x: 0, y: 0 };
+    this.startX = pos.x;
+    this.startY = pos.y;
+    this.x = this.startX;
+    this.y = this.startY;
+    
+    // Unique racing speed for random winner
+    this.racingSpeed = 60 + Math.random() * 60;
+    this.finished = false;
+    this.finishTime = 0;
   }
   
-  // Update racer position - locked to 1.67 diagonal slope
+  // Update racer - progress-based rail system
   update(trackSpeed, dt) {
     if (this.finished) return;
     
-    // Total movement = track scroll + racing speed
-    const totalDelta = (trackSpeed + this.racingSpeed) * (dt / 1000);
+    // Total step = track scroll + racing speed
+    const totalStep = (trackSpeed + this.racingSpeed) * (dt / 1000);
     
-    // Move Y
-    this.y -= totalDelta;
+    // Add to progress
+    this.progress += totalStep;
     
-    // Lock X to same delta - mathematically locked to 1.67 slope
-    this.x += totalDelta * 1.67;
+    // Calculate visual coordinates from progress
+    this.y = this.startY - this.progress;
+    this.x = this.startX + (this.progress * 1.67);
     
     // Boundary clamp
     if (this.y < -500) this.y = -500;
     if (this.y > 2000) this.y = 2000;
   }
   
-  // Reset to start position
+  // Reset to start
   reset() {
-    this.setInitialPosition();
+    this.progress = 0;
+    this.x = this.startX;
+    this.y = this.startY;
     this.racingSpeed = 60 + Math.random() * 60;
     this.finished = false;
     this.finishTime = 0;
