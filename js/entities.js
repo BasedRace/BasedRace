@@ -41,16 +41,14 @@ export class Racer {
     return this.SCREEN_CENTER_X + ((yPosOnScreen - this.SCREEN_ANCHOR_Y) * 1.67) + this.laneOffset;
   }
   
-  // Update racer - screen-space dependent
+  // Update racer - use coordinates directly
   update(trackStep, dt) {
     if (this.finished) return;
     
-    // Move Y position on screen
+    // Move Y position on screen based on racing speed
     this.yPosOnScreen -= this.racingSpeed * dt / 1000;
     
-    // Calculate X from Y - mathematically locked to 1.67 slope
-    this.x = this.calculateX(this.yPosOnScreen);
-    
+    // Don't recalculate X - keep user's set position
     // Boundary clamp
     if (this.yPosOnScreen < -500) this.yPosOnScreen = -500;
     if (this.yPosOnScreen > 2000) this.yPosOnScreen = 2000;

@@ -59,7 +59,7 @@ class Game {
       const step = 10;
       if (direction === 'up') racer.yPosOnScreen -= step;
       if (direction === 'down') racer.yPosOnScreen += step;
-      racer.x = racer.calculateX(racer.yPosOnScreen);
+      // Don't recalculate X - keep user's set position
       if (direction === 'left') racer.x -= step;
       if (direction === 'right') racer.x += step;
       window.updateRacerCoord(racerIndex);
