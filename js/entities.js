@@ -8,15 +8,8 @@ export class Racer {
     this.asset = asset;
     this.laneIndex = laneIndex;
     this.track = track;
-    this.w = 600; // Racer width
-    this.h = 600; // Racer height
-    
-    // Screen-space constants
-    this.SCREEN_CENTER_X = 600;
-    this.SCREEN_ANCHOR_Y = 1400;
-    
-    // Lane offset for parallel lanes
-    this.laneOffset = (laneIndex - 1.5) * 200; // Centered around lane 1.5
+    this.w = 600;
+    this.h = 600;
     
     // Starting positions from user
     const startPositions = {
@@ -27,28 +20,31 @@ export class Racer {
     };
     
     const pos = startPositions[name] || { x: 0, y: 0 };
+    this.startX = pos.x;
+    this.startY = pos.y;
     this.x = pos.x;
     this.yPosOnScreen = pos.y;
     
+    // Progress tracking
+    this.progress = 0;
+    
     // Unique racing speed for random winner
-    this.racingSpeed = 80 + Math.random() * 80; // 80-160
+    this.racingSpeed = 80 + Math.random() * 80;
     this.finished = false;
     this.finishTime = 0;
   }
   
-  // Calculate X from Y - locked to 1.67 diagonal
-  calculateX(yPosOnScreen) {
-    return this.SCREEN_CENTER_X + ((yPosOnScreen - this.SCREEN_ANCHOR_Y) * 1.67) + this.laneOffset;
-  }
-  
-  // Update racer - use coordinates directly
-  update(trackStep, dt) {
+  // Update racer - progress-based with 1.67 diagonal lock
+  update(trackSpeed, dt) {
     if (this.finished) return;
     
-    // Move Y position on screen based on racing speed
-    this.yPosOnScreen -= this.racingSpeed * dt / 1000;
+    // Progress = track movement + racing speed
+    this.progress += trackSpeed + (this.racingSpeed * dt / 1000);
     
-    // Don't recalculate X - keep user's set position
+    // Calculate positions from progress
+    this.yPosOnScreen = this.startY - this.progress;
+    this.x = this.startX + (this.progress * 1.67);
+    
     // Boundary clamp
     if (this.yPosOnScreen < -500) this.yPosOnScreen = -500;
     if (this.yPosOnScreen > 2000) this.yPosOnScreen = 2000;
@@ -63,8 +59,11 @@ export class Racer {
       'Dish': { x: 820, y: 550 }
     };
     const pos = startPositions[this.name] || { x: 0, y: 0 };
+    this.startX = pos.x;
+    this.startY = pos.y;
     this.x = pos.x;
     this.yPosOnScreen = pos.y;
+    this.progress = 0;
     this.racingSpeed = 80 + Math.random() * 80;
     this.finished = false;
     this.finishTime = 0;
