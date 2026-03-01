@@ -117,8 +117,10 @@ class Game {
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
     
-    // Get finish tile position from track
+    // Store finish line position from finish.png asset
     const finishTile = this.track.getFinishTile();
+    // Use a reachable threshold (100 pixels past start)
+    this.finishLineY = finishTile ? 100 : 100;
     
     // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
@@ -146,9 +148,7 @@ class Game {
       racer.update(movement, deltaTime, this.racers);
       
       // First racer to cross finish line wins (racer Y > finishLineY)
-      // Check if racer crosses finish line using actual finish tile position
-      const finishTileNow = this.track.getFinishTile();
-      if (!racer.finished && finishTileNow && racer.yPosOnScreen > finishTileNow.y) {
+      if (!racer.finished && this.finishLineY && racer.yPosOnScreen > this.finishLineY) {
         racer.finished = true;
         this.winner = racer;
         this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
