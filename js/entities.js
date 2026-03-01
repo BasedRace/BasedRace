@@ -50,7 +50,7 @@ export class Racer {
   }
   
   // Update racer - progress-based movement
-  update(trackSpeed, dt, allRacers) {
+  update(trackSpeed, dt, finishTileY) {
     if (this.finished) return;
     
     // Add oscillation bonus
@@ -71,11 +71,8 @@ export class Racer {
     // Calculate X based on diagonal ratio
     this.x = this.startX + (this.progress * this.diagonalRatio);
     
-    // Calculate actual distance traveled from start position
-    const distanceTraveled = Math.abs(this.yPosOnScreen - this.startY);
-    
-    // Check if racer crossed finish line
-    if (distanceTraveled >= FINISH_DISTANCE && !this.finished) {
+    // Check if racer crossed finish line (yPosOnScreen >= finishTile.y)
+    if (finishTileY !== undefined && this.yPosOnScreen >= finishTileY && !this.finished) {
       this.finished = true;
       this.finishTime = Date.now();
     }

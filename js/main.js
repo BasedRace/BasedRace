@@ -138,9 +138,13 @@ class Game {
     const movement = this.scrollSpeed * deltaTime / 1000;
     this.track.updateMovement(movement);
     
+    // Get finish tile Y position
+    const finishTile = this.track.getFinishTile();
+    const finishTileY = finishTile ? finishTile.y : undefined;
+    
     // Update all racers and check for winner
     for (const racer of this.racers) {
-      racer.update(movement, deltaTime, this.racers);
+      racer.update(movement, deltaTime, finishTileY);
       
       // Check if any racer finished (progress >= TOTAL_RACE_DISTANCE)
       if (racer.finished && !this.winner) {
