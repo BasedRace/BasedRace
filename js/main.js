@@ -119,7 +119,8 @@ class Game {
     
     // Store finish line position from finish.png asset
     const finishTile = this.track.getFinishTile();
-    this.finishLineY = finishTile ? finishTile.y : 0;
+    // Use a reachable threshold (100 pixels past start)
+    this.finishLineY = finishTile ? 100 : 100;
     
     // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
