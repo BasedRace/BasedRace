@@ -62,7 +62,7 @@ export class Racer {
     this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.05;
     
     // Increase progress based on speed
-    this.progress += this.currentSpeed * dt;
+    this.progress += this.currentSpeed * dt / 100;
     
     // Check if racer completed the race
     if (this.progress >= TOTAL_RACE_DISTANCE) {
