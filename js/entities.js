@@ -2,7 +2,7 @@
 
 // Global race distance
 const TOTAL_RACE_DISTANCE = 7500;
-const FINISH_DISTANCE = 75;
+const FINISH_DISTANCE = 202;
 
 // Racer class for autonomous 4-racer system
 export class Racer {
@@ -62,8 +62,8 @@ export class Racer {
     // LERP for smooth acceleration
     this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.05;
     
-    // Incremental progress accumulator
-    this.progress += (this.currentSpeed * dt) / 100;
+    // Increase progress based on speed
+    this.progress += this.currentSpeed * dt / 100;
     
     // Calculate Y position based on progress (moving forward)
     this.yPosOnScreen = this.startY + this.progress;
@@ -71,8 +71,11 @@ export class Racer {
     // Calculate X based on diagonal ratio
     this.x = this.startX + (this.progress * this.diagonalRatio);
     
+    // Calculate actual distance traveled from start position
+    const distanceTraveled = Math.abs(this.yPosOnScreen - this.startY);
+    
     // Check if racer crossed finish line
-    if (this.progress >= FINISH_DISTANCE && !this.finished) {
+    if (distanceTraveled >= FINISH_DISTANCE && !this.finished) {
       this.finished = true;
       this.finishTime = Date.now();
     }
