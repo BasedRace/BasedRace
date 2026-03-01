@@ -1,7 +1,7 @@
 // js/entities.js - Track class dengan Auto-Center Logic
 
 // Global race distance
-const TOTAL_RACE_DISTANCE = 1000;
+const TOTAL_RACE_DISTANCE = -7000;
 
 // Racer class for autonomous 4-racer system
 export class Racer {
