@@ -8,9 +8,9 @@
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#0a0a0f;overflow:hidden;font-family:'Orbitron',sans-serif}
-    #ui{position:absolute;top:15px;left:15px;right:15px;display:flex;justify-content:space-between;z-index:100}
+    #ui{position:absolute;top:15px;left:15px;right:15px;display:flex;justify-content:space-between;align-items:center;z-index:100}
     #timer{font-size:24px;color:#0ff;text-shadow:0 0 15px #0ff}
-    #status{font-size:18px;color:#ffd700;text-shadow:0 0 10px #ffd700}
+    #status{font-size:16px;color:#ffd700;text-shadow:0 0 10px #ffd700}
     #start{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(180deg,#0f0c29,#302b63,#24243e);z-index:200}
     #start h1{font-size:48px;color:#e94560;text-shadow:0 0 30px #e94560;letter-spacing:4px}
     #start button{margin-top:30px;padding:15px 50px;font-size:20px;background:#e94560;color:#fff;border:none;border-radius:30px;cursor:pointer}
@@ -18,7 +18,8 @@
     #winner{position:absolute;top:0;left:0;right:0;bottom:0;display:none;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,0.9);z-index:250}
     #winner.show{display:flex}
     #winner h1{font-size:32px;color:#ffd700;text-shadow:0 0 20px #ffd700}
-    #winner-name{font-size:56px;color:#e94560;text-shadow:0 0 40px #e94560;margin:20px 0}
+    #winner-name{font-size:56px;color:#e94560;text-shadow:0 0 40px #e94560;margin:20px 0;animation:bounce 0.5s ease infinite}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
     #controls{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:space-around;z-index:150}
     .btn{width:90px;height:90px;background:rgba(255,255,255,0.15);border:3px solid rgba(255,255,255,0.4);border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:36px;color:#fff}
     canvas{display:block}
@@ -37,8 +38,8 @@
   <div id="winner">
     <h1>🏆 WINNER 🏆</h1>
     <div id="winner-name">JESSE</div>
-    <div id="winner-time" style="color:#0ff;font-size:24px">00:00.00</div>
-    <button onclick="startGame()" style="margin-top:30px;padding:15px 50px;font-size:20px;background:#e94560;color:#fff;border:none;border-radius:30px;cursor:pointer">RACE AGAIN</button>
+    <div id="winner-time" style="color:#0ff;font-size:24px;margin-bottom:20px">00:00.00</div>
+    <button onclick="startGame()" style="padding:15px 50px;font-size:20px;background:#e94560;color:#fff;border:none;border-radius:30px;cursor:pointer">RACE AGAIN</button>
   </div>
   <div id="controls">
     <div class="btn" ontouchstart="move(-1)" onmousedown="move(-1)">◀</div>
@@ -47,84 +48,190 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
   <script>
-    // Embedded base64 images (converted from PNG)
-    const IMAGES = {
-      jesse: 'data:image/png;base64,',
-      barmstrong: 'data:image/png;base64,',
-      deployer: 'data:image/png;base64,',
-      dish: 'data:image/png;base64,'
-    };
-    
-    // Load images from files and create textures
-    function loadTextures() {
-      return new Promise(resolve => {
-        const loader = new THREE.TextureLoader();
-        const names = ['jesse', 'barmstrong', 'deployer', 'dish'];
-        let loaded = 0;
-        const textures = {};
-        
-        names.forEach(name => {
-          loader.load(`assets/${name}.png`, tex => {
-            tex.magFilter = THREE.LinearFilter;
-            tex.minFilter = THREE.LinearFilter;
-            textures[name] = tex;
-            loaded++;
-            if (loaded === names.length) resolve(textures);
-          }, undefined, () => {
-            // Fallback if image fails
-            textures[name] = null;
-            loaded++;
-            if (loaded === names.length) resolve(textures);
-          });
-        });
-      });
-    }
-    
     // Three.js setup
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1a1a2e);
-    scene.fog = new THREE.Fog(0x1a1a2e, 20, 120);
+    scene.fog = new THREE.Fog(0x1a1a2e, 30, 150);
     
     const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
-    camera.position.set(0, 6, 12);
+    camera.position.set(0, 7, 14);
     
     const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(innerWidth, innerHeight);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
     document.body.insertBefore(renderer.domElement, document.getElementById('ui'));
     
     // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-    dir.position.set(5, 15, 10);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(5, 20, 10);
+    dir.castShadow = true;
     scene.add(dir);
     
     // Game state
     let running = false, raceTime = 0, trackSpeed = 0;
-    const BASESPEED = 0.25;
-    const lanes = [-2.5, -0.8, 0.8, 2.5];
-    const colors = [0x00bcd4, 0x9c27b0, 0xff9800, 0xe94560];
-    const names = ['Jesse', 'Barmstrong', 'Deployer', 'Dish'];
+    const BASESPEED = 0.22;
+    const lanes = [-2.8, -0.9, 0.9, 2.8];
     
-    // Road segments
+    // Character data - colors matching the original sprites
+    const racers = [
+      { name: 'Jesse', color: 0x00bcd4, accent: 0x0097a7 },      // Cyan
+      { name: 'Barmstrong', color: 0x9c27b0, accent: 0x7b1fa2 }, // Purple
+      { name: 'Deployer', color: 0xff9800, accent: 0xf57c00 },   // Orange
+      { name: 'Dish', color: 0xe94560, accent: 0xc62828 }        // Red
+    ];
+    
     const roadSegments = [];
-    const SEGMENT = 12;
-    const NUM_SEG = 50;
-    
-    // Karts array
+    const SEGMENT = 15;
+    const NUM_SEG = 45;
     const karts = [];
-    let textures = {};
+    
+    // Create detailed kart
+    function createDetailedKart(racer, lane) {
+      const kart = new THREE.Group();
+      
+      // Main body
+      const bodyGeo = new THREE.BoxGeometry(1.1, 0.5, 2);
+      const bodyMat = new THREE.MeshStandardMaterial({ 
+        color: racer.color, 
+        metalness: 0.5, 
+        roughness: 0.3 
+      });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = 0.5;
+      body.castShadow = true;
+      kart.add(body);
+      
+      // Racing stripe
+      const stripeGeo = new THREE.BoxGeometry(1.15, 0.08, 1.8);
+      const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.8 });
+      const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+      stripe.position.y = 0.79;
+      kart.add(stripe);
+      
+      // Front nose
+      const noseGeo = new THREE.BoxGeometry(0.8, 0.3, 0.5);
+      const nose = new THREE.Mesh(noseGeo, bodyMat);
+      nose.position.set(0, 0.35, 1.1);
+      kart.add(nose);
+      
+      // Driver helmet
+      const helmGeo = new THREE.SphereGeometry(0.35, 16, 16);
+      const helmMat = new THREE.MeshStandardMaterial({ 
+        color: 0xffd700, 
+        metalness: 0.9, 
+        roughness: 0.1 
+      });
+      const helm = new THREE.Mesh(helmGeo, helmMat);
+      helm.position.y = 1.15;
+      helm.castShadow = true;
+      kart.add(helm);
+      
+      // Visor
+      const visorGeo = new THREE.SphereGeometry(0.2, 8, 8, 0, Math.PI);
+      const visorMat = new THREE.MeshStandardMaterial({ 
+        color: 0x111111, 
+        metalness: 1, 
+        roughness: 0 
+      });
+      const visor = new THREE.Mesh(visorGeo, visorMat);
+      visor.position.set(0, 1.2, 0.25);
+      visor.rotation.x = -0.3;
+      kart.add(visor);
+      
+      // Wheels with rims
+      const wheelPositions = [
+        [-0.7, 0.25, 0.7],
+        [0.7, 0.25, 0.7],
+        [-0.7, 0.25, -0.7],
+        [0.7, 0.25, -0.7]
+      ];
+      
+      wheelPositions.forEach(pos => {
+        // Tire
+        const tireGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.25, 16);
+        const tireMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 });
+        const tire = new THREE.Mesh(tireGeo, tireMat);
+        tire.rotation.z = Math.PI / 2;
+        tire.position.set(...pos);
+        kart.add(tire);
+        
+        // Rim
+        const rimGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.26, 8);
+        const rimMat = new THREE.MeshStandardMaterial({ 
+          color: racer.accent, 
+          metalness: 0.9, 
+          roughness: 0.2 
+        });
+        const rim = new THREE.Mesh(rimGeo, rimMat);
+        rim.rotation.z = Math.PI / 2;
+        rim.position.set(...pos);
+        kart.add(rim);
+      });
+      
+      // Spoiler
+      const spoilerGeo = new THREE.BoxGeometry(1.2, 0.08, 0.3);
+      const spoiler = new THREE.Mesh(spoilerGeo, bodyMat);
+      spoiler.position.set(0, 1, -1);
+      kart.add(spoiler);
+      
+      const spoilerStandGeo = new THREE.BoxGeometry(0.08, 0.25, 0.08);
+      const spoilerStand1 = new THREE.Mesh(spoilerStandGeo, bodyMat);
+      spoilerStand1.position.set(-0.4, 0.88, -1);
+      kart.add(spoilerStand1);
+      const spoilerStand2 = new THREE.Mesh(spoilerStandGeo, bodyMat);
+      spoilerStand2.position.set(0.4, 0.88, -1);
+      kart.add(spoilerStand2);
+      
+      // Position
+      kart.position.x = lanes[lane];
+      
+      // Add name label
+      const canvas2d = document.createElement('canvas');
+      canvas2d.width = 256;
+      canvas2d.height = 64;
+      const ctx = canvas2d.getContext('2d');
+      ctx.fillStyle = '#' + racer.color.toString(16).padStart(6, '0');
+      ctx.fillRect(0, 0, 256, 64);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 36px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(racer.name, 128, 46);
+      
+      const labelTex = new THREE.CanvasTexture(canvas2d);
+      const label = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.5, 0.4),
+        new THREE.MeshBasicMaterial({ map: labelTex, transparent: true })
+      );
+      label.position.y = 2;
+      label.rotation.x = -0.3;
+      kart.add(label);
+      
+      scene.add(kart);
+      
+      karts.push({
+        kart,
+        lane,
+        targetX: lanes[lane],
+        x: lanes[lane],
+        baseSpeed: 0.04 + Math.random() * 0.025,
+        speed: 0,
+        progress: 0,
+        finished: false
+      });
+    }
     
     // Create road
     function createRoad() {
-      // Ground
+      // Grass
       const grass = new THREE.Mesh(
-        new THREE.PlaneGeometry(80, 300),
+        new THREE.PlaneGeometry(100, 400),
         new THREE.MeshStandardMaterial({ color: 0x2d5a27 })
       );
       grass.rotation.x = -Math.PI / 2;
       grass.position.y = -0.05;
-      grass.position.z = -150;
+      grass.position.z = -200;
       scene.add(grass);
       
       for (let i = 0; i < NUM_SEG; i++) {
@@ -133,47 +240,50 @@
         
         // Asphalt
         const road = new THREE.Mesh(
-          new THREE.PlaneGeometry(8, SEGMENT),
+          new THREE.PlaneGeometry(9, SEGMENT),
           new THREE.MeshStandardMaterial({ color: 0x333333 })
         );
         road.rotation.x = -Math.PI / 2;
         seg.add(road);
         
-        // Edge lines
-        const edgeMat = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xffffff : 0xe94560 });
-        [-4, 4].forEach(x => {
-          const edge = new THREE.Mesh(new THREE.PlaneGeometry(0.15, SEGMENT), edgeMat);
+        // Edge lines (red/white)
+        const edgeMat = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xe94560 : 0xffffff });
+        [-4.5, 4.5].forEach(x => {
+          const edge = new THREE.Mesh(new THREE.PlaneGeometry(0.2, SEGMENT), edgeMat);
           edge.rotation.x = -Math.PI / 2;
           edge.position.set(x, 0.01, 0);
           seg.add(edge);
         });
         
-        // Center dashes
+        // Yellow center dashes
         const dashMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
-        for (let d = 0; d < 2; d++) {
-          const dash = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 1.5), dashMat);
+        for (let d = 0; d < 3; d++) {
+          const dash = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2), dashMat);
           dash.rotation.x = -Math.PI / 2;
-          dash.position.set(0, 0.01, -SEGMENT/3 + d * SEGMENT/1.5);
+          dash.position.set(0, 0.01, -SEGMENT/2 + d * 5 + 2);
           seg.add(dash);
         }
         
-        // Start line
+        // Start line (green)
         if (i === 1) {
-          const start = new THREE.Mesh(new THREE.PlaneGeometry(8, 1), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+          const start = new THREE.Mesh(
+            new THREE.PlaneGeometry(9, 1.5),
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+          );
           start.rotation.x = -Math.PI / 2;
           start.position.set(0, 0.02, 0);
           seg.add(start);
         }
         
-        // Finish line (checkerboard)
+        // Finish line (checkered)
         if (i === NUM_SEG - 3) {
-          for (let c = 0; c < 8; c++) {
+          for (let c = 0; c < 9; c++) {
             const checker = new THREE.Mesh(
               new THREE.PlaneGeometry(1, 1),
               new THREE.MeshBasicMaterial({ color: c % 2 === 0 ? 0xffffff : 0x000000 })
             );
             checker.rotation.x = -Math.PI / 2;
-            checker.position.set(-3.5 + c, 0.02, 0);
+            checker.position.set(-4 + c, 0.02, 0);
             seg.add(checker);
           }
         }
@@ -183,77 +293,13 @@
       }
     }
     
-    // Create kart with sprite
-    function createKart(name, color, lane, tex) {
-      const kart = new THREE.Group();
-      
-      // Use texture if available
-      if (tex) {
-        const spriteMat = new THREE.MeshBasicMaterial({ 
-          map: tex, 
-          transparent: true, 
-          side: THREE.DoubleSide 
-        });
-        const sprite = new THREE.Mesh(new THREE.PlaneGeometry(2, 2.5), spriteMat);
-        sprite.position.y = 1.3;
-        kart.add(sprite);
-      } else {
-        // Fallback 3D kart
-        const body = new THREE.Mesh(
-          new THREE.BoxGeometry(1, 0.6, 1.8),
-          new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.3 })
-        );
-        body.position.y = 0.5;
-        kart.add(body);
-        
-        const helm = new THREE.Mesh(
-          new THREE.SphereGeometry(0.3, 16, 16),
-          new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.7 })
-        );
-        helm.position.y = 1.1;
-        kart.add(helm);
-        
-        // Wheels
-        const wheelGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.15, 12);
-        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-        [[-0.6, 0.18, 0.6], [0.6, 0.18, 0.6], [-0.6, 0.18, -0.6], [0.6, 0.18, -0.6]].forEach(p => {
-          const w = new THREE.Mesh(wheelGeo, wheelMat);
-          w.rotation.z = Math.PI / 2;
-          w.position.set(...p);
-          kart.add(w);
-        });
-      }
-      
-      // Position
-      kart.position.x = lanes[lane];
-      scene.add(kart);
-      
-      karts.push({
-        kart,
-        lane,
-        targetX: lanes[lane],
-        x: lanes[lane],
-        baseSpeed: 0.045 + Math.random() * 0.025,
-        speed: 0,
-        progress: 0,
-        finished: false
-      });
-    }
-    
     // Initialize
-    async function init() {
+    function init() {
       createRoad();
-      
-      textures = await loadTextures();
-      
-      names.forEach((name, i) => {
-        createKart(name, colors[i], i, textures[name.toLowerCase()]);
-      });
-      
+      racers.forEach((racer, i) => createDetailedKart(racer, i));
       animate(0);
     }
     
-    // Move player
     function move(dir) {
       if (!running) return;
       const p = karts[0];
@@ -262,7 +308,6 @@
       p.targetX = lanes[p.lane];
     }
     
-    // Start game
     window.startGame = function() {
       document.getElementById('start').style.display = 'none';
       document.getElementById('winner').classList.remove('show');
@@ -276,13 +321,11 @@
       });
     };
     
-    // Keyboard
     document.onkeydown = e => {
       if (e.key === 'ArrowLeft' || e.key === 'a') move(-1);
       if (e.key === 'ArrowRight' || e.key === 'd') move(1);
     };
     
-    // Game loop
     let lastTime = 0;
     function animate(time) {
       requestAnimationFrame(animate);
@@ -295,59 +338,49 @@
       }
       
       raceTime += delta;
-      
-      // Timer
       const m = Math.floor(raceTime / 60);
       const s = Math.floor(raceTime % 60);
       const ms = Math.floor((raceTime % 1) * 100);
       document.getElementById('timer').textContent = 
         String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + '.' + String(ms).padStart(2,'0');
       
-      // Speed up
-      if (trackSpeed < BASESPEED * 3) trackSpeed += delta * 0.05;
+      if (trackSpeed < BASESPEED * 3) trackSpeed += delta * 0.04;
       
       // Move road
       roadSegments.forEach(seg => {
-        seg.position.z += trackSpeed * 20;
-        if (seg.position.z > 15) seg.position.z -= NUM_SEG * SEGMENT;
+        seg.position.z += trackSpeed * 18;
+        if (seg.position.z > 20) seg.position.z -= NUM_SEG * SEGMENT;
       });
       
       // Update karts
       let winner = null;
       karts.forEach((k, i) => {
-        // AI speed
-        const bonus = Math.sin(time * 0.004 + i) * 0.015;
+        const bonus = Math.sin(time * 0.004 + i) * 0.012;
         const targetSpeed = k.baseSpeed + bonus;
         k.speed += (targetSpeed - k.speed) * 0.05;
         k.progress += k.speed;
         
-        k.kart.position.z = -k.progress * 10;
+        k.kart.position.z = -k.progress * 9;
         
-        // Lane switch
         k.x += (k.targetX - k.x) * 0.12;
         k.kart.position.x = k.x;
         
-        // Bob
-        k.kart.position.y = Math.sin(time * 0.015 + i) * 0.05;
-        
-        // Lean
+        k.kart.position.y = Math.sin(time * 0.015 + i) * 0.04;
         k.kart.rotation.z = -(k.targetX - k.x) * 0.4;
         
-        // Billboard sprites
+        // Billboard name label
         k.kart.children.forEach(child => {
           if (child.isMesh && child.geometry.type === 'PlaneGeometry') {
             child.lookAt(camera.position.x, child.position.y + k.kart.position.y, camera.position.z);
           }
         });
         
-        // Check finish
-        if (!k.finished && k.progress > 45) {
+        if (!k.finished && k.progress > 40) {
           k.finished = true;
-          if (!winner) winner = names[i];
+          if (!winner) winner = racers[i].name;
         }
       });
       
-      // Winner!
       if (winner) {
         running = false;
         document.getElementById('winner-name').textContent = winner;
@@ -356,14 +389,12 @@
         document.getElementById('status').textContent = '🏆 ' + winner + ' WINS! 🏆';
       }
       
-      // Camera follow
-      camera.position.z = karts[0].kart.position.z + 12;
-      camera.position.x = karts[0].kart.position.x * 0.4;
+      camera.position.z = karts[0].kart.position.z + 14;
+      camera.position.x = karts[0].kart.position.x * 0.35;
       
       renderer.render(scene, camera);
     }
     
-    // Resize
     onresize = () => {
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
