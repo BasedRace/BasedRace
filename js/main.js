@@ -140,7 +140,7 @@ class Game {
     
     // Update all racers and check for winner
     for (const racer of this.racers) {
-      racer.update(movement, deltaTime, this.racers);
+      racer.update(movement, deltaTime, this.track);
       
       // Check if any racer finished (progress >= TOTAL_RACE_DISTANCE)
       if (racer.finished && !this.winner) {
@@ -174,10 +174,10 @@ class Game {
     // Update debug coordinates
     for (let i = 0; i < this.racers.length; i++) {
       const coordEl = document.getElementById('racer' + i + '-coord');
-      if (coordEl && this.racers[i]) {
+      if (coordEl && this.racers[i] && this.track) {
         const name = this.racers[i].name;
-        const progress = Math.round(this.racers[i].progress);
-        coordEl.textContent = name + ': ' + progress;
+        const totalDistance = Math.round((this.track.totalScroll + (this.racers[i].yPosOnScreen - this.racers[i].startY)) * 1.95);
+        coordEl.textContent = name + ': ' + totalDistance;
       }
     }
     

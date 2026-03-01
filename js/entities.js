@@ -50,7 +50,7 @@ export class Racer {
   }
   
   // Update racer - progress-based movement
-  update(trackSpeed, dt, allRacers) {
+  update(trackSpeed, dt, track) {
     if (this.finished) return;
     
     // Add oscillation bonus
@@ -71,11 +71,11 @@ export class Racer {
     // Calculate X based on diagonal ratio
     this.x = this.startX + (this.progress * this.diagonalRatio);
     
-    // Calculate actual distance traveled from start position
-    const distanceTraveled = Math.abs(this.yPosOnScreen - this.startY);
+    // Calculate total distance using track scroll as master odometer
+    const totalDistance = (track.totalScroll + (this.yPosOnScreen - this.startY)) * 1.95;
     
-    // Check if racer crossed finish line
-    if (distanceTraveled >= FINISH_DISTANCE && !this.finished) {
+    // Check if racer crossed finish line using track odometer
+    if (totalDistance >= FINISH_DISTANCE && !this.finished) {
       this.finished = true;
       this.finishTime = Date.now();
     }
@@ -128,10 +128,14 @@ export class Track {
     this.initialX = -(this.WIDTH / 2) + 600;
 
     this.sequence = ['env2', 'start', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'finish', 'env2', 'env2', 'env2'];
+    
+    // Total scroll accumulator (master odometer)
+    this.totalScroll = 0;
   }
 
   generate() {
     this.tiles = [];
+    this.totalScroll = 0; // Reset odometer
     let currentX = this.initialX;
     let currentY = -550;
     
@@ -161,6 +165,9 @@ export class Track {
   }
 
   updateMovement(speed) {
+    // Accumulate total scroll
+    this.totalScroll += speed;
+    
     for (const tile of this.tiles) {
       tile.y -= speed; 
       tile.x += speed * this.OFFSET_X_RATIO;
