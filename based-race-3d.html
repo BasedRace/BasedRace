@@ -2,27 +2,43 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Based Race 3D</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #0a0a0f; font-family: sans-serif; }
-    canvas { display: block; }
-    #ui { position: absolute; top: 10px; left: 10px; color: #0ff; font-size: 20px; }
-    #status { position: absolute; top: 10px; right: 10px; color: gold; font-size: 20px; }
-    #start { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
-    #start h1 { color: #e94560; font-size: 40px; margin: 0; }
-    #start button { padding: 15px 40px; font-size: 20px; background: #e94560; color: white; border: none; border-radius: 30px; cursor: pointer; margin-top: 20px; }
-    #controls { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-around; }
-    .btn { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; color: white; font-size: 30px; display: flex; align-items: center; justify-content: center; }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0a0a0f;overflow:hidden;font-family:'Orbitron',sans-serif}
+    #ui{position:absolute;top:15px;left:15px;right:15px;display:flex;justify-content:space-between;z-index:100}
+    #timer{font-size:24px;color:#0ff;text-shadow:0 0 15px #0ff}
+    #status{font-size:18px;color:#ffd700;text-shadow:0 0 10px #ffd700}
+    #start{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(180deg,#0f0c29,#302b63,#24243e);z-index:200}
+    #start h1{font-size:48px;color:#e94560;text-shadow:0 0 30px #e94560;letter-spacing:4px}
+    #start button{margin-top:30px;padding:15px 50px;font-size:20px;background:#e94560;color:#fff;border:none;border-radius:30px;cursor:pointer}
+    .hidden{display:none!important}
+    #winner{position:absolute;top:0;left:0;right:0;bottom:0;display:none;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,0.9);z-index:250}
+    #winner.show{display:flex}
+    #winner h1{font-size:32px;color:#ffd700;text-shadow:0 0 20px #ffd700}
+    #winner-name{font-size:56px;color:#e94560;text-shadow:0 0 40px #e94560;margin:20px 0}
+    #controls{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:space-around;z-index:150}
+    .btn{width:90px;height:90px;background:rgba(255,255,255,0.15);border:3px solid rgba(255,255,255,0.4);border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:36px;color:#fff}
+    canvas{display:block}
   </style>
 </head>
 <body>
-  <div id="ui">00:00.00</div>
-  <div id="status">BASED RACE 3D</div>
+  <div id="ui">
+    <div id="timer">00:00.00</div>
+    <div id="status">🏁 BASED RACE 3D 🏁</div>
+  </div>
   <div id="start">
     <h1>BASED RACE</h1>
-    <p style="color:#888">Tap LEFT/RIGHT to move</p>
-    <button onclick="start()">START</button>
+    <p style="color:#888;margin-top:10px">3D EDITION</p>
+    <button onclick="startGame()">START RACE</button>
+  </div>
+  <div id="winner">
+    <h1>🏆 WINNER 🏆</h1>
+    <div id="winner-name">JESSE</div>
+    <div id="winner-time" style="color:#0ff;font-size:24px">00:00.00</div>
+    <button onclick="startGame()" style="margin-top:30px;padding:15px 50px;font-size:20px;background:#e94560;color:#fff;border:none;border-radius:30px;cursor:pointer">RACE AGAIN</button>
   </div>
   <div id="controls">
     <div class="btn" ontouchstart="move(-1)" onmousedown="move(-1)">◀</div>
@@ -31,147 +47,330 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
   <script>
+    // Embedded base64 images (converted from PNG)
+    const IMAGES = {
+      jesse: 'data:image/png;base64,',
+      barmstrong: 'data:image/png;base64,',
+      deployer: 'data:image/png;base64,',
+      dish: 'data:image/png;base64,'
+    };
+    
+    // Load images from files and create textures
+    function loadTextures() {
+      return new Promise(resolve => {
+        const loader = new THREE.TextureLoader();
+        const names = ['jesse', 'barmstrong', 'deployer', 'dish'];
+        let loaded = 0;
+        const textures = {};
+        
+        names.forEach(name => {
+          loader.load(`assets/${name}.png`, tex => {
+            tex.magFilter = THREE.LinearFilter;
+            tex.minFilter = THREE.LinearFilter;
+            textures[name] = tex;
+            loaded++;
+            if (loaded === names.length) resolve(textures);
+          }, undefined, () => {
+            // Fallback if image fails
+            textures[name] = null;
+            loaded++;
+            if (loaded === names.length) resolve(textures);
+          });
+        });
+      });
+    }
+    
+    // Three.js setup
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1a1a2e);
+    scene.fog = new THREE.Fog(0x1a1a2e, 20, 120);
+    
     const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
-    camera.position.set(0, 4, 8);
+    camera.position.set(0, 6, 12);
+    
     const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(innerWidth, innerHeight);
-    document.body.insertBefore(renderer.domElement, document.body.firstChild);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.5);
-    dir.position.set(5,10,5);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    document.body.insertBefore(renderer.domElement, document.getElementById('ui'));
+    
+    // Lights
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+    dir.position.set(5, 15, 10);
     scene.add(dir);
-
-    let running = false, time = 0, speed = 0;
-    const racers = [], lanes = [-2, -0.7, 0.7, 2];
+    
+    // Game state
+    let running = false, raceTime = 0, trackSpeed = 0;
+    const BASESPEED = 0.25;
+    const lanes = [-2.5, -0.8, 0.8, 2.5];
     const colors = [0x00bcd4, 0x9c27b0, 0xff9800, 0xe94560];
     const names = ['Jesse', 'Barmstrong', 'Deployer', 'Dish'];
-
-    // Road
-    for(let i=0; i<50; i++) {
-      const seg = new THREE.Group();
-      seg.position.z = -i * 10;
-      const road = new THREE.Mesh(new THREE.PlaneGeometry(6, 10), new THREE.MeshStandardMaterial({color: 0x333333}));
-      road.rotation.x = -Math.PI/2;
-      seg.add(road);
-      const edge = new THREE.MeshBasicMaterial({color: i%2?0xe94560:0xffffff});
-      [-3,3].forEach(x => {
-        const e = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 10), edge);
-        e.rotation.x = -Math.PI/2;
-        e.position.set(x, 0.01, 0);
-        seg.add(e);
-      });
-      if(i===1) {
-        const start = new THREE.Mesh(new THREE.PlaneGeometry(6, 1), new THREE.MeshBasicMaterial({color: 0x00ff00}));
-        start.rotation.x = -Math.PI/2;
-        start.position.set(0, 0.02, 0);
-        seg.add(start);
-      }
-      if(i===47) {
-        for(let c=0; c<6; c++) {
-          const ckr = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({color: c%2?0:0xfff}));
-          ckr.rotation.x = -Math.PI/2;
-          ckr.position.set(-2.5+c, 0.02, 0);
-          seg.add(ckr);
-        }
-      }
-      scene.add(seg);
-      racers.push({seg, z: -i*10});
-    }
-
-    // Karts
+    
+    // Road segments
+    const roadSegments = [];
+    const SEGMENT = 12;
+    const NUM_SEG = 50;
+    
+    // Karts array
     const karts = [];
-    names.forEach((name, i) => {
+    let textures = {};
+    
+    // Create road
+    function createRoad() {
+      // Ground
+      const grass = new THREE.Mesh(
+        new THREE.PlaneGeometry(80, 300),
+        new THREE.MeshStandardMaterial({ color: 0x2d5a27 })
+      );
+      grass.rotation.x = -Math.PI / 2;
+      grass.position.y = -0.05;
+      grass.position.z = -150;
+      scene.add(grass);
+      
+      for (let i = 0; i < NUM_SEG; i++) {
+        const seg = new THREE.Group();
+        seg.position.z = -i * SEGMENT;
+        
+        // Asphalt
+        const road = new THREE.Mesh(
+          new THREE.PlaneGeometry(8, SEGMENT),
+          new THREE.MeshStandardMaterial({ color: 0x333333 })
+        );
+        road.rotation.x = -Math.PI / 2;
+        seg.add(road);
+        
+        // Edge lines
+        const edgeMat = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xffffff : 0xe94560 });
+        [-4, 4].forEach(x => {
+          const edge = new THREE.Mesh(new THREE.PlaneGeometry(0.15, SEGMENT), edgeMat);
+          edge.rotation.x = -Math.PI / 2;
+          edge.position.set(x, 0.01, 0);
+          seg.add(edge);
+        });
+        
+        // Center dashes
+        const dashMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+        for (let d = 0; d < 2; d++) {
+          const dash = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 1.5), dashMat);
+          dash.rotation.x = -Math.PI / 2;
+          dash.position.set(0, 0.01, -SEGMENT/3 + d * SEGMENT/1.5);
+          seg.add(dash);
+        }
+        
+        // Start line
+        if (i === 1) {
+          const start = new THREE.Mesh(new THREE.PlaneGeometry(8, 1), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+          start.rotation.x = -Math.PI / 2;
+          start.position.set(0, 0.02, 0);
+          seg.add(start);
+        }
+        
+        // Finish line (checkerboard)
+        if (i === NUM_SEG - 3) {
+          for (let c = 0; c < 8; c++) {
+            const checker = new THREE.Mesh(
+              new THREE.PlaneGeometry(1, 1),
+              new THREE.MeshBasicMaterial({ color: c % 2 === 0 ? 0xffffff : 0x000000 })
+            );
+            checker.rotation.x = -Math.PI / 2;
+            checker.position.set(-3.5 + c, 0.02, 0);
+            seg.add(checker);
+          }
+        }
+        
+        scene.add(seg);
+        roadSegments.push(seg);
+      }
+    }
+    
+    // Create kart with sprite
+    function createKart(name, color, lane, tex) {
       const kart = new THREE.Group();
-      const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.4, 1.2), new THREE.MeshStandardMaterial({color: colors[i]}));
-      body.position.y = 0.3;
-      kart.add(body);
-      const helm = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), new THREE.MeshStandardMaterial({color: 0xffd700}));
-      helm.position.y = 0.7;
-      kart.add(helm);
-      [[-0.4,0.15,0.4],[0.4,0.15,0.4],[-0.4,0.15,-0.4],[0.4,0.15,-0.4]].forEach(p => {
-        const w = new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,0.1,8), new THREE.MeshStandardMaterial({color: 0x111}));
-        w.rotation.z = Math.PI/2;
-        w.position.set(...p);
-        kart.add(w);
-      });
-      kart.position.x = lanes[i];
+      
+      // Use texture if available
+      if (tex) {
+        const spriteMat = new THREE.MeshBasicMaterial({ 
+          map: tex, 
+          transparent: true, 
+          side: THREE.DoubleSide 
+        });
+        const sprite = new THREE.Mesh(new THREE.PlaneGeometry(2, 2.5), spriteMat);
+        sprite.position.y = 1.3;
+        kart.add(sprite);
+      } else {
+        // Fallback 3D kart
+        const body = new THREE.Mesh(
+          new THREE.BoxGeometry(1, 0.6, 1.8),
+          new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.3 })
+        );
+        body.position.y = 0.5;
+        kart.add(body);
+        
+        const helm = new THREE.Mesh(
+          new THREE.SphereGeometry(0.3, 16, 16),
+          new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.7 })
+        );
+        helm.position.y = 1.1;
+        kart.add(helm);
+        
+        // Wheels
+        const wheelGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.15, 12);
+        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+        [[-0.6, 0.18, 0.6], [0.6, 0.18, 0.6], [-0.6, 0.18, -0.6], [0.6, 0.18, -0.6]].forEach(p => {
+          const w = new THREE.Mesh(wheelGeo, wheelMat);
+          w.rotation.z = Math.PI / 2;
+          w.position.set(...p);
+          kart.add(w);
+        });
+      }
+      
+      // Position
+      kart.position.x = lanes[lane];
       scene.add(kart);
-      karts.push({kart, lane: i, targetX: lanes[i], x: lanes[i], speed: 0.04+Math.random()*0.02, progress: 0});
-    });
-
+      
+      karts.push({
+        kart,
+        lane,
+        targetX: lanes[lane],
+        x: lanes[lane],
+        baseSpeed: 0.045 + Math.random() * 0.025,
+        speed: 0,
+        progress: 0,
+        finished: false
+      });
+    }
+    
+    // Initialize
+    async function init() {
+      createRoad();
+      
+      textures = await loadTextures();
+      
+      names.forEach((name, i) => {
+        createKart(name, colors[i], i, textures[name.toLowerCase()]);
+      });
+      
+      animate(0);
+    }
+    
+    // Move player
     function move(dir) {
-      if(!running) return;
+      if (!running) return;
       const p = karts[0];
-      if(dir<0 && p.lane>0) p.lane--;
-      if(dir>0 && p.lane<3) p.lane++;
+      if (dir < 0 && p.lane > 0) p.lane--;
+      if (dir > 0 && p.lane < 3) p.lane++;
       p.targetX = lanes[p.lane];
     }
-
-    function start() {
+    
+    // Start game
+    window.startGame = function() {
       document.getElementById('start').style.display = 'none';
+      document.getElementById('winner').classList.remove('show');
       running = true;
-      time = 0;
-      speed = 0.2;
-      karts.forEach(k => { k.progress = 0; k.kart.position.z = 0; });
-    }
-
-    document.onkeydown = e => {
-      if(e.key==='ArrowLeft'||e.key==='a') move(-1);
-      if(e.key==='ArrowRight'||e.key==='d') move(1);
+      raceTime = 0;
+      trackSpeed = BASESPEED;
+      karts.forEach(k => {
+        k.progress = 0;
+        k.kart.position.z = 0;
+        k.finished = false;
+      });
     };
-
-    function update() {
-      requestAnimationFrame(update);
-      if(!running) { renderer.render(scene, camera); return; }
+    
+    // Keyboard
+    document.onkeydown = e => {
+      if (e.key === 'ArrowLeft' || e.key === 'a') move(-1);
+      if (e.key === 'ArrowRight' || e.key === 'd') move(1);
+    };
+    
+    // Game loop
+    let lastTime = 0;
+    function animate(time) {
+      requestAnimationFrame(animate);
+      const delta = (time - lastTime) / 1000;
+      lastTime = time;
       
-      time += 0.016;
-      if(speed < 0.6) speed += 0.005;
+      if (!running || delta > 0.1) {
+        renderer.render(scene, camera);
+        return;
+      }
       
-      const ui = document.getElementById('ui');
-      const m = Math.floor(time/60), s = Math.floor(time%60), ms = Math.floor((time%1)*100);
-      ui.textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(ms).padStart(2,'0');
+      raceTime += delta;
+      
+      // Timer
+      const m = Math.floor(raceTime / 60);
+      const s = Math.floor(raceTime % 60);
+      const ms = Math.floor((raceTime % 1) * 100);
+      document.getElementById('timer').textContent = 
+        String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + '.' + String(ms).padStart(2,'0');
+      
+      // Speed up
+      if (trackSpeed < BASESPEED * 3) trackSpeed += delta * 0.05;
       
       // Move road
-      racers.forEach(r => {
-        r.seg.position.z += speed * 15;
-        if(r.seg.position.z > 15) r.seg.position.z -= 500;
+      roadSegments.forEach(seg => {
+        seg.position.z += trackSpeed * 20;
+        if (seg.position.z > 15) seg.position.z -= NUM_SEG * SEGMENT;
       });
       
+      // Update karts
       let winner = null;
       karts.forEach((k, i) => {
-        k.speed += (0.04 + Math.random()*0.01 - k.speed) * 0.1;
+        // AI speed
+        const bonus = Math.sin(time * 0.004 + i) * 0.015;
+        const targetSpeed = k.baseSpeed + bonus;
+        k.speed += (targetSpeed - k.speed) * 0.05;
         k.progress += k.speed;
-        k.kart.position.z = -k.progress * 8;
-        k.x += (k.targetX - k.x) * 0.15;
-        k.kart.position.x = k.x;
-        k.kart.position.y = Math.sin(time*10+i)*0.03;
-        k.kart.rotation.z = -(k.targetX - k.x) * 0.5;
         
-        if(k.progress > 45 && !winner) {
-          winner = k;
-          running = false;
-          document.getElementById('status').textContent = '🏆 ' + names[i] + ' WINS! 🏆';
-          document.getElementById('start').style.display = 'block';
-          document.querySelector('#start h1').textContent = names[i] + ' WINS!';
+        k.kart.position.z = -k.progress * 10;
+        
+        // Lane switch
+        k.x += (k.targetX - k.x) * 0.12;
+        k.kart.position.x = k.x;
+        
+        // Bob
+        k.kart.position.y = Math.sin(time * 0.015 + i) * 0.05;
+        
+        // Lean
+        k.kart.rotation.z = -(k.targetX - k.x) * 0.4;
+        
+        // Billboard sprites
+        k.kart.children.forEach(child => {
+          if (child.isMesh && child.geometry.type === 'PlaneGeometry') {
+            child.lookAt(camera.position.x, child.position.y + k.kart.position.y, camera.position.z);
+          }
+        });
+        
+        // Check finish
+        if (!k.finished && k.progress > 45) {
+          k.finished = true;
+          if (!winner) winner = names[i];
         }
       });
       
-      const camKart = karts[0].kart;
-      camera.position.z = camKart.position.z + 8;
-      camera.position.x = camKart.position.x * 0.3;
+      // Winner!
+      if (winner) {
+        running = false;
+        document.getElementById('winner-name').textContent = winner;
+        document.getElementById('winner-time').textContent = document.getElementById('timer').textContent;
+        document.getElementById('winner').classList.add('show');
+        document.getElementById('status').textContent = '🏆 ' + winner + ' WINS! 🏆';
+      }
+      
+      // Camera follow
+      camera.position.z = karts[0].kart.position.z + 12;
+      camera.position.x = karts[0].kart.position.x * 0.4;
       
       renderer.render(scene, camera);
     }
     
+    // Resize
     onresize = () => {
-      camera.aspect = innerWidth/innerHeight;
+      camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
     };
     
-    update();
+    init();
   </script>
 </body>
 </html>
