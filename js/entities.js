@@ -2,7 +2,7 @@
 
 // Global race distance
 const TOTAL_RACE_DISTANCE = 7500;
-const FINISH_DISTANCE = 10;
+const FINISH_DISTANCE = 100;
 
 // Racer class for autonomous 4-racer system
 export class Racer {
