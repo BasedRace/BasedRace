@@ -117,20 +117,22 @@ body {
   box-shadow: 0 2px 0 #993333;
 }
 
-/* Debug controls - below screen */
+/* Debug controls - displayed on screen */
 #debug-controls {
   position: absolute;
-  bottom: -80px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 10px;
+  right: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   padding: 8px 15px;
   background: rgba(20, 20, 40, 0.9);
   border-radius: 8px;
   border: 1px solid #333;
   z-index: 100;
+  color: #00ff00;
+  font-family: monospace;
+  font-size: 14px;
 }
 
 .debug-group {

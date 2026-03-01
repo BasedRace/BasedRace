@@ -171,6 +171,16 @@ class Game {
   }
 
   render() {
+    // Update debug coordinates
+    for (let i = 0; i < this.racers.length; i++) {
+      const coordEl = document.getElementById('racer' + i + '-coord');
+      if (coordEl && this.racers[i]) {
+        const name = this.racers[i].name;
+        const y = Math.round(this.racers[i].yPosOnScreen);
+        coordEl.textContent = name + ': ' + y;
+      }
+    }
+    
     // Memproses interpolasi smooth sebelum menggambar
     if (this.track.smoothRender) {
         this.track.smoothRender();
