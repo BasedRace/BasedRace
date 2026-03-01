@@ -1,7 +1,9 @@
 // js/entities.js - Track class dengan Auto-Center Logic
 
-// Global race distance
+// Global race constants
 const TOTAL_RACE_DISTANCE = 7500;
+const FINISH_LINE = 7200;
+const END_OF_TRACK = 9600;
 
 // Racer class for autonomous 4-racer system
 export class Racer {
@@ -31,7 +33,7 @@ export class Racer {
     // Diagonal ratio
     this.diagonalRatio = -1.67;
     
-    // Progress tracking - distance traveled
+    // Progress tracking - positive incrementing distance
     this.progress = 0;
     
     // Dynamic AI - competitive organic movement
@@ -48,34 +50,46 @@ export class Racer {
     this.finishTime = 0;
   }
   
-  // Update racer - progress-based movement
+  // Update racer - positive progress system
   update(trackSpeed, dt, allRacers) {
     if (this.finished) return;
     
-    // Add oscillation bonus
-    const bonus = Math.sin(Date.now() * 0.002 * this.oscillationFrequency + this.sinOffset) * 10;
+    // Calculate step: individual speed minus track movement
+    const step = (this.currentSpeed * dt) - trackSpeed;
     
-    // Target speed with bonus
-    this.targetSpeed = this.baseSpeed + bonus;
+    // Increment progress (never below 0)
+    this.progress = Math.max(0, this.progress + step);
+    
+    // Two-phase finish logic
+    if (this.progress >= FINISH_LINE) {
+      // First time crossing finish line
+      if (!this.finishTime) {
+        this.finishTime = Date.now();
+      }
+      
+      // Cool-down effect after finishing
+      this.targetSpeed = this.baseSpeed * 0.8;
+    } else {
+      // Race phase - keep AI active
+      // Add oscillation bonus
+      const bonus = Math.sin(Date.now() * 0.002 * this.oscillationFrequency + this.sinOffset) * 10;
+      
+      // Target speed with bonus
+      this.targetSpeed = this.baseSpeed + bonus;
+    }
     
     // LERP for smooth acceleration
     this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.05;
     
-    // Increase progress based on speed
-    this.progress += this.currentSpeed * dt / 100;
-    
-    // Check if racer completed the race
-    if (this.progress >= TOTAL_RACE_DISTANCE) {
-      this.progress = TOTAL_RACE_DISTANCE;
+    // End of track - stop all movement
+    if (this.progress >= END_OF_TRACK) {
       this.finished = true;
-      this.finishTime = Date.now();
+      this.progress = END_OF_TRACK;
     }
     
-    // Calculate Y position based on progress (moving forward)
-    this.yPosOnScreen = this.startY + this.progress;
-    
-    // Calculate X based on diagonal ratio
-    this.x = this.startX + (this.progress * this.diagonalRatio);
+    // Coordinate mapping: Bottom-Left direction
+    this.yPosOnScreen = this.startY + this.progress;  // Y increases = moves Down
+    this.x = this.startX + (this.progress * -1.67);   // X decreases = moves Left
   }
   
   // Reset to start
