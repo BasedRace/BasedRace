@@ -176,8 +176,8 @@ class Game {
       const coordEl = document.getElementById('racer' + i + '-coord');
       if (coordEl && this.racers[i]) {
         const name = this.racers[i].name;
-        const progress = Math.round(this.racers[i].progress);
-        coordEl.textContent = name + ': ' + progress;
+        const absoluteDistance = Math.round(this.racers[i].absoluteDistance);
+        coordEl.textContent = name + ': ' + absoluteDistance;
       }
     }
     
