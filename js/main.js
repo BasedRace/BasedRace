@@ -147,7 +147,7 @@ class Game {
       racer.update(movement, deltaTime, this.racers);
       
       // First racer to cross finish line wins (racer Y > finishLineY)
-      if (!racer.finished && this.finishLineY && this.racers > this.finishLineY) {
+      if (!racer.finished && this.finishLineY && racer.yPosOnScreen > this.finishLineY) {
         racer.finished = true;
         this.winner = racer;
         this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
