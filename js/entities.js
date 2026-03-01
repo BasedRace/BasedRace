@@ -81,7 +81,7 @@ export class Racer {
     this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.08;
     
     // Y moves forward (toward finish line)
-    this.yPosOnScreen += this.currentSpeed * dt;
+    this.yPosOnScreen += this.currentSpeed * dt / 100;
    
     // X calculated from Y using diagonal ratio from start points
     this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
