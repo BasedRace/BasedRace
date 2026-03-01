@@ -1,5 +1,8 @@
 // js/entities.js - Track class dengan Auto-Center Logic
 
+// Global race distance
+const TOTAL_RACE_DISTANCE = 8000;
+
 // Racer class for autonomous 4-racer system
 export class Racer {
   constructor(id, name, asset, laneIndex, track) {
@@ -28,7 +31,7 @@ export class Racer {
     // Diagonal ratio
     this.diagonalRatio = -1.67;
     
-    // Progress tracking
+    // Progress tracking - distance traveled
     this.progress = 0;
     
     // Dynamic AI - competitive organic movement
@@ -39,56 +42,40 @@ export class Racer {
     
     // Oscillation for natural movement
     this.sinOffset = Math.random() * Math.PI * 2;
-    this.oscillationFrequency = 0.5 + Math.random(); // 0.5 to 1.5
+    this.oscillationFrequency = 0.5 + Math.random();
     
     this.finished = false;
     this.finishTime = 0;
   }
   
-  // Update racer - competitive organic movement
+  // Update racer - progress-based movement
   update(trackSpeed, dt, allRacers) {
     if (this.finished) return;
     
-    // Stronger oscillating bonus for more competition
-    const bonus = Math.sin(Date.now() * 0.002 * this.oscillationFrequency + this.sinOffset) * 40;
+    // Add oscillation bonus
+    const bonus = Math.sin(Date.now() * 0.002 * this.oscillationFrequency + this.sinOffset) * 10;
     
-    // Competitive zone - middle 70% of screen
-    const screenHeight = 1800;
-    const topZone = screenHeight * 0.15;
-    const bottomZone = screenHeight * 0.85;
-    const midZone = screenHeight * 0.5;
-    
-    if (this.yPosOnScreen > bottomZone) {
-      // Behind - strong catchup boost
-      this.targetSpeed = this.baseSpeed * 1.4;
-    } else if (this.yPosOnScreen < topZone) {
-      // Leading - slight slowdown
-      this.targetSpeed = this.baseSpeed * 0.8;
-    } else if (this.yPosOnScreen < midZone) {
-      // Top half - moderate speed
-      this.targetSpeed = this.baseSpeed + bonus * 0.5;
-    } else {
-      // Bottom half - push forward
-      this.targetSpeed = this.baseSpeed * 1.2 + bonus * 0.3;
-    }
-    
-    // Add competition bonus - random bursts
-    if (Math.random() < 0.02) {
-      this.targetSpeed *= 1.3;
-    }
+    // Target speed with bonus
+    this.targetSpeed = this.baseSpeed + bonus;
     
     // LERP for smooth acceleration
-    this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.08;
+    this.currentSpeed += (this.targetSpeed - this.currentSpeed) * 0.05;
     
-    // Y moves forward (toward finish line)
-    this.yPosOnScreen += this.currentSpeed * dt / 100;
-   
-    // X calculated from Y using diagonal ratio from start points
-    this.x = this.startX + ((this.yPosOnScreen - this.startY) * this.diagonalRatio);
+    // Increase progress based on speed
+    this.progress += this.currentSpeed * dt;
     
-    // Boundary clamp
-    if (this.yPosOnScreen < -500) this.yPosOnScreen = -500;
-    if (this.yPosOnScreen > 2000) this.yPosOnScreen = 2000;
+    // Check if racer completed the race
+    if (this.progress >= TOTAL_RACE_DISTANCE) {
+      this.progress = TOTAL_RACE_DISTANCE;
+      this.finished = true;
+      this.finishTime = Date.now();
+    }
+    
+    // Calculate Y position based on progress (moving forward)
+    this.yPosOnScreen = this.startY + this.progress;
+    
+    // Calculate X based on diagonal ratio
+    this.x = this.startX + (this.progress * this.diagonalRatio);
   }
   
   // Reset to start
@@ -106,7 +93,7 @@ export class Racer {
     this.yPosOnScreen = pos.y;
     this.progress = 0;
     
-    // Reset dynamic AI - competitive
+    // Reset dynamic AI
     this.baseSpeed = 0.3 + Math.random() * 0.7;
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
@@ -117,6 +104,7 @@ export class Racer {
     this.finishTime = 0;
   }
 }
+
 export class Track {
   constructor(assets) {
     this.assets = assets;
@@ -124,8 +112,8 @@ export class Track {
     
     // 1. Zoom Factor
     this.ZOOM_FACTOR = 1.61; 
-    this.WIDTH = 1200 * this.ZOOM_FACTOR; // 1932px
-    this.HEIGHT = 1800 * this.ZOOM_FACTOR; // 2898px
+    this.WIDTH = 1200 * this.ZOOM_FACTOR;
+    this.HEIGHT = 1800 * this.ZOOM_FACTOR;
     
     // 2. Konfigurasi diagonal
     this.OFFSET_X_RATIO = 1.67; 
@@ -133,7 +121,7 @@ export class Track {
     // 3. Jarak antar tile
     this.CHAIN_HEIGHT = 800; 
     
-    // 4. Initial X - Dihitung agar aspal tile pertama ada di tengah
+    // 4. Initial X
     this.initialX = -(this.WIDTH / 2) + 600;
 
     this.sequence = ['env2', 'start', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'env1', 'env2', 'finish', 'env2', 'env2', 'env2'];
@@ -155,21 +143,17 @@ export class Track {
         h: this.HEIGHT
       });
       
-      // Update koordinat untuk tile berikutnya (berantai)
       currentY = currentY + this.CHAIN_HEIGHT;
       currentX = currentX - (this.CHAIN_HEIGHT * this.OFFSET_X_RATIO);
     }
     
-    // Sort once during generation for depth ordering
     this.tiles.sort((a, b) => a.y - b.y);
     return this.tiles;
   }
 
-  // Generate and apply pre-scroll atomically
   generateWithPreScroll(preScrollOffset) {
     this.generate();
     this.updateMovement(preScrollOffset);
-    // Re-sort after movement to maintain depth order
     this.tiles.sort((a, b) => a.y - b.y);
   }
 

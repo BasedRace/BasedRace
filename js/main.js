@@ -117,11 +117,6 @@ class Game {
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
     
-    // Store finish line position from finish.png asset
-    const finishTile = this.track.getFinishTile();
-    // Use a reachable threshold (100 pixels past start)
-    this.finishLineY = finishTile ? 100 : 100;
-    
     // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
       racer.reset();
@@ -147,13 +142,10 @@ class Game {
     for (const racer of this.racers) {
       racer.update(movement, deltaTime, this.racers);
       
-      // First racer to cross finish line wins (racer Y > finishLineY)
-      if (!racer.finished && this.finishLineY && racer.yPosOnScreen > this.finishLineY) {
-        racer.finished = true;
+      // Check if any racer finished (progress >= TOTAL_RACE_DISTANCE)
+      if (racer.finished && !this.winner) {
         this.winner = racer;
-        this.statusEl.textContent = `🏆 ${racer.name} WINS! 🏆`;
-        this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
-        this.renderer.startConfetti();
+        this.showWinnerUI(racer.name);
       }
     }
     
@@ -169,6 +161,13 @@ class Game {
     this.statusEl.textContent = 'FINISH!';
     this.startBtn.textContent = 'RESTART';
     this.startBtn.style.display = 'block';
+  }
+
+  // Show winner UI when a racer completes the race
+  showWinnerUI(winnerName) {
+    this.statusEl.textContent = `🏆 ${winnerName} WINS! 🏆`;
+    this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
+    this.renderer.startConfetti();
   }
 
   render() {
