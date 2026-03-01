@@ -79,9 +79,7 @@
       text-transform: uppercase;
       box-shadow: 0 6px 0 #8a2535, 0 0 30px rgba(233,69,96,0.5);
     }
-    .btn:hover {
-      transform: translateY(-2px);
-    }
+    .btn:hover { transform: translateY(-2px); }
     #final-score {
       font-size: 72px;
       color: #ffd700;
@@ -125,10 +123,21 @@
       background: rgba(233,69,96,0.6);
       border-color: #e94560;
     }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #00ffcc;
+      font-size: 24px;
+      z-index: 300;
+    }
   </style>
 </head>
 <body>
   <div id="game-container">
+    <div id="loading">LOADING ASSETS...</div>
+    
     <div id="ui">
       <div id="timer">00:00.00</div>
       <div id="status">🏁 BASED RACE 3D 🏁</div>
@@ -136,7 +145,7 @@
     
     <div id="debug-ui"></div>
     
-    <div id="start-screen">
+    <div id="start-screen" class="hidden">
       <h1>BASED RACE</h1>
       <h2>3D EDITION</h2>
       <p style="color:#888;margin-bottom:30px;font-size:14px;">Tap LEFT/RIGHT or use Arrow Keys</p>
@@ -161,6 +170,46 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
   <script>
+    // Asset URLs from GitHub
+    const ASSETS = {
+      jesse: 'https://raw.githubusercontent.com/BasedRace/BasedRace/master/assets/jesse.png',
+      barmstrong: 'https://raw.githubusercontent.com/BasedRace/BasedRace/master/assets/barmstrong.png',
+      deployer: 'https://raw.githubusercontent.com/BasedRace/BasedRace/master/assets/deployer.png',
+      dish: 'https://raw.githubusercontent.com/BasedRace/BasedRace/master/assets/dish.png',
+      env1: 'https://raw.githubusercontent.com/BasedRace/BasedRace/master/assets/env1.png',
+      env2: 'https://raw.githubusercontent.com/BasedRace/BasedRace/master/assets/env2.png',
+      start: 'https://raw.githubusercontent.com/BasedRace/BasedRace/master/assets/start.png',
+      finish: 'https://raw.githubusercontent.com/BasedRace/BasedRace/master/assets/finish.png'
+    };
+    
+    // Load texture
+    function loadTexture(url) {
+      return new Promise(resolve => {
+        new THREE.TextureLoader().load(url, resolve);
+      });
+    }
+    
+    // Load all assets
+    async function loadAssets() {
+      const loader = new THREE.TextureLoader();
+      const textures = {};
+      
+      for (const [name, url] of Object.entries(ASSETS)) {
+        textures[name] = await new Promise(resolve => {
+          loader.load(url, tex => {
+            tex.magFilter = THREE.NearestFilter;
+            tex.minFilter = THREE.NearestFilter;
+            resolve(tex);
+          });
+        });
+      }
+      
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('start-screen').classList.remove('hidden');
+      
+      return textures;
+    }
+    
     // Elements
     const timerEl = document.getElementById('timer');
     const statusEl = document.getElementById('status');
@@ -177,10 +226,10 @@
     // Three.js setup
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a0a0f);
-    scene.fog = new THREE.Fog(0x0a0a0f, 50, 200);
+    scene.fog = new THREE.Fog(0x0a0a0f, 30, 150);
     
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 8, 15);
+    camera.position.set(0, 6, 12);
     camera.lookAt(0, 0, 0);
     
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -189,132 +238,154 @@
     document.getElementById('game-container').insertBefore(renderer.domElement, document.getElementById('ui'));
     
     // Lights
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
-    scene.add(ambientLight);
-    
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(10, 20, 10);
+    scene.add(new THREE.AmbientLight(0x404040, 1));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(5, 10, 5);
     scene.add(dirLight);
     
     // Game state
     let gameRunning = false;
     let raceTime = 0;
     let trackSpeed = 0;
-    const baseTrackSpeed = 0.4;
+    const baseTrackSpeed = 0.3;
+    let textures = {};
     
     // Road segments
     const roadSegments = [];
-    const segmentLength = 20;
-    const numSegments = 30;
+    const segmentLength = 15;
+    const numSegments = 40;
     
-    // Create road
+    // Create road with textures
     function createRoad() {
       // Ground
-      const groundGeo = new THREE.PlaneGeometry(100, 300);
-      const groundMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
-      const ground = new THREE.Mesh(groundGeo, groundMat);
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(80, 200),
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1a })
+      );
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = -0.1;
       ground.position.z = -50;
       scene.add(ground);
       
-      // Road segments
+      // Road with textures
       for (let i = 0; i < numSegments; i++) {
         const segment = new THREE.Group();
         segment.position.z = -i * segmentLength;
         
-        // Road surface
-        const roadGeo = new THREE.PlaneGeometry(12, segmentLength);
-        const roadMat = new THREE.MeshStandardMaterial({ color: 0x2d2d2d });
-        const road = new THREE.Mesh(roadGeo, roadMat);
+        // Road surface - use env texture
+        const tex = textures.env1 || textures.env2;
+        const roadMat = tex ? 
+          new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide }) :
+          new THREE.MeshStandardMaterial({ color: 0x2d2d2d });
+        
+        const road = new THREE.Mesh(new THREE.PlaneGeometry(10, segmentLength), roadMat);
         road.rotation.x = -Math.PI / 2;
         segment.add(road);
         
         // Lane lines
-        if (i < numSegments - 1) {
-          const lineMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
-          
-          // Left/right lane lines
-          [-3.5, 3.5].forEach(x => {
-            const lineGeo = new THREE.PlaneGeometry(0.2, segmentLength);
-            const line = new THREE.Mesh(lineGeo, lineMat);
-            line.rotation.x = -Math.PI / 2;
-            line.position.set(x, 0.01, 0);
-            segment.add(line);
-          });
-          
-          // Center dashed lines
-          for (let d = 0; d < 4; d++) {
-            const dashGeo = new THREE.PlaneGeometry(0.15, 2);
-            const dash = new THREE.Mesh(dashGeo, lineMat);
-            dash.rotation.x = -Math.PI / 2;
-            dash.position.set(0, 0.01, -segmentLength/2 + d * 5 + 2.5);
-            segment.add(dash);
-          }
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+        
+        // Dashed center lines
+        for (let d = 0; d < 3; d++) {
+          const dash = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.1, 2),
+            lineMat
+          );
+          dash.rotation.x = -Math.PI / 2;
+          dash.position.set(0, 0.01, -segmentLength/2 + d * 5 + 2.5);
+          segment.add(dash);
         }
         
         // Edge lines
         const edgeMat = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xe94560 : 0xffffff });
-        [-6, 6].forEach(x => {
-          const edgeGeo = new THREE.PlaneGeometry(0.3, segmentLength);
-          const edge = new THREE.Mesh(edgeGeo, edgeMat);
+        [-5, 5].forEach(x => {
+          const edge = new THREE.Mesh(new THREE.PlaneGeometry(0.2, segmentLength), edgeMat);
           edge.rotation.x = -Math.PI / 2;
           edge.position.set(x, 0.01, 0);
           segment.add(edge);
         });
+        
+        // Start/finish line
+        if (i === 2) {
+          const startMat = new THREE.MeshBasicMaterial({ 
+            map: textures.start,
+            transparent: true,
+            opacity: 0.9
+          });
+          const startLine = new THREE.Mesh(new THREE.PlaneGeometry(10, 2), startMat);
+          startLine.rotation.x = -Math.PI / 2;
+          startLine.position.set(0, 0.02, 0);
+          segment.add(startLine);
+        }
+        
+        if (i === numSegments - 5) {
+          const finishMat = new THREE.MeshBasicMaterial({ 
+            map: textures.finish,
+            transparent: true,
+            opacity: 0.9
+          });
+          const finishLine = new THREE.Mesh(new THREE.PlaneGeometry(10, 2), finishMat);
+          finishLine.rotation.x = -Math.PI / 2;
+          finishLine.position.set(0, 0.02, 0);
+          segment.add(finishLine);
+        }
         
         scene.add(segment);
         roadSegments.push(segment);
       }
     }
     
-    // Karts
+    // Karts with character textures
     const racers = [];
-    const racerNames = ['Jesse', 'Barmstrong', 'Deployer', 'Dish'];
-    const racerColors = [0x00bcd4, 0x9c27b0, 0xff9800, 0xe94560];
+    const racerData = [
+      { name: 'Jesse', color: 0x00bcd4, tex: 'jesse' },
+      { name: 'Barmstrong', color: 0x9c27b0, tex: 'barmstrong' },
+      { name: 'Deployer', color: 0xff9800, tex: 'deployer' },
+      { name: 'Dish', color: 0xe94560, tex: 'dish' }
+    ];
     
-    function createKart(name, color, lane) {
+    function createKart(data, lane) {
       const kart = new THREE.Group();
       
-      // Body
-      const bodyGeo = new THREE.BoxGeometry(1.2, 0.6, 2);
-      const bodyMat = new THREE.MeshStandardMaterial({ color, metalness: 0.5, roughness: 0.3 });
-      const body = new THREE.Mesh(bodyGeo, bodyMat);
-      body.position.y = 0.5;
-      kart.add(body);
+      // Use character texture on a plane (billboard style)
+      const tex = textures[data.tex];
+      if (tex) {
+        const spriteMat = new THREE.MeshBasicMaterial({ 
+          map: tex, 
+          transparent: true,
+          side: THREE.DoubleSide
+        });
+        
+        // Character sprite
+        const sprite = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.5, 2),
+          spriteMat
+        );
+        sprite.position.y = 1.2;
+        kart.add(sprite);
+      } else {
+        // Fallback - colored box
+        const body = new THREE.Mesh(
+          new THREE.BoxGeometry(1, 1, 1.5),
+          new THREE.MeshStandardMaterial({ color: data.color })
+        );
+        body.position.y = 0.5;
+        kart.add(body);
+      }
       
-      // Helmet
-      const helmetGeo = new THREE.SphereGeometry(0.35, 16, 16);
-      const helmetMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 });
-      const helmet = new THREE.Mesh(helmetGeo, helmetMat);
-      helmet.position.y = 1.1;
-      kart.add(helmet);
-      
-      // Wheels
-      const wheelGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.2, 16);
-      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-      
-      [[-0.7, 0.25, 0.7], [0.7, 0.25, 0.7], [-0.7, 0.25, -0.7], [0.7, 0.25, -0.7]].forEach(pos => {
-        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-        wheel.rotation.z = Math.PI / 2;
-        wheel.position.set(...pos);
-        kart.add(wheel);
-      });
-      
-      // Position
-      const laneX = (lane - 1.5) * 2.5;
+      // Position in lane
+      const laneX = (lane - 1.5) * 2.2;
       kart.position.set(laneX, 0, 0);
       
       kart.userData = {
-        name,
+        name: data.name,
         lane,
         targetX: laneX,
         x: laneX,
-        baseSpeed: 0.08 + Math.random() * 0.04,
+        baseSpeed: 0.06 + Math.random() * 0.03,
         speed: 0,
         progress: 0,
-        finished: false,
-        finishTime: 0
+        finished: false
       };
       
       scene.add(kart);
@@ -330,21 +401,21 @@
       racers.length = 0;
       
       createRoad();
-      racerNames.forEach((name, i) => createKart(name, racerColors[i], i));
+      racerData.forEach((data, i) => createKart(data, i));
       
-      camera.position.set(0, 8, 15);
+      camera.position.set(0, 6, 12);
       raceTime = 0;
       trackSpeed = 0;
     }
     
-    // Move
+    // Move player
     function movePlayer(dir) {
       if (!gameRunning) return;
       const player = racers[0];
       const data = player.userData;
       if (dir === 'left' && data.lane > 0) data.lane--;
       if (dir === 'right' && data.lane < 3) data.lane++;
-      data.targetX = (data.lane - 1.5) * 2.5;
+      data.targetX = (data.lane - 1.5) * 2.2;
     }
     
     // Timer
@@ -355,23 +426,26 @@
       timerEl.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') + '.' + String(ms).padStart(2,'0');
     }
     
-    // Loop
+    // Game loop
     let lastTime = 0;
     function animate(currentTime) {
       requestAnimationFrame(animate);
       const delta = (currentTime - lastTime) / 1000;
       lastTime = currentTime;
       
-      if (!gameRunning || delta > 0.1) return;
+      if (!gameRunning || delta > 0.1) {
+        renderer.render(scene, camera);
+        return;
+      }
       
       raceTime += delta;
       updateTimer();
       
-      if (trackSpeed < baseTrackSpeed * 2) trackSpeed += delta * 0.1;
+      if (trackSpeed < baseTrackSpeed * 2.5) trackSpeed += delta * 0.08;
       
       // Move road
       roadSegments.forEach(seg => {
-        seg.position.z += trackSpeed;
+        seg.position.z += trackSpeed * 30;
         if (seg.position.z > 20) seg.position.z -= numSegments * segmentLength;
       });
       
@@ -379,33 +453,51 @@
       let firstFinisher = null;
       racers.forEach((kart, index) => {
         const data = kart.userData;
-        const bonus = Math.sin(currentTime * 0.002 + index) * 0.02;
+        
+        // AI speed variation
+        const bonus = Math.sin(currentTime * 0.003 + index) * 0.015;
         const targetSpeed = data.baseSpeed + bonus;
         data.speed += (targetSpeed - data.speed) * 0.05;
         data.progress += data.speed;
-        kart.position.z = -data.progress * 20;
         
-        data.x += (data.targetX - data.x) * 0.1;
+        // Move forward
+        kart.position.z = -data.progress * 15;
+        
+        // Lane switch
+        data.x += (data.targetX - data.x) * 0.12;
         kart.position.x = data.x;
-        kart.position.y = Math.sin(currentTime * 0.01 + index) * 0.05;
-        kart.rotation.z = -(data.targetX - data.x) * 0.3;
         
-        if (!data.finished && kart.position.z < -400) {
+        // Bobbing
+        kart.position.y = Math.sin(currentTime * 0.012 + index) * 0.08;
+        
+        // Lean
+        kart.rotation.z = -(data.targetX - data.x) * 0.4;
+        
+        // Face the right direction (billboard)
+        kart.children.forEach(child => {
+          if (child.isMesh && child.geometry.type === 'PlaneGeometry') {
+            child.lookAt(camera.position.x, child.position.y + kart.position.y, camera.position.z);
+          }
+        });
+        
+        // Check finish (around z = -350)
+        if (!data.finished && kart.position.z < -350) {
           data.finished = true;
-          data.finishTime = raceTime;
           if (!firstFinisher) firstFinisher = data;
         }
       });
       
-      // Camera
+      // Camera follow player
       const playerKart = racers[0];
-      camera.position.z = playerKart.position.z + 15;
-      camera.position.x = playerKart.position.x * 0.3;
+      camera.position.z = playerKart.position.z + 12;
+      camera.position.x = playerKart.position.x * 0.4;
       
       if (firstFinisher) endGame(firstFinisher);
       
       // Debug
-      debugUi.innerHTML = racers.map(r => r.userData.name + ': ' + Math.abs(r.position.z).toFixed(1) + 'm').join('<br>');
+      debugUi.innerHTML = racers.map(r => 
+        r.userData.name + ': ' + Math.abs(r.position.z).toFixed(1) + 'm'
+      ).join('<br>');
       
       renderer.render(scene, camera);
     }
@@ -430,25 +522,26 @@
     // Events
     startBtn.onclick = startGame;
     restartBtn.onclick = startGame;
-    
     document.onkeydown = e => {
       if (e.key === 'ArrowLeft' || e.key === 'a') movePlayer('left');
       if (e.key === 'ArrowRight' || e.key === 'd') movePlayer('right');
     };
-    
     leftBtn.ontouchstart = e => { e.preventDefault(); movePlayer('left'); };
     leftBtn.onmousedown = e => { e.preventDefault(); movePlayer('left'); };
     rightBtn.ontouchstart = e => { e.preventDefault(); movePlayer('right'); };
     rightBtn.onmousedown = e => { e.preventDefault(); movePlayer('right'); };
-    
     window.onresize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
     
-    init();
-    animate(0);
+    // Start
+    loadAssets().then(tex => {
+      textures = tex;
+      init();
+      animate(0);
+    });
   </script>
 </body>
 </html>
