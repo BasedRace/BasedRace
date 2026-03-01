@@ -142,8 +142,8 @@ class Game {
     for (const racer of this.racers) {
       racer.update(movement, deltaTime, this.racers);
       
-      // First racer to cross finish line wins (progress >= 7200)
-      if (racer.finishTime && !this.winner) {
+      // Check if any racer finished (progress >= TOTAL_RACE_DISTANCE)
+      if (racer.finished && !this.winner) {
         this.winner = racer;
         this.showWinnerUI(racer.name);
       }
