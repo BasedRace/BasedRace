@@ -117,8 +117,9 @@ class Game {
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
     
-    // Store fixed finish line position (tile at index 10)
-    this.finishLineY = this.track.tiles[10].y;
+    // Store finish line position from finish.png asset
+    const finishTile = this.track.getFinishTile();
+    this.finishLineY = finishTile ? finishTile.y : 0;
     
     // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
