@@ -2,19 +2,292 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Based Race</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Rajdhani', sans-serif;
+      overflow: hidden;
+    }
+    
+    #game-container {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      max-height: 800px;
+      background: #1a1a2e;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(233, 69, 96, 0.3), inset 0 0 60px rgba(0,0,0,0.5);
+      border: 3px solid #e94560;
+    }
+    
+    #game-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    /* Modern UI Overlay */
+    #ui-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+      z-index: 100;
+    }
+    
+    #timer {
+      font-family: 'Orbitron', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: #00ffcc;
+      text-shadow: 0 0 15px #00ffcc, 0 0 30px #00ffcc;
+      letter-spacing: 2px;
+    }
+    
+    #status {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffd700;
+      text-shadow: 0 0 10px #ffd700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Start Screen */
+    #start-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      z-index: 200;
+      padding: 20px;
+    }
+    
+    #start-screen h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 52px;
+      font-weight: 900;
+      color: #e94560;
+      text-shadow: 0 0 30px #e94560, 0 0 60px #e94560, 4px 4px 0 #000;
+      margin-bottom: 8px;
+      letter-spacing: 4px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    #start-screen .subtitle {
+      font-size: 20px;
+      color: #00ffcc;
+      text-shadow: 0 0 15px #00ffcc;
+      margin-bottom: 40px;
+      letter-spacing: 8px;
+    }
+    
+    #start-screen .instructions {
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      margin-bottom: 30px;
+      text-align: center;
+      line-height: 1.8;
+    }
+    
+    .btn {
+      padding: 18px 60px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(180deg, #e94560 0%, #b8354a 100%);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      box-shadow: 0 6px 0 #8a2535, 0 0 30px rgba(233,69,96,0.5);
+      transition: all 0.15s ease;
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 9px 0 #8a2535, 0 0 50px rgba(233,69,96,0.8);
+    }
+    
+    .btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 3px 0 #8a2535;
+    }
+    
+    /* Winner Screen */
+    #winner-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.9);
+      z-index: 200;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    #winner-screen.show {
+      display: flex;
+    }
+    
+    #winner-screen h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 36px;
+      color: #ffd700;
+      text-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700;
+      margin-bottom: 10px;
+    }
+    
+    #winner-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 56px;
+      font-weight: 900;
+      color: #e94560;
+      text-shadow: 0 0 40px #e94560, 4px 4px 0 #000;
+      margin: 20px 0;
+      animation: bounce 0.6s ease infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    #winner-time {
+      font-family: 'Orbitron', monospace;
+      font-size: 28px;
+      color: #00ffcc;
+      text-shadow: 0 0 20px #00ffcc;
+      margin-bottom: 30px;
+    }
+    
+    /* Mobile Controls */
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      z-index: 150;
+      padding: 0 30px;
+    }
+    
+    .control-btn {
+      width: 90px;
+      height: 90px;
+      background: rgba(255,255,255,0.1);
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      color: rgba(255,255,255,0.8);
+      user-select: none;
+      -webkit-user-select: none;
+      backdrop-filter: blur(5px);
+      transition: all 0.1s ease;
+    }
+    
+    .control-btn:active {
+      background: rgba(233,69,96,0.6);
+      border-color: #e94560;
+      transform: scale(0.95);
+    }
+    
+    /* Hide old buttons */
+    #start-btn, #restart-btn { display: none !important; }
+    
+    /* Debug */
+    #debug-controls {
+      position: absolute;
+      top: 70px;
+      right: 10px;
+      color: #0f0;
+      font-size: 12px;
+      font-family: monospace;
+      text-shadow: 1px 1px 2px #000;
+      z-index: 50;
+    }
+    
+    @media (min-width: 768px) {
+      #controls { display: none; }
+    }
+  </style>
 </head>
 <body>
   <div id="game-container">
     <canvas id="game-canvas"></canvas>
+    
     <div id="ui-overlay">
-      <div id="timer">Time: 0.00s</div>
-      <div id="status">Loading...</div>
+      <div id="timer">00:00.00</div>
+      <div id="status">🏁 READY 🏁</div>
     </div>
-    <button id="start-btn">START</button>
-    <button id="restart-btn" style="display: none;">RESTART</button>
+    
+    <div id="start-screen">
+      <h1>BASED RACE</h1>
+      <div class="subtitle">FINISH FIRST</div>
+      <div class="instructions">
+        Tap LEFT/RIGHT to switch lanes<br>
+        Race through checkpoints to win!
+      </div>
+      <button class="btn" id="start-btn-new">START RACE</button>
+    </div>
+    
+    <div id="winner-screen">
+      <h1>🏆 WINNER 🏆</h1>
+      <div id="winner-name">JESSE</div>
+      <div id="winner-time">00:00.00</div>
+      <button class="btn" id="restart-btn-new">RACE AGAIN</button>
+    </div>
+    
+    <div id="controls">
+      <div class="control-btn" id="leftBtn">◀</div>
+      <div class="control-btn" id="rightBtn">▶</div>
+    </div>
+    
     <div id="debug-controls">
       <div id="racer0-coord">Jesse: 0</div>
       <div id="racer1-coord">Barmstrong: 0</div>
@@ -22,6 +295,63 @@
       <div id="racer3-coord">Dish: 0</div>
     </div>
   </div>
+  
   <script type="module" src="js/main.js"></script>
+  
+  <script>
+    // UI handling
+    const startScreen = document.getElementById('start-screen');
+    const winnerScreen = document.getElementById('winner-screen');
+    const startBtn = document.getElementById('start-btn-new');
+    const restartBtn = document.getElementById('restart-btn-new');
+    const timerEl = document.getElementById('timer');
+    const statusEl = document.getElementById('status');
+    const winnerNameEl = document.getElementById('winner-name');
+    const winnerTimeEl = document.getElementById('winner-time');
+    
+    // Listen for game events
+    window.addEventListener('gameStart', () => {
+      startScreen.style.display = 'none';
+      winnerScreen.classList.remove('show');
+      statusEl.textContent = '🏁 GO! 🏁';
+    });
+    
+    window.addEventListener('gameEnd', (e) => {
+      winnerNameEl.textContent = e.detail.winner.toUpperCase();
+      winnerTimeEl.textContent = timerEl.textContent;
+      winnerScreen.classList.add('show');
+      statusEl.textContent = '🏆 ' + e.detail.winner + ' WINS! 🏆';
+    });
+    
+    window.addEventListener('timerUpdate', (e) => {
+      const time = e.detail.time;
+      const mins = Math.floor(time / 60);
+      const secs = Math.floor(time % 60);
+      const ms = Math.floor((time % 1) * 100);
+      timerEl.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') + '.' + String(ms).padStart(2,'0');
+    });
+    
+    startBtn.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('uiStart'));
+    });
+    
+    restartBtn.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('uiRestart'));
+    });
+    
+    // Mobile controls
+    const leftBtn = document.getElementById('leftBtn');
+    const rightBtn = document.getElementById('rightBtn');
+    
+    leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('uiMove', {detail: 'left'})); });
+    leftBtn.addEventListener('mousedown', (e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('uiMove', {detail: 'left'})); });
+    rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('uiMove', {detail: 'right'})); });
+    rightBtn.addEventListener('mousedown', (e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('uiMove', {detail: 'right'})); });
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a') window.dispatchEvent(new CustomEvent('uiMove', {detail: 'left'}));
+      if (e.key === 'ArrowRight' || e.key === 'd') window.dispatchEvent(new CustomEvent('uiMove', {detail: 'right'}));
+    });
+  </script>
 </body>
 </html>

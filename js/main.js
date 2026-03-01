@@ -14,10 +14,8 @@ class Game {
     
     this.timerEl = document.getElementById('timer');
     this.statusEl = document.getElementById('status');
-    this.startBtn = document.getElementById('start-btn');
-    this.restartBtn = document.getElementById('restart-btn');
     
-    this.scrollSpeed = 400; // Kecepatan disesuaikan untuk skala zoom 1.5x
+    this.scrollSpeed = 400;
     this.state = 'loading';
     this.raceTime = 0;
     this.lastTime = 0;
@@ -28,6 +26,11 @@ class Game {
     window.gameInstance = this;
     
     this.init();
+    
+    // Listen for UI events
+    window.addEventListener('uiStart', () => this.startRace());
+    window.addEventListener('uiRestart', () => this.reset());
+    window.addEventListener('uiMove', (e) => this.handleMove(e.detail));
   }
 
   async init() {
@@ -44,32 +47,6 @@ class Game {
       new Racer(3, 'Dish', this.assets['dish'], 3, this.track)
     ];
     
-    this.startBtn.addEventListener('click', () => this.startRace());
-    if (this.restartBtn) {
-      this.restartBtn.addEventListener('click', () => this.reset());
-    }
-    
-    
-    // Expose moveRacer for debug buttons
-    window.moveRacer = (racerIndex, direction) => {
-      const game = window.gameInstance;
-      if (!game || !game.racers || !game.racers[racerIndex]) return;
-      const racer = game.racers[racerIndex];
-      const step = 10;
-      if (direction === 'up') racer.yPosOnScreen -= step;
-      if (direction === 'down') racer.yPosOnScreen += step;
-      if (direction === 'left') racer.x -= step;
-      if (direction === 'right') racer.x += step;
-      
-      // Update coordinate display
-      const coordEl = document.getElementById('racer' + racerIndex + '-coord');
-      if (coordEl) {
-        coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.yPosOnScreen) + ')';
-      }
-      
-      game.renderer.render(game.track, game.racers);
-    };
-    
     // Pre-Scroll: Apply 1.25s offset so track is already positioned before menu shows
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
@@ -77,11 +54,19 @@ class Game {
     this.renderer.render(this.track, this.racers);
     
     this.state = 'ready';
-    this.statusEl.textContent = '';
-    this.startBtn.style.display = 'block';
+    this.statusEl.textContent = '🏁 READY 🏁';
     
     this.lastTime = performance.now();
     this.loop(this.lastTime);
+  }
+  
+  handleMove(direction) {
+    if (this.state !== 'racing') return;
+    const player = this.racers[0];
+    const step = 15;
+    if (direction === 'left') player.x -= step;
+    if (direction === 'right') player.x += step;
+    player.x = Math.max(-500, Math.min(500, player.x));
   }
 
   async loadAssets() {
@@ -110,8 +95,11 @@ class Game {
     if (this.state === 'racing') return;
     this.state = 'racing';
     this.raceTime = 0;
-    this.winner = null; // Reset winner
-    this.lastTime = performance.now(); // Reset delta time to prevent time spike
+    this.winner = null;
+    this.lastTime = performance.now();
+    
+    // Dispatch game start event
+    window.dispatchEvent(new CustomEvent('gameStart'));
     
     // Re-apply pre-scroll offset after reset
     const preScrollOffset = this.scrollSpeed * 1.25;
@@ -123,17 +111,19 @@ class Game {
     }
     
     this.renderer.render(this.track, this.racers);
-    
-    this.startBtn.style.display = 'none';
+  }
+  
+  reset() {
+    this.startRace();
   }
 
   update(deltaTime) {
     if (this.state !== 'racing') return;
     
     this.raceTime += deltaTime / 1000;
-    const mins = Math.floor(this.raceTime / 60);
-    const secs = (this.raceTime % 60).toFixed(2);
-    this.timerEl.textContent = `${String(mins).padStart(2, '0')}:${secs.padStart(5, '0')}`;
+    
+    // Dispatch timer update event for UI
+    window.dispatchEvent(new CustomEvent('timerUpdate', { detail: { time: this.raceTime } }));
     
     const movement = this.scrollSpeed * deltaTime / 1000;
     this.track.updateMovement(movement);
@@ -159,14 +149,13 @@ class Game {
   finishRace() {
     this.state = 'finished';
     this.statusEl.textContent = 'FINISH!';
-    this.startBtn.textContent = 'RESTART';
-    this.startBtn.style.display = 'block';
   }
 
   // Show winner UI when a racer completes the race
   showWinnerUI(winnerName) {
+    // Dispatch game end event for UI
+    window.dispatchEvent(new CustomEvent('gameEnd', { detail: { winner: winnerName } }));
     this.statusEl.textContent = `🏆 ${winnerName} WINS! 🏆`;
-    this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
     this.renderer.startConfetti();
   }
 
