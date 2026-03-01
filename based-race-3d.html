@@ -16,11 +16,7 @@
       width: 100vw;
       height: 100vh;
     }
-    #canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+    canvas { display: block; }
     #ui {
       position: absolute;
       top: 0;
@@ -82,16 +78,9 @@
       cursor: pointer;
       text-transform: uppercase;
       box-shadow: 0 6px 0 #8a2535, 0 0 30px rgba(233,69,96,0.5);
-      transition: all 0.1s;
-      letter-spacing: 2px;
     }
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 0 #8a2535, 0 0 50px rgba(233,69,96,0.7);
-    }
-    .btn:active {
-      transform: translateY(4px);
-      box-shadow: 0 2px 0 #8a2535;
     }
     #final-score {
       font-size: 72px;
@@ -118,7 +107,6 @@
       display: flex;
       justify-content: space-around;
       z-index: 150;
-      pointer-events: none;
     }
     .control-btn {
       width: 100px;
@@ -132,8 +120,6 @@
       font-size: 40px;
       color: rgba(255,255,255,0.8);
       user-select: none;
-      pointer-events: auto;
-      backdrop-filter: blur(5px);
     }
     .control-btn:active {
       background: rgba(233,69,96,0.6);
@@ -143,8 +129,6 @@
 </head>
 <body>
   <div id="game-container">
-    <canvas id="canvas"></canvas>
-    
     <div id="ui">
       <div id="timer">00:00.00</div>
       <div id="status">🏁 BASED RACE 3D 🏁</div>
@@ -160,9 +144,9 @@
     </div>
     
     <div id="game-over" class="hidden">
-      <h1 style="font-size:36px;color:#e94560;text-shadow:0 0 20px #e94560;margin-bottom:10px;">RACE FINISH!</h1>
+      <h1 style="font-size:36px;color:#e94560;margin-bottom:10px;">RACE FINISH!</h1>
       <p style="color:#888;">Winner</p>
-      <div id="winner-name" style="font-size:48px;color:#ffd700;text-shadow:0 0 30px #ffd700;margin:10px 0;">JESSE</div>
+      <div id="winner-name" style="font-size:48px;color:#ffd700;margin:10px 0;">JESSE</div>
       <p style="color:#888;margin-top:20px;">Final Time</p>
       <div id="final-score">00:00.00</div>
       <button class="btn" id="restartBtn">RACE AGAIN</button>
@@ -174,19 +158,10 @@
     </div>
   </div>
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-    }
-  }
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
-  <script type="module">
-    import * as THREE from 'three';
-    
+  <script>
     // Elements
-    const canvas = document.getElementById('canvas');
     const timerEl = document.getElementById('timer');
     const statusEl = document.getElementById('status');
     const startScreen = document.getElementById('start-screen');
@@ -208,9 +183,10 @@
     camera.position.set(0, 8, 15);
     camera.lookAt(0, 0, 0);
     
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.getElementById('game-container').insertBefore(renderer.domElement, document.getElementById('ui'));
     
     // Lights
     const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
@@ -242,7 +218,7 @@
       ground.position.z = -50;
       scene.add(ground);
       
-      // Road segments with lines
+      // Road segments
       for (let i = 0; i < numSegments; i++) {
         const segment = new THREE.Group();
         segment.position.z = -i * segmentLength;
@@ -258,18 +234,14 @@
         if (i < numSegments - 1) {
           const lineMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
           
-          // Left line
-          const leftLineGeo = new THREE.PlaneGeometry(0.2, segmentLength);
-          const leftLine = new THREE.Mesh(leftLineGeo, lineMat);
-          leftLine.rotation.x = -Math.PI / 2;
-          leftLine.position.set(-3.5, 0.01, 0);
-          segment.add(leftLine);
-          
-          // Right line
-          const rightLine = new THREE.Mesh(leftLineGeo, lineMat);
-          rightLine.rotation.x = -Math.PI / 2;
-          rightLine.position.set(3.5, 0.01, 0);
-          segment.add(rightLine);
+          // Left/right lane lines
+          [-3.5, 3.5].forEach(x => {
+            const lineGeo = new THREE.PlaneGeometry(0.2, segmentLength);
+            const line = new THREE.Mesh(lineGeo, lineMat);
+            line.rotation.x = -Math.PI / 2;
+            line.position.set(x, 0.01, 0);
+            segment.add(line);
+          });
           
           // Center dashed lines
           for (let d = 0; d < 4; d++) {
@@ -281,25 +253,22 @@
           }
         }
         
-        // Edge lines (red/white)
+        // Edge lines
         const edgeMat = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xe94560 : 0xffffff });
-        const leftEdgeGeo = new THREE.PlaneGeometry(0.3, segmentLength);
-        const leftEdge = new THREE.Mesh(leftEdgeGeo, edgeMat);
-        leftEdge.rotation.x = -Math.PI / 2;
-        leftEdge.position.set(-6, 0.01, 0);
-        segment.add(leftEdge);
-        
-        const rightEdge = new THREE.Mesh(leftEdgeGeo, edgeMat);
-        rightEdge.rotation.x = -Math.PI / 2;
-        rightEdge.position.set(6, 0.01, 0);
-        segment.add(rightEdge);
+        [-6, 6].forEach(x => {
+          const edgeGeo = new THREE.PlaneGeometry(0.3, segmentLength);
+          const edge = new THREE.Mesh(edgeGeo, edgeMat);
+          edge.rotation.x = -Math.PI / 2;
+          edge.position.set(x, 0.01, 0);
+          segment.add(edge);
+        });
         
         scene.add(segment);
         roadSegments.push(segment);
       }
     }
     
-    // Create karts
+    // Karts
     const racers = [];
     const racerNames = ['Jesse', 'Barmstrong', 'Deployer', 'Dish'];
     const racerColors = [0x00bcd4, 0x9c27b0, 0xff9800, 0xe94560];
@@ -314,7 +283,7 @@
       body.position.y = 0.5;
       kart.add(body);
       
-      // Driver helmet
+      // Helmet
       const helmetGeo = new THREE.SphereGeometry(0.35, 16, 16);
       const helmetMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 });
       const helmet = new THREE.Mesh(helmetGeo, helmetMat);
@@ -325,29 +294,20 @@
       const wheelGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.2, 16);
       const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
       
-      const wheelPositions = [
-        [-0.7, 0.25, 0.7],
-        [0.7, 0.25, 0.7],
-        [-0.7, 0.25, -0.7],
-        [0.7, 0.25, -0.7]
-      ];
-      
-      wheelPositions.forEach(pos => {
+      [[-0.7, 0.25, 0.7], [0.7, 0.25, 0.7], [-0.7, 0.25, -0.7], [0.7, 0.25, -0.7]].forEach(pos => {
         const wheel = new THREE.Mesh(wheelGeo, wheelMat);
         wheel.rotation.z = Math.PI / 2;
         wheel.position.set(...pos);
         kart.add(wheel);
       });
       
-      // Position in lane
+      // Position
       const laneX = (lane - 1.5) * 2.5;
       kart.position.set(laneX, 0, 0);
       
-      // Properties
       kart.userData = {
         name,
         lane,
-        targetLane: lane,
         targetX: laneX,
         x: laneX,
         baseSpeed: 0.08 + Math.random() * 0.04,
@@ -359,61 +319,46 @@
       
       scene.add(kart);
       racers.push(kart);
-      
       return kart;
     }
     
     // Initialize
     function init() {
-      // Clear existing
       roadSegments.forEach(seg => scene.remove(seg));
       roadSegments.length = 0;
       racers.forEach(r => scene.remove(r));
       racers.length = 0;
       
       createRoad();
+      racerNames.forEach((name, i) => createKart(name, racerColors[i], i));
       
-      // Create karts in lanes
-      racerNames.forEach((name, i) => {
-        createKart(name, racerColors[i], i);
-      });
-      
-      // Reset camera
       camera.position.set(0, 8, 15);
-      camera.lookAt(0, 0, 0);
-      
       raceTime = 0;
       trackSpeed = 0;
     }
     
-    // Move player
-    function movePlayer(direction) {
+    // Move
+    function movePlayer(dir) {
       if (!gameRunning) return;
-      
       const player = racers[0];
       const data = player.userData;
-      
-      if (direction === 'left' && data.lane > 0) {
-        data.lane--;
-      } else if (direction === 'right' && data.lane < 3) {
-        data.lane++;
-      }
+      if (dir === 'left' && data.lane > 0) data.lane--;
+      if (dir === 'right' && data.lane < 3) data.lane++;
       data.targetX = (data.lane - 1.5) * 2.5;
     }
     
-    // Update timer display
+    // Timer
     function updateTimer() {
       const mins = Math.floor(raceTime / 60);
       const secs = Math.floor(raceTime % 60);
       const ms = Math.floor((raceTime % 1) * 100);
-      timerEl.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
+      timerEl.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') + '.' + String(ms).padStart(2,'0');
     }
     
-    // Game loop
+    // Loop
     let lastTime = 0;
     function animate(currentTime) {
       requestAnimationFrame(animate);
-      
       const delta = (currentTime - lastTime) / 1000;
       lastTime = currentTime;
       
@@ -422,84 +367,57 @@
       raceTime += delta;
       updateTimer();
       
-      // Accelerate track
-      if (trackSpeed < baseTrackSpeed * 2) {
-        trackSpeed += delta * 0.1;
-      }
+      if (trackSpeed < baseTrackSpeed * 2) trackSpeed += delta * 0.1;
       
-      // Move road segments (infinite scroll)
+      // Move road
       roadSegments.forEach(seg => {
         seg.position.z += trackSpeed;
-        if (seg.position.z > 20) {
-          seg.position.z -= numSegments * segmentLength;
-        }
+        if (seg.position.z > 20) seg.position.z -= numSegments * segmentLength;
       });
       
       // Update racers
       let firstFinisher = null;
-      
       racers.forEach((kart, index) => {
         const data = kart.userData;
-        
-        // AI speed variation
         const bonus = Math.sin(currentTime * 0.002 + index) * 0.02;
         const targetSpeed = data.baseSpeed + bonus;
         data.speed += (targetSpeed - data.speed) * 0.05;
-        
-        // Move forward
         data.progress += data.speed;
-        
-        // Update 3D position
         kart.position.z = -data.progress * 20;
         
-        // Lane switching (smooth)
         data.x += (data.targetX - data.x) * 0.1;
         kart.position.x = data.x;
-        
-        // Slight bobbing
         kart.position.y = Math.sin(currentTime * 0.01 + index) * 0.05;
+        kart.rotation.z = -(data.targetX - data.x) * 0.3;
         
-        // Lean into turns
-        const lean = (data.targetX - data.x) * 0.3;
-        kart.rotation.z = -lean;
-        
-        // Check finish (around z = -400)
         if (!data.finished && kart.position.z < -400) {
           data.finished = true;
           data.finishTime = raceTime;
-          
-          if (!firstFinisher) {
-            firstFinisher = data;
-          }
+          if (!firstFinisher) firstFinisher = data;
         }
       });
       
-      // Camera follow player
+      // Camera
       const playerKart = racers[0];
       camera.position.z = playerKart.position.z + 15;
       camera.position.x = playerKart.position.x * 0.3;
       
-      // Winner!
-      if (firstFinisher) {
-        endGame(firstFinisher);
-      }
+      if (firstFinisher) endGame(firstFinisher);
       
       // Debug
-      debugUi.innerHTML = racers.map((r, i) => 
-        `${r.userData.name}: ${Math.abs(r.position.z).toFixed(1)}m`
-      ).join('<br>');
+      debugUi.innerHTML = racers.map(r => r.userData.name + ': ' + Math.abs(r.position.z).toFixed(1) + 'm').join('<br>');
+      
+      renderer.render(scene, camera);
     }
     
-    // End game
     function endGame(winner) {
       gameRunning = false;
       winnerNameEl.textContent = winner.name.toUpperCase();
       finalScoreEl.textContent = timerEl.textContent;
-      statusEl.textContent = `🏆 ${winner.name} WINS! 🏆`;
+      statusEl.textContent = '🏆 ' + winner.name + ' WINS! 🏆';
       gameOverScreen.classList.remove('hidden');
     }
     
-    // Start game
     function startGame() {
       startScreen.classList.add('hidden');
       gameOverScreen.classList.add('hidden');
@@ -509,27 +427,26 @@
       trackSpeed = baseTrackSpeed;
     }
     
-    // Event listeners
-    startBtn.addEventListener('click', startGame);
-    restartBtn.addEventListener('click', startGame);
+    // Events
+    startBtn.onclick = startGame;
+    restartBtn.onclick = startGame;
     
-    document.addEventListener('keydown', (e) => {
+    document.onkeydown = e => {
       if (e.key === 'ArrowLeft' || e.key === 'a') movePlayer('left');
       if (e.key === 'ArrowRight' || e.key === 'd') movePlayer('right');
-    });
+    };
     
-    leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); movePlayer('left'); });
-    leftBtn.addEventListener('mousedown', (e) => { e.preventDefault(); movePlayer('left'); });
-    rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); movePlayer('right'); });
-    rightBtn.addEventListener('mousedown', (e) => { e.preventDefault(); movePlayer('right'); });
+    leftBtn.ontouchstart = e => { e.preventDefault(); movePlayer('left'); };
+    leftBtn.onmousedown = e => { e.preventDefault(); movePlayer('left'); };
+    rightBtn.ontouchstart = e => { e.preventDefault(); movePlayer('right'); };
+    rightBtn.onmousedown = e => { e.preventDefault(); movePlayer('right'); };
     
-    window.addEventListener('resize', () => {
+    window.onresize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    };
     
-    // Initialize and start
     init();
     animate(0);
   </script>
