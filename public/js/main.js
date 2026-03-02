@@ -145,6 +145,9 @@ class Game {
 
   // Show winner UI when a racer completes the race
   showWinnerUI(winnerName) {
+    const winnerEl = document.getElementById('winner-text');
+    winnerEl.textContent = `🏆 ${winnerName} WINS! 🏆`;
+    winnerEl.style.display = 'block';
     this.renderer.startConfetti();
   }
 
