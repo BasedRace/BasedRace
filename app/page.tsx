@@ -84,7 +84,7 @@ export default function Home() {
           style={{ 
             backgroundColor: '#e7f2eb',
             color: '#0f10f4',
-            fontSize: 'clamp(14px, 4vw, 24px)',
+            fontSize: 'clamp(16px, 5vw, 28px)',
             height: '25%',
           }}
         >
