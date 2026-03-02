@@ -12,9 +12,6 @@ class Game {
     
     this.renderer = new Renderer(this.canvas);
     
-    this.timerEl = document.getElementById('timer');
-    this.statusEl = document.getElementById('status');
-    
     this.scrollSpeed = 400; // Kecepatan disesuaikan untuk skala zoom 1.5x
     this.state = 'loading';
     this.raceTime = 0;
@@ -29,7 +26,6 @@ class Game {
   }
 
   async init() {
-    this.statusEl.textContent = 'Loading...';
     await this.loadAssets();
     
     this.track = new Track(this.assets);
@@ -120,9 +116,6 @@ class Game {
     if (this.state !== 'racing') return;
     
     this.raceTime += deltaTime / 1000;
-    const mins = Math.floor(this.raceTime / 60);
-    const secs = (this.raceTime % 60).toFixed(2);
-    this.timerEl.textContent = `${String(mins).padStart(2, '0')}:${secs.padStart(5, '0')}`;
     
     const movement = this.scrollSpeed * deltaTime / 1000;
     this.track.updateMovement(movement);
@@ -147,14 +140,11 @@ class Game {
 
   finishRace() {
     this.state = 'finished';
-    this.statusEl.textContent = 'FINISH!';
     document.getElementById('back-btn').style.display = 'block';
   }
 
   // Show winner UI when a racer completes the race
   showWinnerUI(winnerName) {
-    this.statusEl.textContent = `🏆 ${winnerName} WINS! 🏆`;
-    this.statusEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8vw;font-weight:bold;color:#FFD700;text-shadow:0 0 20px #FFD700,0 0 40px #FF6B00;white-space:nowrap;animation:pulse 0.3s ease-out;z-index:100;';
     this.renderer.startConfetti();
   }
 
