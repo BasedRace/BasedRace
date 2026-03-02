@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/miniapp-sdk';
 
-type GameState = 'login' | 'menu' | 'playing';
+type GameState = 'login' | 'menu' | 'profile' | 'playing';
 type UserProfile = {
   fid: number;
   username: string;
@@ -44,6 +44,14 @@ export default function Home() {
     setGameState('menu');
   };
 
+  const handleProfile = () => {
+    setGameState('profile');
+  };
+
+  const handleBackToMenu = () => {
+    setGameState('menu');
+  };
+
   const handleStart = () => {
     setGameState('playing');
   };
@@ -59,6 +67,124 @@ export default function Home() {
           title="Based Race Game"
           sandbox="allow-scripts allow-same-origin"
         />
+      </div>
+    );
+  }
+
+  // Profile state
+  if (gameState === 'profile') {
+    return (
+      <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, overflow: 'hidden', position: 'relative', background: '#000' }}>
+        {/* Background */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <Image
+            src="/ui/mainmenu.webp"
+            alt="Profile Background"
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        </div>
+        
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+            image-rendering: pixelated;
+          }
+          .pixel-border {
+            box-shadow: 
+              4px 0 0 0 #233e63,
+              -4px 0 0 0 #233e63,
+              0 4px 0 0 #233e63,
+              0 -4px 0 0 #233e63,
+              6px 0 0 0 #99b1c5,
+              -6px 0 0 0 #99b1c5,
+              0 6px 0 0 #99b1c5,
+              0 -6px 0 0 #99b1c5;
+          }
+          .pixel-btn {
+            box-shadow: 
+              4px 4px 0 0 #233e63,
+              6px 6px 0 0 #99b1c5;
+          }
+          .pixel-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 
+              0 0 0 0 #233e63,
+              2px 2px 0 0 #99b1c5;
+          }
+        `}</style>
+
+        {/* Profile Box - Centered */}
+        <div 
+          className="pixel-border"
+          style={{ 
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#e7f2eb',
+            width: '66%',
+            height: '50%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '20px',
+          }}
+        >
+          {/* Profile Title */}
+          <div style={{ fontFamily: "'Press Start 2P'", fontSize: 'clamp(14px, 4vw, 20px)', color: '#233e63', marginBottom: '20px' }}>
+            PROFILE
+          </div>
+
+          {/* User Info */}
+          {user ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', flex: 1, justifyContent: 'center' }}>
+              {/* PFP */}
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #233e63' }}>
+                <img 
+                  src={user.pfpUrl} 
+                  alt={user.displayName}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              {/* Display Name */}
+              <div style={{ fontFamily: "'Press Start 2P'", fontSize: 'clamp(10px, 3vw, 14px)', color: '#0f10f4', textAlign: 'center' }}>
+                {user.displayName || user.username}
+              </div>
+              {/* Username */}
+              <div style={{ fontFamily: "'Press Start 2P'", fontSize: 'clamp(8px, 2vw, 12px)', color: '#233e63' }}>
+                @{user.username}
+              </div>
+              {/* FID */}
+              <div style={{ fontFamily: "'Press Start 2P'", fontSize: 'clamp(8px, 2vw, 12px)', color: '#99b1c5' }}>
+                FID: {user.fid}
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontFamily: "'Press Start 2P'", fontSize: 'clamp(10px, 3vw, 14px)', color: '#233e63', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              Loading...
+            </div>
+          )}
+
+          {/* Back to Menu Button */}
+          <button
+            onClick={handleBackToMenu}
+            className="pixel-font w-full text-center pixel-btn transition-all duration-150"
+            style={{ 
+              backgroundColor: '#e7f2eb',
+              color: '#0f10f4',
+              fontSize: 'clamp(10px, 3vw, 14px)',
+              padding: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              marginTop: 'auto',
+            }}
+          >
+            BACK TO MENU
+          </button>
+        </div>
       </div>
     );
   }
@@ -137,28 +263,6 @@ export default function Home() {
             LOGIN
           </button>
         </div>
-
-        {/* User profile display if logged in via Farcaster */}
-        {user && (
-          <div style={{ 
-            position: 'absolute', 
-            top: '20px', 
-            right: '20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            padding: '10px',
-            borderRadius: '10px'
-          }}>
-            <img 
-              src={user.pfpUrl} 
-              alt={user.displayName}
-              style={{ width: '40px', height: '40px', borderRadius: '50%' }}
-            />
-            <span style={{ color: '#fff', fontSize: '14px' }}>{user.displayName || user.username}</span>
-          </div>
-        )}
       </div>
     );
   }
@@ -244,7 +348,11 @@ export default function Home() {
         </button>
 
         {/* Secondary Buttons */}
-        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', margin: '0', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button 
+          onClick={handleProfile}
+          className="pixel-font w-full text-center pixel-btn transition-all duration-150" 
+          style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', margin: '0', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
           PROFILE
         </button>
         
