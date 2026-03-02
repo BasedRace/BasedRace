@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 type GameState = 'menu' | 'playing';
 
@@ -26,15 +27,16 @@ export default function Home() {
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* Full-screen background image */}
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{ 
-          backgroundImage: 'url(/ui/mainmenu.webp)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
+      <div className="absolute inset-0 w-full h-full">
+        <Image
+          src="/ui/mainmenu.webp"
+          alt="Main Menu Background"
+          fill
+          className="object-cover"
+          priority
+          unoptimized
+        />
+      </div>
       
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -67,13 +69,15 @@ export default function Home() {
       `}</style>
 
       {/* Menu Box - Centered 800x1000 */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center p-4">
         <div 
           className="pixel-border p-8"
           style={{ 
             backgroundColor: '#e7f2eb',
             width: '800px',
+            maxWidth: '100%',
             height: '1000px',
+            maxHeight: '100vh',
           }}
         >
           {/* Start Button - Primary */}
@@ -108,4 +112,3 @@ export default function Home() {
     </div>
   );
 }
-
