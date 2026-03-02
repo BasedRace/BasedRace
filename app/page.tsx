@@ -84,6 +84,7 @@ export default function Home() {
           height: '40%',
           display: 'flex',
           flexDirection: 'column',
+          padding: '4%',
         }}
       >
         {/* Start Button - Primary */}
@@ -95,8 +96,6 @@ export default function Home() {
             color: '#0f10f4',
             fontSize: 'clamp(16px, 5vw, 28px)',
             flex: '1',
-            margin: '0',
-            border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -106,15 +105,15 @@ export default function Home() {
         </button>
 
         {/* Secondary Buttons */}
-        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', margin: '0', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           PROFILE
         </button>
         
-        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', margin: '0', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           MINT
         </button>
         
-        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', margin: '0', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           LEADERBOARD
         </button>
       </div>
