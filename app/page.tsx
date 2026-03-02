@@ -25,15 +25,15 @@ export default function Home() {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="flex items-center justify-center min-h-screen">
       {/* Full-screen background image */}
       <div className="absolute inset-0 w-full h-full">
         <Image
           src="/ui/mainmenu.webp"
           alt="Main Menu Background"
           fill
-          className="object-contain"
           priority
+          className="object-cover"
           unoptimized
         />
       </div>
@@ -68,44 +68,41 @@ export default function Home() {
         }
       `}</style>
 
-      {/* Menu Box - Centered */}
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div 
-          className="pixel-border p-6 sm:p-8"
+      {/* Menu Box - Centered with flexbox */}
+      <div 
+        className="pixel-border p-6 relative z-10"
+        style={{ 
+          backgroundColor: '#e7f2eb',
+          width: '66%',
+          height: '55%',
+        }}
+      >
+        {/* Start Button - Primary */}
+        <button
+          onClick={handleStart}
+          className="pixel-font w-full py-4 mb-4 text-center pixel-btn transition-all duration-150"
           style={{ 
             backgroundColor: '#e7f2eb',
-            width: '100%',
-            maxWidth: '500px',
-            minHeight: '400px',
+            color: '#0f10f4',
+            fontSize: '16px',
           }}
         >
-          {/* Start Button - Primary */}
-          <button
-            onClick={handleStart}
-            className="pixel-font w-full py-4 sm:py-5 mb-4 sm:mb-6 text-center pixel-btn transition-all duration-150"
-            style={{ 
-              backgroundColor: '#e7f2eb',
-              color: '#0f10f4',
-              fontSize: '18px',
-            }}
-          >
-            START
-          </button>
+          START
+        </button>
 
-          {/* Secondary Buttons */}
-          <div className="space-y-3">
-            <button className="pixel-font w-full py-3 sm:py-4 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '14px' }}>
-              PROFILE
-            </button>
-            
-            <button className="pixel-font w-full py-3 sm:py-4 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '14px' }}>
-              MINT
-            </button>
-            
-            <button className="pixel-font w-full py-3 sm:py-4 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '14px' }}>
-              LEADERBOARD
-            </button>
-          </div>
+        {/* Secondary Buttons */}
+        <div className="space-y-3">
+          <button className="pixel-font w-full py-3 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '12px' }}>
+            PROFILE
+          </button>
+          
+          <button className="pixel-font w-full py-3 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '12px' }}>
+            MINT
+          </button>
+          
+          <button className="pixel-font w-full py-3 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '12px' }}>
+            LEADERBOARD
+          </button>
         </div>
       </div>
     </div>
