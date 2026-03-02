@@ -93,15 +93,15 @@ export default function Home() {
 
         {/* Secondary Buttons */}
         <div className="flex-1 flex flex-col">
-          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(12px, 3vw, 18px)' }}>
+          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)' }}>
             PROFILE
           </button>
           
-          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(12px, 3vw, 18px)' }}>
+          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)' }}>
             MINT
           </button>
           
-          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(12px, 3vw, 18px)' }}>
+          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)' }}>
             LEADERBOARD
           </button>
         </div>
