@@ -74,7 +74,7 @@ export default function Home() {
         style={{ 
           backgroundColor: '#e7f2eb',
           width: '66%',
-          height: '55%',
+          height: '80%',
         }}
       >
         {/* Start Button - Primary */}
