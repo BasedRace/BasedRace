@@ -80,6 +80,9 @@ class Game {
     this.statusEl.textContent = '';
     this.startBtn.style.display = 'block';
     
+    // Auto-start the race when game is ready
+    this.startRace();
+    
     this.lastTime = performance.now();
     this.loop(this.lastTime);
   }
