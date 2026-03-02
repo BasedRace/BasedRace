@@ -1,0 +1,36 @@
+{
+  "frame": {
+    "name": "Based Race",
+    "version": "1",
+    "iconUrl": "https://basedrace.vercel.app/logo.png",
+    "homeUrl": "https://basedrace.vercel.app",
+    "imageUrl": "https://basedrace.vercel.app/logo.png",
+    "buttonTitle": "Start Race!",
+    "splashImageUrl": "https://basedrace.vercel.app/logo.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "https://basedrace.vercel.app/api/webhook",
+    "description": "Play, Mint, and Rewarded. High-octane pixel racing on Base. Turn your profile picture into a legendary racer and compete against friends for the top spot on the leaderboard. Play the game, mint your unique player, and earn rewards.",
+    "subtitle": "Play, Mint, and Rewarded",
+    "primaryCategory": "games",
+    "screenshotUrls": [
+      "https://basedrace.vercel.app/logo.png"
+    ],
+    "heroImageUrl": "https://basedrace.vercel.app/logo.png",
+    "tags": [
+      "game",
+      "social",
+      "nft",
+      "mint",
+      "reward"
+    ],
+    "ogTitle": "Based Race",
+    "ogDescription": "Play, Mint, and Rewarded",
+    "tagline": "Play, Mint, and Rewarded",
+    "ogImageUrl": "https://basedrace.vercel.app/logo.png"
+  },
+  "accountAssociation": {
+    "header": "eyJmaWQiOjUwOTU3OCwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDI2NzdDMjNmMkViYjY3NjBFZTkzMjRCNmExZDNkRTIyNTg4NWU5N0QifQ",
+    "payload": "eyJkb21haW4iOiJiYXNlZHJhY2UudmVyY2VsLmFwcCJ9",
+    "signature": "3cadJG0lkz3JGNWG9+cvJ43Kk7BYUeT3JU2Rw6MvE7tG4q0ymbCVvQD2nk2uMuXPhjdgeKs28oB8rH7mciqf+Rs="
+  }
+}
