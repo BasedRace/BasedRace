@@ -27,8 +27,13 @@ export default function Home() {
     <div className="relative w-full h-screen overflow-hidden">
       {/* Full-screen background image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: 'url(/ui/mainmenu.webp)' }}
+        className="absolute inset-0 w-full h-full"
+        style={{ 
+          backgroundImage: 'url(/ui/mainmenu.webp)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
       />
       
       <style jsx global>{`
