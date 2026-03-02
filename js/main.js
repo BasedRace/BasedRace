@@ -88,7 +88,7 @@ class Game {
     const assetNames = ['env2', 'start', 'env1', 'finish'];
     const racerNames = ['jesse', 'barmstrong', 'deployer', 'dish'];
     const allNames = [...assetNames, ...racerNames];
-    const version = Date.now(); // Cache busting
+    const version = 'v1.0.0'; // Static version for caching
     const promises = allNames.map(name => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -171,20 +171,18 @@ class Game {
   }
 
   render() {
-    // Update debug coordinates
-    for (let i = 0; i < this.racers.length; i++) {
-      const coordEl = document.getElementById('racer' + i + '-coord');
-      if (coordEl && this.racers[i] && this.track) {
-        const name = this.racers[i].name;
-        const totalDistance = Math.round((this.track.totalScroll + (this.racers[i].yPosOnScreen - this.racers[i].startY)) * 1.95);
-        coordEl.textContent = name + ': ' + totalDistance;
+    // Update debug coordinates only during racing
+    if (this.state === 'racing') {
+      for (let i = 0; i < this.racers.length; i++) {
+        const coordEl = document.getElementById('racer' + i + '-coord');
+        if (coordEl && this.racers[i] && this.track) {
+          const name = this.racers[i].name;
+          const totalDistance = Math.round((this.track.totalScroll + (this.racers[i].yPosOnScreen - this.racers[i].startY)) * 1.95);
+          coordEl.textContent = name + ': ' + totalDistance;
+        }
       }
     }
     
-    // Memproses interpolasi smooth sebelum menggambar
-    if (this.track.smoothRender) {
-        this.track.smoothRender();
-    }
     this.renderer.render(this.track, this.racers);
   }
 
@@ -194,9 +192,13 @@ class Game {
     
     if (deltaTime < 1000) {
       this.update(deltaTime);
+      
+      // Only render continuously during racing
+      if (this.state === 'racing') {
+        this.render();
+      }
     }
     
-    this.render();
     requestAnimationFrame((t) => this.loop(t));
   }
 

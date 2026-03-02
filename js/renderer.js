@@ -71,18 +71,21 @@ export class Renderer {
       );
     }
     
-    // Draw confetti if active
-    if (this.confetti && this.confetti.length > 0) {
+    // Draw confetti only when active
+    if (this.confettiActive) {
       this.drawConfetti();
     }
   }
   
-  // Confetti system - more lively and boisterous
+  // Confetti system - optimized
   confetti = [];
+  confettiActive = false;
+  
   startConfetti() {
+    this.confettiActive = true;
     this.confetti = [];
     const colors = ['#FFD700', '#FF6B00', '#FF1493', '#00FF7F', '#00BFFF', '#FF4500', '#7CFC00', '#DA70D6'];
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 150; i++) { // Reduced from 200
       this.confetti.push({
         x: Math.random() * 1200 - 100,
         y: Math.random() * -2000 - 500,
@@ -97,6 +100,8 @@ export class Renderer {
   }
   
   drawConfetti() {
+    if (!this.confettiActive) return;
+    
     for (const p of this.confetti) {
       p.x += p.vx;
       p.y += p.vy;
@@ -111,8 +116,9 @@ export class Renderer {
       this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
       this.ctx.restore();
     }
-    // Keep confetti coming
-    if (this.confetti.length < 150 && Math.random() > 0.8) {
+    
+    // Keep confetti coming - limit spawning rate
+    if (this.confetti.length < 100 && Math.random() > 0.9) {
       const colors = ['#FFD700', '#FF6B00', '#FF1493', '#00FF7F', '#00BFFF'];
       this.confetti.push({
         x: Math.random() * 1200,
@@ -125,8 +131,14 @@ export class Renderer {
         rotationSpeed: (Math.random() - 0.5) * 15
       });
     }
+    
     // Remove confetti that fell off screen
     this.confetti = this.confetti.filter(p => p.y < 1900);
+    
+    // Stop when all confetti is gone
+    if (this.confetti.length === 0) {
+      this.confettiActive = false;
+    }
   }
 
   // Merender semua tile track dengan urutan kedalaman (back to front)
