@@ -23,7 +23,7 @@ export default function Home() {
         await sdk.actions.ready();
         
         // Get user context
-        const context = sdk.context();
+        const context = await sdk.context;
         if (context && context.user) {
           setUser({
             fid: context.user.fid,
