@@ -74,15 +74,15 @@ export default function Home() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '20px'
+          gap: '0'
         }}>
           {/* Mascot */}
-          <div style={{ width: '200px', position: 'relative' }}>
+          <div style={{ width: '150px', position: 'relative', marginBottom: '0' }}>
             <Image
               src="/ui/mascot.webp"
               alt="Mascot"
-              width={200}
-              height={200}
+              width={150}
+              height={150}
               className="object-contain"
               unoptimized
             />
@@ -99,6 +99,7 @@ export default function Home() {
               padding: '15px 40px',
               border: 'none',
               cursor: 'pointer',
+              marginTop: '0',
             }}
           >
             LOGIN
