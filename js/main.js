@@ -92,7 +92,7 @@ class Game {
     const promises = allNames.map(name => {
       return new Promise((resolve) => {
         const img = new Image();
-        img.src = `assets/${name}.png?v=${version}`;
+        img.src = `/assets/${name}.png?v=${version}`;
         img.onload = () => {
           this.assets[name] = img;
           resolve();
