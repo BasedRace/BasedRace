@@ -25,7 +25,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center h-screen">
       {/* Full-screen background image */}
       <div className="absolute inset-0 w-full h-full">
         <Image
