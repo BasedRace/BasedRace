@@ -73,7 +73,7 @@ export default function Home() {
 
       {/* Menu Box - Centered */}
       <div 
-        className="pixel-border p-4"
+        className="pixel-border"
         style={{ 
           position: 'absolute',
           top: '50%',
@@ -82,36 +82,40 @@ export default function Home() {
           backgroundColor: '#e7f2eb',
           width: '66%',
           height: '40%',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '4%',
         }}
       >
         {/* Start Button - Primary */}
         <button
           onClick={handleStart}
-          className="pixel-font w-full flex-shrink-0 text-center pixel-btn transition-all duration-150"
+          className="pixel-font w-full text-center pixel-btn transition-all duration-150"
           style={{ 
             backgroundColor: '#e7f2eb',
             color: '#0f10f4',
             fontSize: 'clamp(16px, 5vw, 28px)',
-            height: '25%',
+            flex: '1',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           START
         </button>
 
         {/* Secondary Buttons */}
-        <div className="flex-1 flex flex-col">
-          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)' }}>
-            PROFILE
-          </button>
-          
-          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)' }}>
-            MINT
-          </button>
-          
-          <button className="pixel-font w-full flex-1 text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)' }}>
-            LEADERBOARD
-          </button>
-        </div>
+        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          PROFILE
+        </button>
+        
+        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          MINT
+        </button>
+        
+        <button className="pixel-font w-full text-center pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(16px, 5vw, 28px)', flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          LEADERBOARD
+        </button>
       </div>
     </div>
   );
