@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="antialiased">{children}</body>
+    <html lang="en" style={{ margin: 0, padding: 0 }}>
+      <body style={{ margin: 0, padding: 0, overflow: 'hidden' }}>{children}</body>
     </html>
   );
 }
