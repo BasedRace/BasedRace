@@ -19,6 +19,7 @@ export default function Home() {
           src="/index.html" 
           className="w-full h-full border-0"
           title="Based Race Game"
+          sandbox="allow-scripts allow-same-origin"
         />
       </div>
     );
