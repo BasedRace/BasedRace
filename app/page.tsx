@@ -1,12 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import miniApp from '@farcaster/miniapp-sdk';
 
 type GameState = 'login' | 'menu' | 'playing';
+type UserProfile = {
+  fid: number;
+  username: string;
+  displayName: string;
+  pfpUrl: string;
+} | null;
 
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('login');
+  const [user, setUser] = useState<UserProfile>(null);
+
+  useEffect(() => {
+    // Initialize SDK and hide splash screen
+    const initSDK = async () => {
+      try {
+        await miniApp.actions.ready();
+        
+        // Get user context
+        const context = miniApp.context();
+        if (context && context.user) {
+          setUser({
+            fid: context.user.fid,
+            username: context.user.username || '',
+            displayName: context.user.displayName || '',
+            pfpUrl: context.user.pfpUrl || '',
+          });
+        }
+      } catch (error) {
+        console.error('Failed to initialize SDK:', error);
+      }
+    };
+    
+    initSDK();
+  }, []);
 
   const handleLogin = () => {
     setGameState('menu');
@@ -105,6 +137,28 @@ export default function Home() {
             LOGIN
           </button>
         </div>
+
+        {/* User profile display if logged in via Farcaster */}
+        {user && (
+          <div style={{ 
+            position: 'absolute', 
+            top: '20px', 
+            right: '20px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '10px',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            padding: '10px',
+            borderRadius: '10px'
+          }}>
+            <img 
+              src={user.pfpUrl} 
+              alt={user.displayName}
+              style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+            />
+            <span style={{ color: '#fff', fontSize: '14px' }}>{user.displayName || user.username}</span>
+          </div>
+        )}
       </div>
     );
   }

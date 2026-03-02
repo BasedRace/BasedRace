@@ -9,3 +9,4 @@ memory/
 AGENTS.md
 -e node_modules/
 .next/
+node_modules/
