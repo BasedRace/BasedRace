@@ -6,6 +6,7 @@
   <title>Based Race</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * {
       margin: 0;
       padding: 0;
@@ -39,8 +40,24 @@
       text-shadow: 1px 1px 2px black;
       z-index: 10;
     }
-    #start-btn, #restart-btn {
-      display: none;
+    #back-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Press Start 2P', cursive;
+      background-color: #e7f2eb;
+      color: #0f10f4;
+      border: none;
+      padding: 15px 20px;
+      font-size: clamp(10px, 2.5vw, 14px);
+      cursor: pointer;
+      box-shadow: 4px 4px 0 0 #233e63, 6px 6px 0 0 #99b1c5;
+      z-index: 100;
+    }
+    #back-btn:active {
+      transform: translateX(-50%) translate(4px, 4px);
+      box-shadow: 0 0 0 0 #233e63, 2px 2px 0 0 #99b1c5;
     }
   </style>
 </head>
@@ -51,7 +68,13 @@
       <div id="timer">Time: 0.00s</div>
       <div id="status">Loading...</div>
     </div>
+    <button id="back-btn">Back to Menu</button>
   </div>
   <script type="module" src="/js/main.js"></script>
+  <script>
+    document.getElementById('back-btn').addEventListener('click', () => {
+      window.parent.location.reload();
+    });
+  </script>
 </body>
 </html>

@@ -42,12 +42,6 @@ class Game {
       new Racer(3, 'Dish', this.assets['dish'], 3, this.track)
     ];
     
-    this.startBtn.addEventListener('click', () => this.startRace());
-    if (this.restartBtn) {
-      this.restartBtn.addEventListener('click', () => this.reset());
-    }
-    
-    
     // Expose moveRacer for debug buttons
     window.moveRacer = (racerIndex, direction) => {
       const game = window.gameInstance;
