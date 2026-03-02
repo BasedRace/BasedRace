@@ -7,3 +7,5 @@ TOOLS.md
 USER.md
 memory/
 AGENTS.md
+-e node_modules/
+.next/
