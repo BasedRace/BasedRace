@@ -27,15 +27,16 @@ export default function Home() {
   }
 
   return (
-    <div className="w-screen h-screen overflow-hidden flex items-center justify-center">
+    <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, overflow: 'hidden' }}>
       {/* Full-screen background image */}
-      <div className="absolute inset-0 w-full h-full">
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
         <Image
           src="/ui/mainmenu.webp"
           alt="Main Menu Background"
           fill
           priority
           className="object-cover"
+          style={{ objectPosition: 'center' }}
           unoptimized
         />
       </div>
@@ -70,10 +71,14 @@ export default function Home() {
         }
       `}</style>
 
-      {/* Menu Box - Centered with flexbox */}
+      {/* Menu Box - Centered */}
       <div 
-        className="pixel-border p-4 relative z-10 flex flex-col"
+        className="pixel-border p-4"
         style={{ 
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
           backgroundColor: '#e7f2eb',
           width: '66%',
           height: '40%',
