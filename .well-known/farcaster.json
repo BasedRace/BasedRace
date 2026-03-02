@@ -9,7 +9,7 @@
     "splashImageUrl": "https://basedrace.vercel.app/logo.png",
     "splashBackgroundColor": "#000000",
     "webhookUrl": "https://basedrace.vercel.app/api/webhook",
-    "description": "Play, Mint, and Rewarded. High-octane pixel racing on Base. Turn your profile picture into a legendary racer and compete against friends for the top spot on the leaderboard. Play the game, mint your unique player, and earn rewards.",
+    "description": "Turn your profile picture into a legendary racer and compete against friends for the top spot on the leaderboard.",
     "subtitle": "Play, Mint, and Rewarded",
     "primaryCategory": "games",
     "screenshotUrls": [
