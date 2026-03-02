@@ -6,16 +6,9 @@ import { Renderer } from './renderer.js';
 class Game {
   constructor() {
     this.canvas = document.getElementById('game-canvas');
-    // Set canvas to full screen
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-    
-    // Handle window resize
-    window.addEventListener('resize', () => {
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = window.innerHeight;
-      this.renderer.render(this.track, this.racers);
-    });
+    // Resolusi layar tetap 1200x1800
+    this.canvas.width = 1200;
+    this.canvas.height = 1800;
     
     this.renderer = new Renderer(this.canvas);
     
