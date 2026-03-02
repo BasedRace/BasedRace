@@ -148,6 +148,7 @@ class Game {
   finishRace() {
     this.state = 'finished';
     this.statusEl.textContent = 'FINISH!';
+    document.getElementById('back-btn').style.display = 'block';
   }
 
   // Show winner UI when a racer completes the race
