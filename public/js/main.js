@@ -14,8 +14,6 @@ class Game {
     
     this.timerEl = document.getElementById('timer');
     this.statusEl = document.getElementById('status');
-    this.startBtn = document.getElementById('start-btn');
-    this.restartBtn = document.getElementById('restart-btn');
     
     this.scrollSpeed = 400; // Kecepatan disesuaikan untuk skala zoom 1.5x
     this.state = 'loading';
@@ -76,11 +74,7 @@ class Game {
     
     this.renderer.render(this.track, this.racers);
     
-    this.state = 'ready';
-    this.statusEl.textContent = '';
-    this.startBtn.style.display = 'block';
-    
-    // Auto-start the race when game is ready
+    // Auto-start race when ready
     this.startRace();
     
     this.lastTime = performance.now();
@@ -113,8 +107,8 @@ class Game {
     if (this.state === 'racing') return;
     this.state = 'racing';
     this.raceTime = 0;
-    this.winner = null; // Reset winner
-    this.lastTime = performance.now(); // Reset delta time to prevent time spike
+    this.winner = null;
+    this.lastTime = performance.now();
     
     // Re-apply pre-scroll offset after reset
     const preScrollOffset = this.scrollSpeed * 1.25;
@@ -126,8 +120,6 @@ class Game {
     }
     
     this.renderer.render(this.track, this.racers);
-    
-    this.startBtn.style.display = 'none';
   }
 
   update(deltaTime) {
@@ -162,8 +154,6 @@ class Game {
   finishRace() {
     this.state = 'finished';
     this.statusEl.textContent = 'FINISH!';
-    this.startBtn.textContent = 'RESTART';
-    this.startBtn.style.display = 'block';
   }
 
   // Show winner UI when a racer completes the race
