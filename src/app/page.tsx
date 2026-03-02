@@ -28,7 +28,7 @@ export default function Home() {
       {/* Full-screen background image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: 'url(/mainmenu.webp)' }}
+        style={{ backgroundImage: 'url(/ui/mainmenu.webp)' }}
       />
       
       <style jsx global>{`
