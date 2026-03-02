@@ -80,28 +80,28 @@ export default function Home() {
         {/* Start Button - Primary */}
         <button
           onClick={handleStart}
-          className="pixel-font w-full mb-3 text-center pixel-btn transition-all duration-150"
+          className="pixel-font w-full text-center pixel-btn transition-all duration-150"
           style={{ 
             backgroundColor: '#e7f2eb',
             color: '#0f10f4',
-            fontSize: 'clamp(10px, 2.5vw, 16px)',
-            padding: '8% 0',
+            fontSize: 'clamp(12px, 3vw, 18px)',
+            height: '25%',
           }}
         >
           START
         </button>
 
         {/* Secondary Buttons */}
-        <div className="space-y-2">
-          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(8px, 2vw, 12px)', padding: '6% 0' }}>
+        <div className="space-y-0">
+          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(10px, 2.5vw, 14px)', height: '25%' }}>
             PROFILE
           </button>
           
-          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(8px, 2vw, 12px)', padding: '6% 0' }}>
+          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(10px, 2.5vw, 14px)', height: '25%' }}>
             MINT
           </button>
           
-          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(8px, 2vw, 12px)', padding: '6% 0' }}>
+          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(10px, 2.5vw, 14px)', height: '25%' }}>
             LEADERBOARD
           </button>
         </div>
