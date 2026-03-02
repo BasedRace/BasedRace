@@ -77,12 +77,12 @@ export default function Home() {
           gap: '0'
         }}>
           {/* Mascot */}
-          <div style={{ width: '150px', position: 'relative', marginBottom: '0' }}>
+          <div style={{ width: '200px', position: 'relative', marginBottom: '0' }}>
             <Image
               src="/ui/mascot.webp"
               alt="Mascot"
-              width={150}
-              height={150}
+              width={200}
+              height={200}
               className="object-contain"
               unoptimized
             />
