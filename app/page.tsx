@@ -70,37 +70,38 @@ export default function Home() {
 
       {/* Menu Box - Centered with flexbox */}
       <div 
-        className="pixel-border p-6 relative z-10"
+        className="pixel-border p-4 relative z-10"
         style={{ 
           backgroundColor: '#e7f2eb',
           width: '66%',
-          height: '55%',
+          height: '40%',
         }}
       >
         {/* Start Button - Primary */}
         <button
           onClick={handleStart}
-          className="pixel-font w-full py-4 mb-4 text-center pixel-btn transition-all duration-150"
+          className="pixel-font w-full mb-3 text-center pixel-btn transition-all duration-150"
           style={{ 
             backgroundColor: '#e7f2eb',
             color: '#0f10f4',
-            fontSize: '16px',
+            fontSize: 'clamp(10px, 2.5vw, 16px)',
+            padding: '8% 0',
           }}
         >
           START
         </button>
 
         {/* Secondary Buttons */}
-        <div className="space-y-3">
-          <button className="pixel-font w-full py-3 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '12px' }}>
+        <div className="space-y-2">
+          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(8px, 2vw, 12px)', padding: '6% 0' }}>
             PROFILE
           </button>
           
-          <button className="pixel-font w-full py-3 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '12px' }}>
+          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(8px, 2vw, 12px)', padding: '6% 0' }}>
             MINT
           </button>
           
-          <button className="pixel-font w-full py-3 pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: '12px' }}>
+          <button className="pixel-font w-full pixel-btn transition-all duration-150" style={{ backgroundColor: '#e7f2eb', color: '#0f10f4', fontSize: 'clamp(8px, 2vw, 12px)', padding: '6% 0' }}>
             LEADERBOARD
           </button>
         </div>
