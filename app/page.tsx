@@ -20,10 +20,10 @@ export default function Home() {
     // Initialize SDK and hide splash screen
     const initSDK = async () => {
       try {
-        await miniApp.actions.ready();
+        await sdk.actions.ready();
         
         // Get user context
-        const context = miniApp.context();
+        const context = sdk.context();
         if (context && context.user) {
           setUser({
             fid: context.user.fid,
