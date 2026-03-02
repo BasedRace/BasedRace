@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import miniApp from '@farcaster/miniapp-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 type GameState = 'login' | 'menu' | 'playing';
 type UserProfile = {
