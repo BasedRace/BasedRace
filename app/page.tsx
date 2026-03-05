@@ -145,11 +145,11 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="pixel-font w-full text-center mt-3"
+          className="pixel-font w-full text-center mt-6"
           style={{ 
             backgroundColor: 'transparent',
             color: '#99b1c5',
-            fontSize: 'clamp(10px, 3vw, 12px)',
+            fontSize: 'clamp(12px, 3.5vw, 14px)',
             border: 'none',
             cursor: 'pointer',
           }}
