@@ -147,7 +147,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="pixel-font w-full text-center mt-12"
+          className="pixel-font w-full text-center mt-16"
           style={{ 
             backgroundColor: 'transparent',
             color: '#99b1c5',
