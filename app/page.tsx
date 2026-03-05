@@ -44,7 +44,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
       
       // Simple algorithm to find a dominant, non-grayscale color
       let dominantHue = 360; // Default blue
-      const hues: { [key: number]: number } = {};
+      const hues: { [key: string]: number } = {};
       for (let i = 0; i < imageData.length; i += 4) {
         const r = imageData[i];
         const g = imageData[i+1];
