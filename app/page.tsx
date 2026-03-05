@@ -110,10 +110,12 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         left: '50%',
         transform: 'translate(-50%, -50%)',
         backgroundColor: '#e7f2eb',
+        width: '66%',
+        height: '55%',
       }}
     >
       {/* Responsive container */}
-      <div className="w-[90%] max-w-[400px] flex flex-col items-center justify-between h-full">
+      <div className="w-[90%] max-w-[500px] flex flex-col items-center justify-between h-full">
         <div className="pixel-font text-[#233e63] text-xl mb-4 text-center">YOUR RACER</div>
         
         <div className="flex-grow flex items-center justify-center w-full">
