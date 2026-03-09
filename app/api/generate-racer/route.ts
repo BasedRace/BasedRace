@@ -76,23 +76,30 @@ export async function POST(req: NextRequest) {
              throw new Error('Invalid response from AI model. Response did not contain image data.');
         }
         
-        const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
         
-        // Use sharp's "green screen" method (chroma keying) to guarantee transparency
-        console.log('Processing image with sharp to remove magenta background...');
-        imageBuffer = await sharp(rawImageBuffer)
-            .ensureAlpha() // Ensure the image has an alpha channel for transparency
-            .removeAlpha() // Remove any existing partial transparency
-            .composite([{
-                input: Buffer.from([255, 0, 255]), // The magenta color to target
-                raw: { width: 1, height: 1, channels: 3 },
-                tile: true,
-                blend: 'dest-in',
-                gravity: 'northwest'
-            }])
-            .png()
-            .toBuffer();
+        // Use sharp's low-level pixel manipulation to guarantee transparency
+        console.log('Processing image with sharp to remove magenta background pixel by pixel...');
+        const { data, info } = await sharp(rawImageBuffer)
+            .ensureAlpha() // Ensure we have an alpha channel to modify
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+
+        // Iterate over every pixel and make magenta transparent
+        for (let i = 0; i < data.length; i += info.channels) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // If the pixel is pure magenta (R=255, G=0, B=255)
+            if (r === 255 && g === 0 && b === 255) {
+                // Set its alpha channel to 0 (fully transparent)
+                data[i + 3] = 0;
+            }
+        }
+        
+        // Re-assemble the image from the modified pixel data
+        imageBuffer = await sharp(data, { raw: info }).png().toBuffer();
         console.log('Image processing complete.');
 
         storageFileName = `racer-${fid}-${Date.now()}.png`;
