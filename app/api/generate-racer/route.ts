@@ -55,19 +55,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ imageUrl: existingRacer.image_url });
     }
 
-    // 2. If no racer exists, generate a new one using the provided code example structure
+    // 2. If no racer exists, generate a new one with the specified Gemini Image model
     console.log('No existing racer found. Generating image with "gemini-3.1-flash-image-preview" model...');
     
-    const prompt = `A detailed, high-quality, 16-bit pixel art illustration of a go-kart racer. The driver's appearance must be a direct pixel-art translation of the person in the input image. The go-kart's color scheme should be derived from the input image's palette. The background must be transparent. The view should be isometric 3/4. The style should be vibrant and reminiscent of classic go-kart video games.`;
+    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image(profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. transparant background.`;
     
-    // --- Fallback logic ---
     let imageBuffer;
     let storageFileName;
 
     try {
         const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
         
-        // This structure mirrors the user-provided example for the API call
         const result = await genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" })
                                     .generateContent([prompt, pfpImagePart]);
         
