@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     const response = result.response;
     const firstPart = response.candidates?.[0].content.parts[0];
 
-    if (!firstPart || !('inlineData' in firstPart)) {
+    if (!firstPart || !('inlineData' in firstPart) || !firstPart.inlineData) {
          console.error("API response did not contain image data. Full response:", JSON.stringify(response, null, 2));
          throw new Error('Invalid response from image generation model.');
     }
