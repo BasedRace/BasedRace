@@ -124,16 +124,15 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         </div>
 
         {/* Metadata */}
-        <div className="text-center mt-4 mb-6">
+        <div className="text-center mt-4">
           <div className="pixel-font text-[#0f10f4] text-lg">@{user?.username}</div>
           <div className="pixel-font text-[#233e63] text-sm mt-1">FID: {user?.fid}</div>
         </div>
 
-        {/* Button Group */}
-        <div className="w-full mt-auto pt-4">
-          <button
+        {/* MINT Button */}
+        <button
             onClick={onMint}
-            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3"
+            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3 mt-4"
             style={{
               backgroundColor: '#e7f2eb',
               color: '#0f10f4',
@@ -143,11 +142,12 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
             }}
           >
             MINT PERSONAL RACER
-          </button>
+        </button>
 
-          <button
+        {/* BACK Button */}
+        <button
             onClick={onBack}
-            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3 mt-4"
+            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3"
             style={{
               backgroundColor: '#e7f2eb',
               color: '#0f10f4',
@@ -157,8 +157,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
             }}
           >
             BACK
-          </button>
-        </div>
+        </button>
       </div>
     </div>
   );
