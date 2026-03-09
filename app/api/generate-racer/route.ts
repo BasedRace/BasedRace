@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
              throw new Error('Invalid response from AI model. Response did not contain image data.');
         }
         
+        const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
         
         // Use sharp's "green screen" method (chroma keying) to guarantee transparency
