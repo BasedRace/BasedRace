@@ -132,7 +132,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         {/* Mint Button */}
         <button
           onClick={onMint}
-          className="pixel-font w-full text-center pixel-btn transition-all duration-150 mt-10 py-3"
+          className="pixel-font w-full text-center pixel-btn transition-all duration-150 mt-6 py-3"
           style={{ 
             backgroundColor: '#e7f2eb',
             color: '#0f10f4',
@@ -147,7 +147,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="pixel-font w-full text-center mt-4"
+          className="pixel-font w-full text-center mt-6"
           style={{ 
             backgroundColor: 'transparent',
             color: '#99b1c5',
