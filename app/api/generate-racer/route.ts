@@ -10,6 +10,21 @@ const supabaseAdmin = createClient(
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
+// Helper function to fetch an image and convert it to a format the model understands
+async function urlToGenerativePart(url: string, mimeType: string) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch image from ${url}: ${response.statusText}`);
+    }
+    const buffer = await response.arrayBuffer();
+    return {
+        inlineData: {
+            data: Buffer.from(buffer).toString('base64'),
+            mimeType,
+        },
+    };
+}
+
 export async function POST(req: NextRequest) {
   console.log('API route hit. Processing request...');
 
