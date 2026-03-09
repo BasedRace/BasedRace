@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     // 2. If no racer exists, generate a new one with the specified Gemini Image model
     console.log('No existing racer found. Generating image with "gemini-3.1-flash-image-preview" model...');
     
-    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image(profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. transparent background.`;
+    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image(profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. The background must be a solid, pure magenta color: #FF00FF.`;
     
     let imageBuffer;
     let storageFileName;
@@ -76,14 +76,21 @@ export async function POST(req: NextRequest) {
              throw new Error('Invalid response from AI model. Response did not contain image data.');
         }
         
-        const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
         
-        // Use sharp to remove the background and ensure transparency
-        console.log('Processing image with sharp to remove background...');
+        // Use sharp's "green screen" method (chroma keying) to guarantee transparency
+        console.log('Processing image with sharp to remove magenta background...');
         imageBuffer = await sharp(rawImageBuffer)
-            .trim() // Trim solid background from edges
-            .png()  // Ensure output is PNG to preserve transparency
+            .ensureAlpha() // Ensure the image has an alpha channel for transparency
+            .removeAlpha() // Remove any existing partial transparency
+            .composite([{
+                input: Buffer.from([255, 0, 255]), // The magenta color to target
+                raw: { width: 1, height: 1, channels: 3 },
+                tile: true,
+                blend: 'dest-in',
+                gravity: 'northwest'
+            }])
+            .png()
             .toBuffer();
         console.log('Image processing complete.');
 
