@@ -77,10 +77,14 @@ export async function POST(req: NextRequest) {
         }
         
         const imageBase64 = firstPart.inlineData.data;
-        imageBuffer = Buffer.from(imageBase64, 'base64');
+        const rawImageBuffer = Buffer.from(imageBase64, 'base64');
+
+        // Use sharp.trim() to safely remove the solid white border
+        console.log('Trimming white background from image...');
+        imageBuffer = await sharp(rawImageBuffer).trim().png().toBuffer();
+        
         storageFileName = `racer-${fid}-${Date.now()}.png`;
-        console.log('AI Image generated. Using raw image without post-processing.');
-        console.log(`AI Image generated and processed. Filename: ${storageFileName}`);
+        console.log(`Image processed. Filename: ${storageFileName}`);
 
     } catch (aiError) {
         console.error("AI generation failed. Falling back to placeholder.", aiError);
