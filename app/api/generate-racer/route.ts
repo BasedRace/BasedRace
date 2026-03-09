@@ -76,33 +76,32 @@ export async function POST(req: NextRequest) {
              throw new Error('Invalid response from AI model. Response did not contain image data.');
         }
         
-        const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
         
-        // Use sharp's low-level pixel manipulation with a tolerance to guarantee transparency
-        console.log('Processing image with sharp to remove magenta background with tolerance...');
-        const { data, info } = await sharp(rawImageBuffer)
-            .ensureAlpha() // Ensure we have an alpha channel to modify
-            .raw()
-            .toBuffer({ resolveWithObject: true });
+        // Use a professional "color keying" method with a mask to guarantee transparency and remove the halo.
+        console.log('Processing image with sharp using a color key mask...');
 
-        // Iterate over every pixel and make any shade of magenta transparent
-        for (let i = 0; i < data.length; i += info.channels) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
+        // First, create a mask that is black where the background is and white for the foreground.
+        // We do this by isolating the green channel, as magenta has a very low green value.
+        const mask = await sharp(rawImageBuffer)
+            .extractChannel('green') // Get only the green values
+            .threshold(100)          // Anything with a green value below 100 becomes black
+            .negate()                // Invert the mask so the background is black and foreground is white
+            .toBuffer();
 
-            // Check for colors that are "close" to magenta (high R, low G, high B)
-            if (r > 220 && g < 40 && b > 220) {
-                // Set this pixel's alpha channel to 0 (fully transparent)
-                data[i + 3] = 0;
-            }
-        }
+        // Now, composite the original image using the mask to cut out the background.
+        imageBuffer = await sharp(rawImageBuffer)
+            .ensureAlpha()
+            .composite([
+                {
+                    input: mask,
+                    blend: 'dest-in', // Use the mask to determine what to keep
+                },
+            ])
+            .png()
+            .toBuffer();
         
-        // Re-assemble the image from the modified pixel data
-        imageBuffer = await sharp(data, { raw: info }).png().toBuffer();
         console.log('Image processing complete.');
-
         storageFileName = `racer-${fid}-${Date.now()}.png`;
         console.log(`AI Image generated and processed. Filename: ${storageFileName}`);
 
