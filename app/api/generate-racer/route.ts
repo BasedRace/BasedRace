@@ -58,13 +58,7 @@ export async function POST(req: NextRequest) {
 
     const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
 
-    const prompt = `
-        Use the provided profile picture as the main inspiration for a new character.
-        
-        TASK: Generate a full-body, forward-facing pixel art character of a retro-futuristic racer based on the person/character in the input image. 
-        
-        STYLE: The character should be in a 16-bit pixel art style, reminiscent of classic SNES games. The output must be a PNG file with a completely transparent background. The character should be centered and in a dynamic, ready-to-race pose. The color palette should be vibrant and based on the colors from the input image.
-    `;
+    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image(profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. transparant background.`;
 
     // Gemini Pro can't directly output images, so we ask for Base64 encoded string
     // In a real scenario, you'd use a dedicated image generation model (like Imagen)
