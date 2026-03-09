@@ -77,13 +77,13 @@ export async function POST(req: NextRequest) {
         }
         
         const imageBase64 = firstPart.inlineData.data;
-        let imageBuffer = Buffer.from(imageBase64, 'base64');
+        const rawImageBuffer = Buffer.from(imageBase64, 'base64');
         
         // Use sharp to remove the background and ensure transparency
         console.log('Processing image with sharp to remove background...');
-        imageBuffer = await sharp(imageBuffer)
+        imageBuffer = await sharp(rawImageBuffer)
             .trim() // Trim solid background from edges
-            .png()  // Ensure output is PNG
+            .png()  // Ensure output is PNG to preserve transparency
             .toBuffer();
         console.log('Image processing complete.');
 
