@@ -76,24 +76,25 @@ export async function POST(req: NextRequest) {
              throw new Error('Invalid response from AI model. Response did not contain image data.');
         }
         
+        const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
         
-        // Use sharp's low-level pixel manipulation to guarantee transparency
-        console.log('Processing image with sharp to remove magenta background pixel by pixel...');
+        // Use sharp's low-level pixel manipulation with a tolerance to guarantee transparency
+        console.log('Processing image with sharp to remove magenta background with tolerance...');
         const { data, info } = await sharp(rawImageBuffer)
             .ensureAlpha() // Ensure we have an alpha channel to modify
             .raw()
             .toBuffer({ resolveWithObject: true });
 
-        // Iterate over every pixel and make magenta transparent
+        // Iterate over every pixel and make any shade of magenta transparent
         for (let i = 0; i < data.length; i += info.channels) {
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
 
-            // If the pixel is pure magenta (R=255, G=0, B=255)
-            if (r === 255 && g === 0 && b === 255) {
-                // Set its alpha channel to 0 (fully transparent)
+            // Check for colors that are "close" to magenta (high R, low G, high B)
+            if (r > 220 && g < 40 && b > 220) {
+                // Set this pixel's alpha channel to 0 (fully transparent)
                 data[i + 3] = 0;
             }
         }
