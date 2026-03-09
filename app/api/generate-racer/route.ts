@@ -79,15 +79,16 @@ export async function POST(req: NextRequest) {
         const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
         
-        // Use a robust "color distance" method to guarantee transparency.
-        console.log('Processing image with sharp using color distance calculation...');
+        // Use a sophisticated "alpha feathering" method based on color distance to remove the background and halo.
+        console.log('Processing image with alpha-feathering color distance...');
         const { data, info } = await sharp(rawImageBuffer)
             .ensureAlpha()
             .raw()
             .toBuffer({ resolveWithObject: true });
 
         const magentaR = 255, magentaG = 0, magentaB = 255;
-        const tolerance = 150; // A high tolerance to catch all shades of magenta
+        const innerTolerance = 80;  // Pixels closer than this are 100% transparent
+        const outerTolerance = 180; // Pixels further than this are 100% opaque. The space between is the feathering zone.
 
         // Iterate over every pixel
         for (let i = 0; i < data.length; i += info.channels) {
@@ -95,17 +96,25 @@ export async function POST(req: NextRequest) {
             const g = data[i + 1];
             const b = data[i + 2];
 
-            // Calculate the color distance in 3D space
+            // Calculate the color distance
             const distance = Math.sqrt(
               Math.pow(r - magentaR, 2) +
               Math.pow(g - magentaG, 2) +
               Math.pow(b - magentaB, 2)
             );
 
-            // If the pixel is "close enough" to magenta, make it transparent
-            if (distance < tolerance) {
-                data[i + 3] = 0; // Set alpha to 0
+            if (distance < innerTolerance) {
+                // Definitely background, make fully transparent
+                data[i + 3] = 0;
+            } else if (distance < outerTolerance) {
+                // This is the anti-aliasing / halo zone. Calculate partial transparency.
+                const alpha = Math.floor(255 * (distance - innerTolerance) / (outerTolerance - innerTolerance));
+                // Only apply this new alpha if it's lower than the pixel's current alpha
+                if (data[i + 3] > alpha) {
+                    data[i + 3] = alpha;
+                }
             }
+            // If distance is > outerTolerance, it's part of the artwork, so we leave its alpha untouched.
         }
         
         imageBuffer = await sharp(data, { raw: info }).png().toBuffer();
