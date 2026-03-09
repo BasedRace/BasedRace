@@ -129,35 +129,36 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
           <div className="pixel-font text-[#233e63] text-sm mt-1">FID: {user?.fid}</div>
         </div>
 
-        {/* Mint Button */}
-        <button
-          onClick={onMint}
-          className="pixel-font w-full text-center pixel-btn transition-all duration-150 mt-6 py-3"
-          style={{ 
-            backgroundColor: '#e7f2eb',
-            color: '#0f10f4',
-            fontSize: 'clamp(14px, 4vw, 18px)',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          MINT PERSONAL RACER
-        </button>
-        
-        {/* Back Button */}
-        <button
-          onClick={onBack}
-          className="pixel-font w-full text-center mt-6"
-          style={{ 
-            backgroundColor: 'transparent',
-            color: '#99b1c5',
-            fontSize: 'clamp(15px, 4vw, 18px)',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          BACK
-        </button>
+        {/* Button Group */}
+        <div className="w-full flex flex-col items-center gap-2 mt-auto pt-4">
+          <button
+            onClick={onMint}
+            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3"
+            style={{
+              backgroundColor: '#e7f2eb',
+              color: '#0f10f4',
+              fontSize: 'clamp(14px, 4vw, 18px)',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            MINT PERSONAL RACER
+          </button>
+
+          <button
+            onClick={onBack}
+            className="pixel-font w-full text-center"
+            style={{
+              backgroundColor: 'transparent',
+              color: '#99b1c5',
+              fontSize: 'clamp(15px, 4vw, 18px)',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            BACK
+          </button>
+        </div>
       </div>
     </div>
   );
