@@ -79,29 +79,38 @@ export async function POST(req: NextRequest) {
         const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
         
-        // Use a professional "color keying" method with a mask to guarantee transparency and remove the halo.
-        console.log('Processing image with sharp using a color key mask...');
-
-        // First, create a mask that is black where the background is and white for the foreground.
-        // We do this by isolating the green channel, as magenta has a very low green value.
-        const mask = await sharp(rawImageBuffer)
-            .extractChannel('green') // Get only the green values
-            .threshold(100)          // Anything with a green value below 100 becomes black, the rest white
-            .toBuffer();
-
-        // Now, composite the original image using the mask to cut out the background.
-        imageBuffer = await sharp(rawImageBuffer)
+        // Use a robust "color distance" method to guarantee transparency.
+        console.log('Processing image with sharp using color distance calculation...');
+        const { data, info } = await sharp(rawImageBuffer)
             .ensureAlpha()
-            .composite([
-                {
-                    input: mask,
-                    blend: 'dest-in', // Use the mask to determine what to keep
-                },
-            ])
-            .png()
-            .toBuffer();
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+
+        const magentaR = 255, magentaG = 0, magentaB = 255;
+        const tolerance = 150; // A high tolerance to catch all shades of magenta
+
+        // Iterate over every pixel
+        for (let i = 0; i < data.length; i += info.channels) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // Calculate the color distance in 3D space
+            const distance = Math.sqrt(
+              Math.pow(r - magentaR, 2) +
+              Math.pow(g - magentaG, 2) +
+              Math.pow(b - magentaB, 2)
+            );
+
+            // If the pixel is "close enough" to magenta, make it transparent
+            if (distance < tolerance) {
+                data[i + 3] = 0; // Set alpha to 0
+            }
+        }
         
+        imageBuffer = await sharp(data, { raw: info }).png().toBuffer();
         console.log('Image processing complete.');
+        
         storageFileName = `racer-${fid}-${Date.now()}.png`;
         console.log(`AI Image generated and processed. Filename: ${storageFileName}`);
 
