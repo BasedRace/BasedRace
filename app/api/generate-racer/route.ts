@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     console.log('No existing racer found. Generating image with "imagen-3" model...');
     
     // Get the specified image generation model
-    const model = genAI.getGenerativeModel({ model: "imagen-3" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" });
 
     const prompt = `A detailed, high-quality, 16-bit pixel art illustration of a go-kart racer. The driver's appearance must be a direct pixel-art translation of the person in the input image. The go-kart's color scheme should be derived from the input image's palette. The background must be transparent. The view should be isometric 3/4. The style should be vibrant and reminiscent of classic go-kart video games.`;
     
