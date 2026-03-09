@@ -14,92 +14,77 @@ type UserProfile = {
 
 // Minting Preview Component
 const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: () => void, onMint: () => void }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const generateRacer = async () => {
-      if (!canvasRef.current || !user?.pfpUrl) return;
+    // This function will only run when the `user` object is available.
+    const generateAndSetRacer = async () => {
+      setIsLoading(true);
+      setError(null);
 
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      ctx.imageSmoothingEnabled = false;
+      try {
+        const response = await fetch('/api/generate-racer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fid: user!.fid,
+            username: user!.username,
+            pfpUrl: user!.pfpUrl,
+          }),
+        });
 
-      // Load PFP
-      const pfpImg = new (window as any).Image();
-      pfpImg.crossOrigin = 'Anonymous';
-      pfpImg.src = user.pfpUrl;
-
-      await new Promise(resolve => pfpImg.onload = resolve);
-
-      // --- Color Extraction from PFP ---
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-      if (!tempCtx) return;
-      tempCanvas.width = pfpImg.width;
-      tempCanvas.height = pfpImg.height;
-      tempCtx.drawImage(pfpImg, 0, 0);
-      const imageData = tempCtx.getImageData(0, 0, pfpImg.width, pfpImg.height).data;
-      
-      // Simple algorithm to find a dominant, non-grayscale color
-      let dominantHue = 360; // Default blue
-      const hues: { [key: string]: number } = {};
-      for (let i = 0; i < imageData.length; i += 4) {
-        const r = imageData[i];
-        const g = imageData[i+1];
-        const b = imageData[i+2];
-        const sat = Math.max(r,g,b) - Math.min(r,g,b);
-        if (sat > 50) { // filter out grays
-          const hue = Math.round(rgbToHsl(r,g,b)[0] * 360);
-          hues[hue] = (hues[hue] || 0) + 1;
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to generate racer image.');
         }
-      }
-      if(Object.keys(hues).length > 0){
-        dominantHue = parseInt(Object.keys(hues).reduce((a, b) => hues[a] > hues[b] ? a : b));
-      }
 
-      // Load car frame
-      const carFrameImg = new (window as any).Image();
-      // IMPORTANT: Replace this with your actual car frame asset
-      carFrameImg.src = '/car-frame-placeholder.png'; 
-      await new Promise(resolve => carFrameImg.onload = resolve);
-      
-      // --- Composite Image ---
-      canvas.width = carFrameImg.width;
-      canvas.height = carFrameImg.height;
-      
-      // 1. Draw PFP (sized and positioned for the car's "window")
-      // These values are placeholders; adjust x,y,w,h to fit your car frame asset
-      ctx.drawImage(pfpImg, 50, 20, 80, 80); 
-
-      // 2. Draw car with color accents
-      const carCanvas = document.createElement('canvas');
-      const carCtx = carCanvas.getContext('2d');
-      if(!carCtx) return;
-      carCanvas.width = carFrameImg.width;
-      carCanvas.height = carFrameImg.height;
-      carCtx.drawImage(carFrameImg, 0, 0);
-
-      const carImageData = carCtx.getImageData(0,0, carCanvas.width, carCanvas.height);
-      const data = carImageData.data;
-      for(let i=0; i < data.length; i+=4) {
-        // This targets specific magenta pixels (#ff00ff) in the placeholder to be replaced by the hue.
-        if(data[i] === 255 && data[i+1] === 0 && data[i+2] === 255) {
-          const [r,g,b] = hslToRgb(dominantHue/360, 0.8, 0.6);
-          data[i] = r;
-          data[i+1] = g;
-          data[i+2] = b;
-        }
+        const data = await response.json();
+        setGeneratedImageUrl(data.imageUrl);
+      } catch (err) {
+        setError((err as Error).message);
+        console.error(err);
+      } finally {
+        setIsLoading(false);
       }
-      carCtx.putImageData(carImageData, 0, 0);
-      
-      // 3. Draw the colorized car frame over the PFP
-      ctx.drawImage(carCanvas, 0, 0);
     };
 
-    generateRacer();
-  }, [user]);
+    if (user) {
+      generateAndSetRacer();
+    }
+  }, [user]); // The effect re-runs if the user object changes from null to a real user
+
+  // Main render logic for the component
+  const renderContent = () => {
+    // If user data is not loaded yet, show a loading state
+    if (!user) {
+      return <div className="pixel-font text-lg text-[#233e63]">Loading User...</div>;
+    }
+    // If we are fetching the image, show generating state
+    if (isLoading) {
+      return <div className="pixel-font text-lg text-[#233e63]">Generating...</div>;
+    }
+    // If there was an error
+    if (error) {
+      return <div className="pixel-font text-sm text-red-500 text-center">Error: {error}</div>;
+    }
+    // If successful, show the image
+    if (generatedImageUrl) {
+      return (
+        <img 
+          src={generatedImageUrl} 
+          alt="Your generated racer" 
+          className="object-contain"
+          style={{ imageRendering: 'pixelated', width: '80%', maxWidth: '256px' }} 
+        />
+      );
+    }
+    return null;
+  };
+
 
   return (
     <div 
@@ -119,21 +104,21 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         <div className="pixel-font text-[#233e63] text-xl mb-4 text-center">YOUR RACER</div>
         
         <div className="flex-grow flex items-center justify-center w-full">
-          {/* Canvas for the composite image */}
-          <canvas ref={canvasRef} style={{ imageRendering: 'pixelated', width: '80%', maxWidth: '256px' }} />
+          {renderContent()}
         </div>
 
         {/* Metadata */}
         <div className="text-center mt-4 mb-6">
-          <div className="pixel-font text-[#0f10f4] text-lg">@{user?.username}</div>
-          <div className="pixel-font text-[#233e63] text-sm mt-1">FID: {user?.fid}</div>
+          <div className="pixel-font text-[#0f10f4] text-lg">@{user?.username || '...'}</div>
+          <div className="pixel-font text-[#233e63] text-sm mt-1">FID: {user?.fid || '...'}</div>
         </div>
 
         {/* Button Group */}
         <div className="w-full mt-auto pt-4">
           <button
             onClick={onMint}
-            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3"
+            disabled={isLoading || !!error || !generatedImageUrl}
+            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               backgroundColor: '#e7f2eb',
               color: '#0f10f4',
