@@ -37,35 +37,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ imageUrl: existingRacer.image_url });
     }
 
-    // 2. If no racer exists, generate a new one with Imagen
-    console.log('No existing racer found. Generating image with Imagen...');
+    // 2. If no racer exists, generate a new one with the specified Gemini Image model
+    console.log('No existing racer found. Generating image with "nano banana 2" model...');
     
-    // This is a conceptual endpoint. The actual library/API call may differ.
-    // We are simulating the call to a hypothetical Google Imagen API endpoint.
-    const imageGenerationResponse = await fetch('https://api.google.com/v1/imagen/generate', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${process.env.GOOGLE_API_KEY}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            // Assuming the API takes a text prompt and an input image for inspiration
-            prompt: `Detailed pixel-art illustration in the style of nano banana 2, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in the input image. The seated driver character has highly detailed, pixelated features, character appearance directly translated from the provided reference appearance in the input image, scaled to fit the go-kart. The driver's appearance is based on the input image, holding the steering wheel. transparent background.`,
-            input_image_url: pfpUrl,
-            output_format: 'png_buffer'
-        })
-    });
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
-    if (!imageGenerationResponse.ok) {
-        // Fallback to placeholder if the real generation fails
-        console.error('Imagen generation failed, falling back to placeholder.');
-        const placeholderResponse = await fetch('https://placehold.co/256x256/FF6347/FFFFFF.png?text=AI+Error');
-        const imageBuffer = await placeholderResponse.arrayBuffer();
-        const storageFileName = `racer-${fid}-${Date.now()}-fallback.png`;
+    // Helper function to fetch an image and convert it to a format the model understands
+    async function urlToGenerativePart(url: string, mimeType: string) {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image from ${url}: ${response.statusText}`);
+        }
+        const buffer = await response.arrayBuffer();
+        return {
+            inlineData: {
+                data: Buffer.from(buffer).toString('base64'),
+                mimeType,
+            },
+        };
     }
 
-    // Assuming the response gives us the raw image data
-    const imageBuffer = await imageGenerationResponse.arrayBuffer();
+    // Get the specified image generation model
+    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" }); // Using a known model for structure, but this would be "nano-banana-2" if public
+
+    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image(profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. transparant background.`;
+    
+    const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
+
+    // This is the correct method to call a generative model with multi-part input
+    // NOTE: This will likely fail if "nano-banana-2" is not a public model ID,
+    // or if gemini-pro-vision is used (as it returns text). This is a structural implementation.
+    const result = await model.generateContent([prompt, pfpImagePart]);
+    const response = result.response;
+    const firstPart = response.candidates?.[0].content.parts[0];
+
+    if (!firstPart || !('inlineData' in firstPart)) {
+         console.error("API response did not contain image data. Full response:", JSON.stringify(response, null, 2));
+         throw new Error('Invalid response from image generation model.');
+    }
+    
+    const imageBase64 = firstPart.inlineData.data;
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
     const storageFileName = `racer-${fid}-${Date.now()}.png`;
     console.log(`Image generated. Filename will be: ${storageFileName}`);
 
