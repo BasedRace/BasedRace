@@ -130,7 +130,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         </div>
 
         {/* Button Group */}
-        <div className="w-full flex flex-col items-center gap-6 mt-auto pt-4">
+        <div className="w-full mt-auto pt-4">
           <button
             onClick={onMint}
             className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3"
@@ -147,7 +147,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
 
           <button
             onClick={onBack}
-            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3"
+            className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3 mt-4"
             style={{
               backgroundColor: '#e7f2eb',
               color: '#0f10f4',
