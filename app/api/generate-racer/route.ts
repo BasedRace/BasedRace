@@ -55,12 +55,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ imageUrl: existingRacer.image_url });
     }
 
-    // 2. If no racer exists, generate a new one with the specified Imagen model
-    console.log('No existing racer found. Generating image with "imagen-3" model...');
+    // 2. If no racer exists, generate a new one using the provided code example structure
+    console.log('No existing racer found. Generating image with "gemini-3.1-flash-image-preview" model...');
     
-    // Get the specified image generation model
-    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" });
-
     const prompt = `A detailed, high-quality, 16-bit pixel art illustration of a go-kart racer. The driver's appearance must be a direct pixel-art translation of the person in the input image. The go-kart's color scheme should be derived from the input image's palette. The background must be transparent. The view should be isometric 3/4. The style should be vibrant and reminiscent of classic go-kart video games.`;
     
     // --- Fallback logic ---
@@ -69,12 +66,15 @@ export async function POST(req: NextRequest) {
 
     try {
         const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
-        const result = await model.generateContent([prompt, pfpImagePart]);
-        const response = result.response;
-        const firstPart = response.candidates?.[0].content.parts[0];
+        
+        // This structure mirrors the user-provided example for the API call
+        const result = await genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" })
+                                    .generateContent([prompt, pfpImagePart]);
+        
+        const firstPart = result.response.candidates?.[0].content.parts[0];
 
         if (!firstPart || !('inlineData' in firstPart) || !firstPart.inlineData) {
-             throw new Error('Invalid response from AI model.');
+             throw new Error('Invalid response from AI model. Response did not contain image data.');
         }
         
         const imageBase64 = firstPart.inlineData.data;
