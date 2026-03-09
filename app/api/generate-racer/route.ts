@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     // 2. If no racer exists, generate a new one (simulation)
     console.log('No existing racer found. Generating placeholder image...');
-    const placeholderResponse = await fetch('https://via.placeholder.com/256/0000FF/FFFFFF?text=Racer-Preview');
+    const placeholderResponse = await fetch('https://placehold.co/256x256/0000FF/FFFFFF.png?text=Racer-Preview');
     if (!placeholderResponse.ok) {
         throw new Error('Failed to fetch placeholder image.');
     }
