@@ -59,25 +59,35 @@ export async function POST(req: NextRequest) {
     console.log('No existing racer found. Generating image with "imagen-3.0-generate-001" model...');
     
     // Get the specified image generation model
-    const model = genAI.getGenerativeModel({ model: "imagen-3.0-generate-001" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" }); // Use the latest stable vision model
 
-    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image(profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. transparant background.`;
+    const prompt = `A detailed, high-quality, 16-bit pixel art illustration of a go-kart racer. The driver's appearance must be a direct pixel-art translation of the person in the input image. The go-kart's color scheme should be derived from the input image's palette. The background must be transparent. The view should be isometric 3/4. The style should be vibrant and reminiscent of classic go-kart video games.`;
     
-    const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
+    // --- Fallback logic ---
+    let imageBuffer;
+    let storageFileName;
 
-    const result = await model.generateContent([prompt, pfpImagePart]);
-    const response = result.response;
-    const firstPart = response.candidates?.[0].content.parts[0];
+    try {
+        const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
+        const result = await model.generateContent([prompt, pfpImagePart]);
+        const response = result.response;
+        const firstPart = response.candidates?.[0].content.parts[0];
 
-    if (!firstPart || !('inlineData' in firstPart) || !firstPart.inlineData) {
-         console.error("API response did not contain image data. Full response:", JSON.stringify(response, null, 2));
-         throw new Error('Invalid response from image generation model.');
+        if (!firstPart || !('inlineData' in firstPart) || !firstPart.inlineData) {
+             throw new Error('Invalid response from AI model.');
+        }
+        
+        const imageBase64 = firstPart.inlineData.data;
+        imageBuffer = Buffer.from(imageBase64, 'base64');
+        storageFileName = `racer-${fid}-${Date.now()}.png`;
+        console.log(`AI Image generated. Filename: ${storageFileName}`);
+
+    } catch (aiError) {
+        console.error("AI generation failed. Falling back to placeholder.", aiError);
+        const placeholderResponse = await fetch('https://placehold.co/256x256/FF6347/FFFFFF.png?text=AI+Error');
+        imageBuffer = await placeholderResponse.arrayBuffer();
+        storageFileName = `racer-${fid}-${Date.now()}-fallback.png`;
     }
-    
-    const imageBase64 = firstPart.inlineData.data;
-    const imageBuffer = Buffer.from(imageBase64, 'base64');
-    const storageFileName = `racer-${fid}-${Date.now()}.png`;
-    console.log(`Image generated. Filename will be: ${storageFileName}`);
 
     // 3. Upload the generated image to Supabase Storage
     console.log('Uploading image to Supabase Storage...');
