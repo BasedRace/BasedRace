@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 // Initialize Supabase admin client
 const supabaseAdmin = createClient(
@@ -76,9 +77,18 @@ export async function POST(req: NextRequest) {
         }
         
         const imageBase64 = firstPart.inlineData.data;
-        imageBuffer = Buffer.from(imageBase64, 'base64');
+        let imageBuffer = Buffer.from(imageBase64, 'base64');
+        
+        // Use sharp to remove the background and ensure transparency
+        console.log('Processing image with sharp to remove background...');
+        imageBuffer = await sharp(imageBuffer)
+            .trim() // Trim solid background from edges
+            .png()  // Ensure output is PNG
+            .toBuffer();
+        console.log('Image processing complete.');
+
         storageFileName = `racer-${fid}-${Date.now()}.png`;
-        console.log(`AI Image generated. Filename: ${storageFileName}`);
+        console.log(`AI Image generated and processed. Filename: ${storageFileName}`);
 
     } catch (aiError) {
         console.error("AI generation failed. Falling back to placeholder.", aiError);
