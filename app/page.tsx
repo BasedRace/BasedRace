@@ -71,15 +71,17 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
     if (error) {
       return <div className="pixel-font text-sm text-red-500 text-center">Error: {error}</div>;
     }
-    // If successful, show the image
+    // If successful, show the image in a styled container
     if (generatedImageUrl) {
       return (
-        <img 
-          src={generatedImageUrl} 
-          alt="Your generated racer" 
-          className="object-contain"
-          style={{ imageRendering: 'pixelated', width: '80%', maxWidth: '256px' }} 
-        />
+        <div className="w-full h-full flex items-center justify-center bg-gray-200 p-2" style={{borderRadius: '8px'}}>
+          <img 
+            src={generatedImageUrl} 
+            alt="Your generated racer" 
+            className="object-contain"
+            style={{ imageRendering: 'pixelated', width: '100%', height: '100%' }} 
+          />
+        </div>
       );
     }
     return null;
