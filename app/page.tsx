@@ -71,10 +71,10 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
     if (error) {
       return <div className="pixel-font text-sm text-red-500 text-center">Error: {error}</div>;
     }
-    // If successful, show the image in a styled container
+    // If successful, show the image in a styled container that matches the modal background
     if (generatedImageUrl) {
       return (
-        <div className="w-full h-full flex items-center justify-center bg-gray-200 p-2" style={{borderRadius: '8px'}}>
+        <div className="w-full h-full flex items-center justify-center p-2" style={{ backgroundColor: '#e7f2eb', borderRadius: '8px' }}>
           <img 
             src={generatedImageUrl} 
             alt="Your generated racer" 
