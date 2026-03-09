@@ -53,30 +53,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ imageUrl: existingRacer.image_url });
     }
 
-    // 2. If no racer exists, generate a new one with Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
-
-    const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
-
-    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image(profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. transparant background.`;
-
-    // Gemini Pro can't directly output images, so we ask for Base64 encoded string
-    // In a real scenario, you'd use a dedicated image generation model (like Imagen)
-    // For this example, we'll simulate the output as if it's a base64 string
-    // NOTE: This part is a conceptual placeholder. Gemini Pro Vision returns text.
-    // A proper implementation would use an Image Generation model API.
-    // Let's assume for this build that the model can generate an image and we get its buffer.
-    
-    // This is a placeholder for the actual image generation call
-    // For now, we'll return a placeholder image to build the flow.
-    // In a real scenario, this would be:
-    // const result = await model.generateContent([prompt, pfpImagePart]);
-    // const imageBase64 = result.response.text(); // Assuming it returns base64
-    // const imageBuffer = Buffer.from(imageBase64, 'base64');
+    // 2. If no racer exists, generate a new one (simulation)
+    // NOTE: This part is a conceptual placeholder. A proper implementation 
+    // would use a dedicated Image Generation model API like Imagen.
     
     // --- SIMULATED IMAGE GENERATION ---
-    // Creating a simple placeholder image buffer for demonstration
-    const placeholderResponse = await fetch('https://via.placeholder.com/256/FF0000/FFFFFF?text=Racer-Preview');
+    const placeholderResponse = await fetch('https://via.placeholder.com/256/0000FF/FFFFFF?text=Racer-Preview');
     const imageBuffer = await placeholderResponse.arrayBuffer();
     const storageFileName = `racer-${fid}-${Date.now()}.png`;
     // --- END SIMULATION ---
