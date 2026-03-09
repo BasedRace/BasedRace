@@ -124,7 +124,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         </div>
 
         {/* Metadata */}
-        <div className="text-center mt-4">
+        <div className="text-center mt-4 mb-6">
           <div className="pixel-font text-[#0f10f4] text-lg">@{user?.username}</div>
           <div className="pixel-font text-[#233e63] text-sm mt-1">FID: {user?.fid}</div>
         </div>
@@ -301,7 +301,7 @@ export default function Home() {
               0 6px 0 0 #99b1c5, 0 -6px 0 0 #99b1c5;
           }
           .pixel-btn {
-            box-shadow: 4px 4px 0 0 #233e63, 6px 6px 0 0 #99b1c5;
+            box-shadow: 6px 6px 0 0 #233e63, 8px 8px 0 0 #99b1c5;
           }
           .pixel-btn:active {
             transform: translate(4px, 4px);
