@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     // 2. If no racer exists, generate a new one with the specified Gemini Image model
     console.log('No existing racer found. Generating image with "gemini-3.1-flash-image-preview" model...');
     
-    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image (profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. The background solid magenta color: #FF00FF`;
+    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appereance directly translated from the provided reference appereance from this image (profile pic), scaled to fit the go-kart. the driver's appearance is based on this image, holding the steering wheel. The background must be a solid, pure white color: #FFFFFF.`;
     
     let imageBuffer;
     let storageFileName;
@@ -77,50 +77,9 @@ export async function POST(req: NextRequest) {
         }
         
         const imageBase64 = firstPart.inlineData.data;
-        const rawImageBuffer = Buffer.from(imageBase64, 'base64');
-        
-        // Use a sophisticated "alpha feathering" method based on color distance to remove the background and halo.
-        console.log('Processing image with alpha-feathering color distance...');
-        const { data, info } = await sharp(rawImageBuffer)
-            .ensureAlpha()
-            .raw()
-            .toBuffer({ resolveWithObject: true });
-
-        const magentaR = 255, magentaG = 0, magentaB = 255;
-        const innerTolerance = 80;  // Pixels closer than this are 100% transparent
-        const outerTolerance = 180; // Pixels further than this are 100% opaque. The space between is the feathering zone.
-
-        // Iterate over every pixel
-        for (let i = 0; i < data.length; i += info.channels) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-
-            // Calculate the color distance
-            const distance = Math.sqrt(
-              Math.pow(r - magentaR, 2) +
-              Math.pow(g - magentaG, 2) +
-              Math.pow(b - magentaB, 2)
-            );
-
-            if (distance < innerTolerance) {
-                // Definitely background, make fully transparent
-                data[i + 3] = 0;
-            } else if (distance < outerTolerance) {
-                // This is the anti-aliasing / halo zone. Calculate partial transparency.
-                const alpha = Math.floor(255 * (distance - innerTolerance) / (outerTolerance - innerTolerance));
-                // Only apply this new alpha if it's lower than the pixel's current alpha
-                if (data[i + 3] > alpha) {
-                    data[i + 3] = alpha;
-                }
-            }
-            // If distance is > outerTolerance, it's part of the artwork, so we leave its alpha untouched.
-        }
-        
-        imageBuffer = await sharp(data, { raw: info }).png().toBuffer();
-        console.log('Image processing complete.');
-        
+        imageBuffer = Buffer.from(imageBase64, 'base64');
         storageFileName = `racer-${fid}-${Date.now()}.png`;
+        console.log('AI Image generated. Using raw image without post-processing.');
         console.log(`AI Image generated and processed. Filename: ${storageFileName}`);
 
     } catch (aiError) {
