@@ -86,8 +86,7 @@ export async function POST(req: NextRequest) {
         // We do this by isolating the green channel, as magenta has a very low green value.
         const mask = await sharp(rawImageBuffer)
             .extractChannel('green') // Get only the green values
-            .threshold(100)          // Anything with a green value below 100 becomes black
-            .negate()                // Invert the mask so the background is black and foreground is white
+            .threshold(100)          // Anything with a green value below 100 becomes black, the rest white
             .toBuffer();
 
         // Now, composite the original image using the mask to cut out the background.
