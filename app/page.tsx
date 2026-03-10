@@ -34,27 +34,23 @@ export default function Home() {
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = useWaitForTransactionReceipt({ hash });
 
-  // Effect for initialization and fetching user data
+  // Effect for fetching Farcaster user profile and mint status
   useEffect(() => {
-    const initSDKAndFetchMintStatus = async () => {
-      // Don't proceed until the wallet is connected and we have an address
-      if (!isConnected || !connectedWalletAddress) {
-        return;
-      }
-
+    const getFarcasterUser = async () => {
       try {
         await sdk.actions.ready();
         const context = await sdk.context;
         if (context?.user) {
+          // Set profile initially without wallet address
           const profile: UserProfile = {
             fid: context.user.fid,
             username: context.user.username || '',
             displayName: context.user.displayName || '',
             pfpUrl: context.user.pfpUrl || '',
-            walletAddress: connectedWalletAddress,
           };
           setUser(profile);
           
+          // Fetch mint status
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) {
             const data = await response.json();
@@ -66,8 +62,18 @@ export default function Home() {
         toast.error('Could not connect to Farcaster.');
       }
     };
-    initSDKAndFetchMintStatus();
-  }, [isConnected, connectedWalletAddress]);
+    getFarcasterUser();
+  }, []); // Run only once on component mount
+
+  // Effect for attaching wallet address once it's available
+  useEffect(() => {
+    if (user && connectedWalletAddress && !user.walletAddress) {
+      setUser(currentUser => ({
+        ...currentUser!,
+        walletAddress: connectedWalletAddress,
+      }));
+    }
+  }, [user, connectedWalletAddress]);
 
   // Effect for handling transaction state changes
   useEffect(() => {
