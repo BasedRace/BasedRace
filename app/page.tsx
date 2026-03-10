@@ -362,6 +362,7 @@ export default function Home() {
               onMint={handleOnChainMint} 
               setGeneratedMetadataUrl={setGeneratedMetadataUrl} 
               generatedMetadataUrl={generatedMetadataUrl} // Pass the state value
+              isMinted={isMinted} // Pass the isMinted state
             />
           </div>
         );
