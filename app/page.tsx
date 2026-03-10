@@ -29,24 +29,31 @@ export default function Home() {
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // New loading state
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = useWaitForTransactionReceipt({ hash });
 
-  // Effect for fetching Farcaster user profile and mint status
+  // Single, robust effect for initialization and data synchronization
   useEffect(() => {
-    const getFarcasterUser = async () => {
+    const initialize = async () => {
+      // Don't proceed until the wallet is connected and we have an address
+      if (!isConnected || !connectedWalletAddress) {
+        // Keep polling or let wagmi's reactivity handle it
+        return;
+      }
+
       try {
         await sdk.actions.ready();
         const context = await sdk.context;
         if (context?.user) {
-          // Set profile initially without wallet address
           const profile: UserProfile = {
             fid: context.user.fid,
             username: context.user.username || '',
             displayName: context.user.displayName || '',
             pfpUrl: context.user.pfpUrl || '',
+            walletAddress: connectedWalletAddress, // Now we have the address
           };
           setUser(profile);
           
@@ -56,24 +63,19 @@ export default function Home() {
             const data = await response.json();
             setIsMinted(data.isMinted);
           }
+          
+          // All data is loaded, unlock the UI
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('SDK initialization failed:', error);
         toast.error('Could not connect to Farcaster.');
+        setIsLoading(false); // Stop loading even on error
       }
     };
-    getFarcasterUser();
-  }, []); // Run only once on component mount
 
-  // Effect for attaching wallet address once it's available
-  useEffect(() => {
-    if (user && connectedWalletAddress && !user.walletAddress) {
-      setUser(currentUser => ({
-        ...currentUser!,
-        walletAddress: connectedWalletAddress,
-      }));
-    }
-  }, [user, connectedWalletAddress]);
+    initialize();
+  }, [isConnected, connectedWalletAddress]); // Reruns whenever wallet status changes
 
   // Effect for handling transaction state changes
   useEffect(() => {
@@ -133,7 +135,7 @@ export default function Home() {
   const renderGameState = () => {
     switch(gameState) {
       case 'login':
-        return <LoginScreen onLogin={() => setGameState('menu')} />;
+        return <LoginScreen onLogin={() => setGameState('menu')} isLoading={isLoading} />;
       case 'menu':
         return <MainMenu onStart={() => setGameState('playing')} onProfile={() => setGameState('profile')} onMint={() => setGameState('minting')} />;
       case 'profile':
@@ -149,7 +151,7 @@ export default function Home() {
       case 'playing':
         return <GameScreen />;
       default:
-        return <LoginScreen onLogin={() => setGameState('menu')} />;
+        return <LoginScreen onLogin={() => setGameState('menu')} isLoading={isLoading} />;
     }
   };
 
