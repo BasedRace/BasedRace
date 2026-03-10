@@ -139,7 +139,11 @@ export default function Home() {
           case 'tournament': return <GameScreen />;
           case 'betting': return <RaceBettingScreen />;
           case 'menu': default:
-            return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
+            return <StartScreen 
+              onSelectTournament={() => setStartSubView('tournament')} 
+              onSelectRaceBetting={() => setStartSubView('betting')} 
+              onSelectMint={() => setActiveView('mint')}
+            />;
         }
       case 'profile': return <ProfileScreen user={user} onBack={() => setActiveView('start')} />;
       case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
