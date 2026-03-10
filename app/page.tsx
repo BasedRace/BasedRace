@@ -286,7 +286,8 @@ export default function Home() {
               user={user} 
               onBack={handleBackToMenu} 
               onMint={handleOnChainMint} 
-              setGeneratedMetadataUrl={setGeneratedMetadataUrl} // Pass setter to MintingPreview
+              setGeneratedMetadataUrl={setGeneratedMetadataUrl} 
+              generatedMetadataUrl={generatedMetadataUrl} // Pass the state value
             />
           </div>
         );
