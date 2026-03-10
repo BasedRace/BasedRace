@@ -19,8 +19,5 @@ export const MainMenu = ({ onEnter }: { onEnter: () => void }) => (
       </button>
     </div>
 
-    <div className="absolute bottom-10 w-full text-center z-10">
-      <p className="pixel-font text-white text-xs opacity-70">© 2026 BASED RACE</p>
-    </div>
   </div>
 );
