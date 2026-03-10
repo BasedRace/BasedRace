@@ -79,9 +79,34 @@ export async function POST(req: NextRequest) {
         const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
 
-        // Use sharp.flatten() to safely remove the solid white border and resize
-        console.log('Processing image with sharp for transparency and resize...');
-        imageBuffer = await sharp(rawImageBuffer).flatten({ background: { r: 0, g: 0, b: 0, alpha: 0 } }).resize(550, 550).png().toBuffer();
+        console.log('Processing image with sharp for custom transparency and resize...');
+
+        const imageSharp = sharp(rawImageBuffer);
+        const metadata = await imageSharp.metadata();
+
+        if (!metadata.width || !metadata.height) {
+            throw new Error('Could not get image metadata for processing.');
+        }
+
+        const { data, info } = await imageSharp.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+
+        // Iterate over pixel data (RGBA)
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            // const a = data[i + 3]; // Alpha channel
+
+            // Check if pixel is close to white (R, G, B > 245)
+            if (r > 245 && g > 245 && b > 245) {
+                data[i + 3] = 0; // Set alpha to 0 (transparent)
+            }
+        }
+
+        imageBuffer = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+            .resize(550, 550)
+            .png()
+            .toBuffer();
         
         storageFileName = `racer-${fid}-${Date.now()}.png`;
         console.log(`Image processed. Filename: ${storageFileName}`);
