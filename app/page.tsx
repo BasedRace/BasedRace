@@ -142,7 +142,6 @@ export default function Home() {
             return <StartScreen 
               onSelectTournament={() => setStartSubView('tournament')} 
               onSelectRaceBetting={() => setStartSubView('betting')} 
-              onSelectMint={() => setActiveView('mint')}
             />;
         }
       case 'profile': return <ProfileScreen user={user} onBack={() => setActiveView('start')} />;
