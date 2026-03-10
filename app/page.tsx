@@ -32,7 +32,7 @@ type UserProfile = {
 
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('loading');
-  const [activeView, setActiveView] = useState<NavView>('start');
+  const [activeView, setActiveView] = useState<NavView>('profile'); // Default to profile screen
   const [startSubView, setStartSubView] = useState<StartSubView>('menu');
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
@@ -58,10 +58,6 @@ export default function Home() {
           setUser(profile);
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) setIsMinted((await response.json()).isMinted);
-
-          // Explicitly set the state to the start menu
-          setActiveView('start');
-          setStartSubView('menu');
         }
         setGameState('login'); // Mark loading as complete
       } catch (error) {
@@ -91,8 +87,8 @@ export default function Home() {
   const handleConnect = () => connect({ connector: connectors[0] });
 
   const handleNavigate = (view: NavView) => {
-    // Reset sub-view when navigating away from 'start'
-    if (activeView === 'start' && view !== 'start') {
+    // When user clicks 'start', always show the menu first.
+    if (view === 'start') {
       setStartSubView('menu');
     }
     setActiveView(view);
@@ -134,9 +130,7 @@ export default function Home() {
       case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
       case 'garage': return <GarageScreen />;
       case 'leaderboard': return <LeaderboardScreen />;
-      default:
-        // This default case should ideally not be reached with valid NavView types
-        return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
+      default: return <ProfileScreen user={user} onBack={() => {}} />;
     }
   };
 
