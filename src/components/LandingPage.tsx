@@ -20,9 +20,9 @@ export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPage
       */}
       <button 
         onClick={onSelectMint}
-        className="pixel-font w-full max-w-[300px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
+        className="pixel-font w-full max-w-[200px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
                    text-[10px] py-4 px-2 shadow-[4px记录_4px_0px_#99b1c5] 
-                   active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[50px]"
+                   active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[80px]"
       >
         <span className="block uppercase tracking-tighter">
           {isMinted ? "VIEW YOUR RACER" : "MINT PERSONAL RACER"}
