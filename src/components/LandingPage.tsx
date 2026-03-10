@@ -9,17 +9,17 @@ interface LandingPageProps {
 }
 
 export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPageProps) => (
-  /* - justify-center: Menempatkan di tengah.
-     - -translate-y-12: Menaikkan posisi sedikit ke atas (sekitar 48px).
+  /* -translate-y-4 memberikan sedikit kenaikan dari tengah murni agar 
+     posisinya lebih turun dibanding sebelumnya yang menggunakan translate-y-12
   */
-  <div className="w-full h-full relative flex flex-col items-center justify-center p-6 -translate-y-12">
+  <div className="w-full h-full relative flex flex-col items-center justify-center p-6 -translate-y-4">
     
-    <div className="flex flex-col items-center gap-10 w-full max-w-md relative z-30">
+    <div className="flex flex-col items-center gap-8 w-full max-w-md relative z-30">
       
       {/* NFT Image Container 
-          Ditambahkan border solid untuk memastikan box terlihat. 
+          - Ukuran diperkecil menjadi w-48 h-48 (192px)
       */}
-      <div className="w-64 h-64 relative pixel-border bg-black/60 shadow-2xl overflow-hidden flex items-center justify-center">
+      <div className="w-48 h-48 relative pixel-border bg-black/60 shadow-2xl overflow-hidden flex items-center justify-center">
         {isMinted && nftImageUrl ? (
           <Image 
             src={nftImageUrl} 
@@ -30,14 +30,13 @@ export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPage
             priority
           />
         ) : (
-          /* Menggunakan tag img standar sebagai fallback jika Next Image fill bermasalah */
+          /* Menggunakan img standar untuk memastikan render maksimal */
           <img 
             src="/ui/dummy.png" 
             alt="Personal Racer NFT Placeholder" 
-            className="w-full h-full object-contain p-4 transition-opacity duration-500"
+            className="w-full h-full object-contain p-6"
             onError={(e) => {
-              console.error("Image failed to load");
-              e.currentTarget.src = "https://via.placeholder.com/256?text=NO+IMAGE"; // Fallback visual jika file hilang
+              e.currentTarget.src = "https://via.placeholder.com/192?text=NO+IMAGE";
             }}
           />
         )}
