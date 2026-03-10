@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     console.log(`Checking database for existing racer with FID: ${fid}`);
     const { data: existingRacer, error: dbError } = await supabaseAdmin
       .from('racers')
-      .select('image_url, status, tier')
+      .select('image_url, status, tier, metadata_url')
       .eq('fid', fid)
       .single();
 
