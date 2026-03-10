@@ -28,6 +28,10 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
           ? 'border-2 border-[#99b1c5] shadow-[0_0_15px_rgba(153,177,197,0.6)]' 
           : 'border-2 border-transparent';
         
+        const labelSize = view === 'profile' 
+          ? 'text-[8px] sm:text-[10px]' 
+          : 'text-[11px] sm:text-[14px]';
+
         return (
           <button
             key={view}
@@ -35,7 +39,7 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
             className={`flex flex-col items-center justify-around bg-[#e7f2eb] p-0.5 text-center text-[#0f10f4] transition-all duration-150 focus:outline-none ${activeClasses} h-48 pixel-font overflow-hidden`}
           >
             <span className="text-6xl leading-none">{icon}</span>
-            <span className="text-[11px] sm:text-[14px] uppercase font-black tracking-tighter leading-tight w-full break-words px-0.5">
+            <span className={`${labelSize} uppercase font-black tracking-tighter leading-tight w-full break-words px-0.5`}>
               {label}
             </span>
           </button>
