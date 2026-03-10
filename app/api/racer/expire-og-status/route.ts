@@ -20,18 +20,20 @@ export async function POST(req: NextRequest) {
   try {
     console.log('Updating status for unminted OG Racers...');
 
-    const { data, error } = await supabaseAdmin.from('racers')
+    const { error } = await supabaseAdmin.from('racers')
       .update({ status: 'Racer' })
       .eq('is_minted', false)
-      .eq('status', 'OG Racer'); // Only update those who are currently 'OG Racer'
+      .eq('status', 'OG Racer');
 
     if (error) {
       console.error('Supabase update OG status error:', error);
       throw new Error(`Failed to update OG status: ${error.message}`);
     }
 
-    console.log(`Updated status for ${data?.length || 0} unminted OG Racers.`);
-    return NextResponse.json({ success: true, updatedCount: data?.length || 0 });
+    // Supabase update returns a count of rows affected, not a data array with length
+    // For now, we will simply report success.
+    console.log('Successfully attempted to update status for unminted OG Racers.');
+    return NextResponse.json({ success: true });
 
   } catch (error) {
     console.error('Error in /api/racer/expire-og-status:', error);
