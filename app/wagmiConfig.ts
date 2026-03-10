@@ -2,7 +2,7 @@
 
 import { createConfig, http } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { createConnector, custom } from 'wagmi/connectors'; // Keep custom for custom connectors
+import { createConnector } from 'wagmi/connectors';
 import { sdk } from '@farcaster/miniapp-sdk';
 
 const FarcasterConnector = createConnector({
