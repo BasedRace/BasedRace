@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     let imageBuffer;
     let storageFileName;
 
-    try {
+    
         const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
         
         const result = await genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" })
@@ -110,13 +110,6 @@ export async function POST(req: NextRequest) {
         
         storageFileName = `racer-${fid}-${Date.now()}.png`;
         console.log(`Image processed. Filename: ${storageFileName}`);
-
-    } catch (aiError) {
-        console.error("AI generation failed. Falling back to placeholder.", aiError);
-        const placeholderResponse = await fetch('https://placehold.co/256x256/FF6347/FFFFFF.png?text=AI+Error');
-        imageBuffer = await placeholderResponse.arrayBuffer();
-        storageFileName = `racer-${fid}-${Date.now()}-fallback.png`;
-    }
 
     // 3. Upload the generated image to Supabase Storage
     console.log('Uploading image to Supabase Storage...');
