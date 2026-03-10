@@ -1,17 +1,26 @@
 'use client';
 
-import { createConfig, http, custom } from 'wagmi';
+import { createConfig, http } from 'wagmi';
 import { base } from 'wagmi/chains';
+import { createConnector, custom } from 'wagmi/connectors'; // Keep custom for custom connectors
 import { sdk } from '@farcaster/miniapp-sdk';
+
+const FarcasterConnector = createConnector({
+  id: 'farcaster',
+  name: 'Farcaster',
+  type: 'farcaster',
+  async setup() {
+    const provider = await sdk.wallet.getEthereumProvider();
+    return {
+      provider,
+    };
+  },
+});
 
 export const config = createConfig({
   chains: [base],
   connectors: [
-    custom({
-      id: 'farcaster',
-      name: 'Farcaster',
-      getProvider: async () => sdk.wallet.getEthereumProvider(),
-    }),
+    FarcasterConnector(),
   ],
   transports: {
     [base.id]: http(),
