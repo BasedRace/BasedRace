@@ -33,7 +33,7 @@ export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPage
           - w-48 h-48: Kembali ke ukuran sebelumnya (lebih besar).
           - Tanpa 'pixel-border' dan 'bg-black': Sekarang bersih tanpa kotak.
       */}
-      <div className="w-48 h-48 relative overflow-hidden flex items-center justify-center">
+      <div className="w-55 h-55 relative overflow-hidden flex items-center justify-center">
         {isMinted && nftImageUrl ? (
           <Image 
             src={nftImageUrl} 
