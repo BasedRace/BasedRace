@@ -16,12 +16,10 @@ const navItems: { view: NavView, icon: string, label: string }[] = [
 export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavigate: (view: NavView) => void }) => {
   return (
     <nav 
-      className="grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font w-full" 
+      className="grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font" 
       style={{ 
         borderTop: '4px solid #233e63', 
-        paddingBottom: 'calc(4px + env(safe-area-inset-bottom))',
-        transform: 'scale(1.1)',
-        transformOrigin: 'bottom center'
+        paddingBottom: 'calc(px + env(safe-area-inset-bottom))'
       }}
     >
       {navItems.map(({ view, icon, label }) => {
@@ -34,9 +32,9 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
           <button
             key={view}
             onClick={() => onNavigate(view)} // Simplified direct call
-            className={`flex flex-col items-center justify-center bg-[#e7f2eb] p-1 text-center text-[#0f10f4] transition-all duration-150 focus:outline-none ${activeClasses} h-28 pixel-font`}
+            className={`flex flex-col items-center justify-center bg-[#e7f2eb] p-1 text-center text-[#0f10f4] transition-all duration-150 focus:outline-none ${activeClasses} h-30 pixel-font`}
           >
-            <span className="text-5xl mb-0.5 leading-none">{icon}</span>
+            <span className="text-5xl mb-1 leading-none">{icon}</span>
             <span className="text-[10px] uppercase font-black tracking-tighter leading-none">{label}</span>
           </button>
         );
