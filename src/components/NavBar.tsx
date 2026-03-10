@@ -32,11 +32,10 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
           <button
             key={view}
             onClick={() => onNavigate(view)} // Simplified direct call
-            className={`flex flex-col items-center justify-center bg-[#e7f2eb] p-2 text-center text-[#0f10f4] transition-all duration-150 focus:outline-none ${activeClasses} h-60 pixel-font`}
-            style={{ imageRendering: 'pixelated' }}
+            className={`flex flex-col items-center justify-center bg-[#e7f2eb] p-1 text-center text-[#0f10f4] transition-all duration-150 focus:outline-none ${activeClasses} h-30 pixel-font`}
           >
-            <span className="text-6xl leading-none mb-2" style={{ imageRendering: 'pixelated' }}>{icon}</span>
-            <span className="text-[12px] uppercase font-black tracking-tighter leading-none">{label}</span>
+            <span className="text-5xl mb-1 leading-none">{icon}</span>
+            <span className="text-[10px] uppercase font-black tracking-tighter leading-none">{label}</span>
           </button>
         );
       })}
