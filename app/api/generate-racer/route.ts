@@ -218,7 +218,7 @@ export async function POST(req: NextRequest) {
 async function generateAndStoreMetadata(fid: number, username: string, status: string, tier: string, imageUrl: string) {
   const metadata = {
     name: `Based Racer #${fid}`,
-    description: "A unique AI-generated racer for the Based Race tournament.",
+    description: "A unique personal racer for the Based Race tournament.",
     image: imageUrl,
     attributes: [
       { trait_type: "Racer", value: `Based Racer (${fid})` },
