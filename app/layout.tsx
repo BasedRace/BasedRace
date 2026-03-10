@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { Providers } from './providers';
+import { Providers } from '../src/components/Providers';
 import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
