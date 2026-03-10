@@ -32,7 +32,7 @@ type UserProfile = {
 
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('loading');
-  const [activeView, setActiveView] = useState<NavView>('profile'); // Default to profile screen
+  const [activeView, setActiveView] = useState<NavView>('profile');
   const [startSubView, setStartSubView] = useState<StartSubView>('menu');
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export default function Home() {
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) setIsMinted((await response.json()).isMinted);
         }
-        setGameState('login'); // Mark loading as complete
+        setGameState('login');
       } catch (error) {
         console.error('Initialization failed:', error);
         toast.error('Could not connect to Farcaster.');
@@ -87,10 +87,7 @@ export default function Home() {
   const handleConnect = () => connect({ connector: connectors[0] });
 
   const handleNavigate = (view: NavView) => {
-    // When user clicks 'start', always show the menu first.
-    if (view === 'start') {
-      setStartSubView('menu');
-    }
+    if (view === 'start') setStartSubView('menu');
     setActiveView(view);
   };
 
@@ -126,21 +123,25 @@ export default function Home() {
           default:
             return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
         }
-      case 'profile': return <ProfileScreen user={user} onBack={() => {}} />;
+      case 'profile': return <ProfileScreen user={user} />;
       case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
       case 'garage': return <GarageScreen />;
       case 'leaderboard': return <LeaderboardScreen />;
-      default: return <ProfileScreen user={user} onBack={() => {}} />;
+      default: return <ProfileScreen user={user} />;
     }
   };
 
   return (
-    <main className="w-screen h-screen bg-black">
-      <div className="absolute w-px h-px -z-10 overflow-hidden opacity-0">
-        <Image src="/ui/mainmenu.webp" alt="" priority unoptimized aria-hidden="true" width={10} height={10}/>
-      </div>
-      <div className="w-full h-full pb-20">{renderActiveView()}</div>
+    <main className="w-screen h-screen bg-black relative">
+      {/* Permanent Main Menu Background */}
+      <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover" unoptimized />
+
+      {/* Main Content Area - Renders on top of the background */}
+      <div className="w-full h-full pb-20 relative z-10">{renderActiveView()}</div>
+
+      {/* Navigation */}
       <NavBar activeView={activeView} onNavigate={handleNavigate} />
+      
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }

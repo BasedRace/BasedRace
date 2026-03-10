@@ -1,6 +1,7 @@
 'use client';
 
-import Image from 'next/image';
+// Note: This component now renders its content on a transparent background
+// to overlay on top of the main application background.
 
 type UserProfile = {
   fid: number;
@@ -10,11 +11,10 @@ type UserProfile = {
   walletAddress?: `0x${string}`;
 } | null;
 
-export const ProfileScreen = ({ user, onBack }: { user: UserProfile, onBack: () => void }) => (
-  <div className="w-screen h-screen m-0 p-0 overflow-hidden relative bg-black">
-    <Image src="/ui/mainmenu.webp" alt="Profile Background" fill className="object-cover" unoptimized />
+export const ProfileScreen = ({ user }: { user: UserProfile }) => (
+  <div className="w-full h-full flex items-center justify-center">
     <div 
-      className="pixel-border absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#e7f2eb] w-2/3 h-1/2 flex flex-col items-center p-5"
+      className="pixel-border bg-[#e7f2eb] w-2/3 h-1/2 flex flex-col items-center p-5"
     >
       <div className="pixel-font text-xl text-[#233e63] mb-5">PROFILE</div>
       {user ? (
@@ -29,12 +29,6 @@ export const ProfileScreen = ({ user, onBack }: { user: UserProfile, onBack: () 
       ) : (
         <div className="pixel-font text-sm text-[#233e63] flex-grow flex items-center justify-center">Loading...</div>
       )}
-      <button
-        onClick={onBack}
-        className="pixel-font w-full text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] text-sm p-2.5 mt-auto"
-      >
-        BACK TO MENU
-      </button>
     </div>
   </div>
 );
