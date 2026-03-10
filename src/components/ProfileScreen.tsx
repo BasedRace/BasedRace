@@ -13,15 +13,15 @@ type UserProfile = {
 
 export const ProfileScreen = ({ user, onBack }: { user: UserProfile; onBack: () => void }) => (
   <div className="w-full h-full flex items-center justify-center relative">
-    <button 
-      onClick={onBack}
-      className="absolute top-4 left-4 pixel-font pixel-btn bg-[#e7f2eb] text-[#0f10f4] text-xs px-4 py-2 z-20"
-    >
-      BACK
-    </button>
     <div 
-      className="pixel-border bg-[#e7f2eb] w-2/3 h-1/2 flex flex-col items-center p-5"
+      className="pixel-border bg-[#e7f2eb] w-2/3 h-1/2 flex flex-col items-center p-5 relative"
     >
+      <button 
+        onClick={onBack}
+        className="absolute top-2 left-2 pixel-font pixel-btn bg-[#e7f2eb] text-[#0f10f4] text-[8px] px-2 py-1 z-20"
+      >
+        BACK
+      </button>
       <div className="pixel-font text-xl text-[#233e63] mb-5">PROFILE</div>
       {user ? (
         <div className="flex flex-col items-center gap-4 flex-grow justify-center">
