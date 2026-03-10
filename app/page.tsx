@@ -13,11 +13,12 @@ type UserProfile = {
 } | null;
 
 // Minting Preview Component
-const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: {
+const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl, generatedMetadataUrl }: {
   user: UserProfile,
   onBack: () => void,
   onMint: (metadataUrl: string, fid: number) => void,
-  setGeneratedMetadataUrl: (url: string | null) => void
+  setGeneratedMetadataUrl: (url: string | null) => void,
+  generatedMetadataUrl: string | null,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
