@@ -15,7 +15,10 @@ const navItems: { view: NavView, icon: string, label: string }[] = [
 
 export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavigate: (view: NavView) => void }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font z-50" style={{ borderTop: '4px solid #233e63' }}>
+    <nav 
+      className="fixed bottom-0 left-0 right-0 grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font z-[9999]" 
+      style={{ borderTop: '4px solid #233e63', pointerEvents: 'auto' }}
+    >
       {navItems.map(({ view, icon, label }) => {
         const isActive = activeView === view;
         const activeClasses = isActive 
