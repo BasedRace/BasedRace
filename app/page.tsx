@@ -3,6 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/miniapp-sdk';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { parseEther } from 'viem';
+import BasedRaceNFTABI from '../config/BasedRaceNFTABI.json';
+
+const CONTRACT_ADDRESS: `0x${string}` = '0x18B2Ae4A7eDB05ECf19b5a9f07a814e150b8c6a0';
+const MINT_FEE = parseEther('0.001');
 
 type GameState = 'login' | 'menu' | 'profile' | 'playing' | 'minting';
 type UserProfile = {
@@ -10,15 +16,17 @@ type UserProfile = {
   username: string;
   displayName: string;
   pfpUrl: string;
+  walletAddress?: `0x${string}`;
 } | null;
 
 // Minting Preview Component
-const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl, generatedMetadataUrl }: {
+const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl, generatedMetadataUrl, isMinted }: {
   user: UserProfile,
   onBack: () => void,
   onMint: (metadataUrl: string, fid: number) => void,
   setGeneratedMetadataUrl: (url: string | null) => void,
   generatedMetadataUrl: string | null,
+  isMinted: boolean,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,27 +163,45 @@ const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl, generat
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('login');
   const [user, setUser] = useState<UserProfile>(null);
-  const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null); // Corrected to a single definition
+  const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
+  const [isMinted, setIsMinted] = useState<boolean>(false); // New state for minting status
+
+  const { address: connectedWalletAddress, isConnected } = useAccount(); // Get connected wallet address
 
   useEffect(() => {
-    const initSDK = async () => {
+    const initSDKAndFetchMintStatus = async () => {
       try {
         await sdk.actions.ready();
         const context = await sdk.context;
+        const provider = await sdk.getEip1193Provider();
+
         if (context && context.user) {
-          setUser({
+          const currentUserProfile: UserProfile = {
             fid: context.user.fid,
             username: context.user.username || '',
             displayName: context.user.displayName || '',
             pfpUrl: context.user.pfpUrl || '',
-          });
+            walletAddress: (provider && (await provider.request({ method: 'eth_accounts' }))[0]) as `0x${string}` || undefined, // Get wallet address from provider
+          };
+          setUser(currentUserProfile);
+          
+          // Fetch minting status from backend
+          if (currentUserProfile.fid) {
+            const response = await fetch(`/api/racer/status?fid=${currentUserProfile.fid}`);
+            if (response.ok) {
+              const data = await response.json();
+              setIsMinted(data.isMinted);
+            } else {
+              console.error('Failed to fetch mint status');
+            }
+          }
         }
       } catch (error) {
-        console.error('Failed to initialize SDK:', error);
+        console.error('Failed to initialize SDK or fetch mint status:', error);
       }
     };
-    initSDK();
-  }, []);
+    initSDKAndFetchMintStatus();
+  }, []); // Empty dependency array to run once on mount
 
   const handleLogin = () => setGameState('menu');
   const handleProfile = () => setGameState('profile');
@@ -183,39 +209,87 @@ export default function Home() {
   const handleStart = () => setGameState('playing');
   const handleMint = () => setGameState('minting');
   const handleOnChainMint = async (metadataUrl: string, fid: number) => {
-    // Placeholder for actual on-chain transaction logic
+    if (!user?.walletAddress) {
+      alert("Please connect your wallet first.");
+      return;
+    }
+    if (isMinted) {
+      alert("You have already minted your Based Racer!");
+      return;
+    }
+    if (!metadataUrl) {
+      alert("Metadata URL not available. Please generate your racer first.");
+      return;
+    }
+
+    // Wagmi hooks for writing to contract
+    const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
+
+    // Wagmi hook for waiting for transaction confirmation
+    const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = 
+      useWaitForTransactionReceipt({ hash });
+
+    const mintButtonText = () => {
+      if (!isConnected) return "Connect Wallet to Mint";
+      if (isMinted) return "Minted!";
+      if (isPending) return "Confirming...";
+      if (isConfirming) return "Processing...";
+      if (isConfirmed) return "Mint Successful!";
+      return "MINT PERSONAL RACER";
+    };
+
+    const isMintDisabled = 
+      !isConnected || 
+      isMinted || 
+      !generatedMetadataUrl || 
+      isPending || 
+      isConfirming;
+
+    // Actual on-chain transaction logic
     console.log("Preparing on-chain transaction for user:", user, "with metadata URL:", metadataUrl);
-    // In a real scenario, you would interact with your smart contract here:
-    // const transactionResult = await smartContract.safeMint(user.walletAddress, metadataUrl);
+    
+    try {
+      writeContract({
+        address: CONTRACT_ADDRESS,
+        abi: BasedRaceNFTABI,
+        functionName: 'safeMint',
+        args: [user.walletAddress, metadataUrl],
+        value: MINT_FEE,
+      });
 
-    // Simulate a successful mint for demonstration purposes
-    const isMintSuccessful = true; // Replace with actual transaction outcome
-
-    if (isMintSuccessful) {
-      console.log("Mint transaction simulated successfully. Updating database...");
-      try {
-        const response = await fetch('/api/racer/minted', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ fid, isMinted: true }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to update mint status in DB.');
-        }
-        console.log("Database updated: is_minted set to true for FID:", fid);
-        alert("Your Based Racer NFT has been minted!");
-        // Optionally, transition to a new state or refresh profile to show minted status
-        handleBackToMenu(); // Go back to menu after mint
-      } catch (error) {
-        console.error("Error updating mint status in DB:", error);
-        alert(`Mint successful on-chain, but failed to update status: ${(error as Error).message}`);
+      if (writeError) {
+        console.error("Write contract error:", writeError);
+        alert(`Minting transaction failed: ${writeError.message}`);
+        return;
       }
-    } else {
-      alert("Minting transaction failed.");
+
+      if (isConfirmed) {
+        console.log("Mint transaction confirmed successfully. Updating database...");
+        try {
+          const response = await fetch('/api/racer/minted', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fid, isMinted: true }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update mint status in DB.');
+          }
+          console.log("Database updated: is_minted set to true for FID:", fid);
+          alert(`Your Based Racer NFT has been minted! Transaction Hash: ${hash}`);
+          setIsMinted(true); // Update local state
+          handleBackToMenu(); // Go back to menu after mint
+        } catch (error) {
+          console.error("Error updating mint status in DB:", error);
+          alert(`Mint successful on-chain, but failed to update status: ${(error as Error).message}`);
+        }
+      }
+    } catch (error) {
+      console.error("Full minting process error:", error);
+      alert(`Minting process failed: ${(error as Error).message}`);
     }
   };
 
