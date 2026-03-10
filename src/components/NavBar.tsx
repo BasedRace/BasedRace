@@ -29,7 +29,7 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
           : 'border-2 border-transparent';
         
         const labelSize = view === 'profile' 
-          ? 'text-[8px] sm:text-[10px]' 
+          ? 'text-[10px] sm:text-[12px]' 
           : 'text-[11px] sm:text-[14px]';
 
         return (
