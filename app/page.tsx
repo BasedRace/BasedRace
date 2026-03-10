@@ -9,6 +9,7 @@ import BasedRaceNFTABI from '../src/lib/BasedRaceNFTABI.json';
 import { CONTRACT_ADDRESS, MINT_FEE } from '../src/lib/constants';
 
 // Component Imports
+import { MainMenu } from '../src/components/MainMenu';
 import { LoginScreen } from '../src/components/LoginScreen';
 import { ProfileScreen } from '../src/components/ProfileScreen';
 import { MintingScreen } from '../src/components/MintingScreen';
@@ -34,6 +35,7 @@ export default function Home() {
   const [gameState, setGameState] = useState<GameState>('loading');
   const [activeView, setActiveView] = useState<NavView>('profile');
   const [startSubView, setStartSubView] = useState<StartSubView>('menu');
+  const [showMainMenu, setShowMainMenu] = useState<boolean>(true);
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
@@ -127,6 +129,11 @@ export default function Home() {
   if (gameState === 'loading') {
     return <div className="w-screen h-screen bg-black" />;
   }
+  
+  if (showMainMenu) {
+    return <MainMenu onEnter={() => setShowMainMenu(false)} />;
+  }
+
   if (!isConnected || !user) {
     return <LoginScreen onLogin={handleConnect} />;
   }
