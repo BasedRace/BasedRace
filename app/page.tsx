@@ -37,6 +37,7 @@ export default function Home() {
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
+  const [isRacing, setIsRacing] = useState<boolean>(false); // New state for race
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -68,6 +69,23 @@ export default function Home() {
     };
     initialize();
   }, [isConnected, connectedWalletAddress]);
+
+  // Effect to handle messages from the game iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'raceState') {
+        if (event.data.state === 'started') {
+          setIsRacing(true);
+        } else if (event.data.state === 'finished') {
+          setIsRacing(false);
+          setActiveView('start');
+          setStartSubView('menu');
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   useEffect(() => {
     if (isConfirmed) {
@@ -119,8 +137,7 @@ export default function Home() {
         switch (startSubView) {
           case 'tournament': return <GameScreen />;
           case 'betting': return <RaceBettingScreen />;
-          case 'menu':
-          default:
+          case 'menu': default:
             return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
         }
       case 'profile': return <ProfileScreen user={user} />;
@@ -133,15 +150,11 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen bg-black relative">
-      {/* Permanent Main Menu Background */}
       <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover" unoptimized />
-
-      {/* Main Content Area - Renders on top of the background */}
-      <div className="w-full h-full pb-20 relative z-10">{renderActiveView()}</div>
-
-      {/* Navigation */}
-      <NavBar activeView={activeView} onNavigate={handleNavigate} />
-      
+      <div className={`w-full h-full relative z-10 ${!isRacing ? 'pb-20' : ''}`}>
+        {renderActiveView()}
+      </div>
+      {!isRacing && <NavBar activeView={activeView} onNavigate={handleNavigate} />}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }

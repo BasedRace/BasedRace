@@ -6,13 +6,12 @@ import { Renderer } from './renderer.js';
 class Game {
   constructor() {
     this.canvas = document.getElementById('game-canvas');
-    // Resolusi layar tetap 1200x1800
     this.canvas.width = 1200;
     this.canvas.height = 1800;
     
     this.renderer = new Renderer(this.canvas);
     
-    this.scrollSpeed = 400; // Kecepatan disesuaikan untuk skala zoom 1.5x
+    this.scrollSpeed = 400;
     this.state = 'loading';
     this.raceTime = 0;
     this.lastTime = 0;
@@ -30,7 +29,6 @@ class Game {
     
     this.track = new Track(this.assets);
     
-    // Create 4 racers
     this.racers = [
       new Racer(0, 'Jesse', this.assets['jesse'], 0, this.track),
       new Racer(1, 'Barmstrong', this.assets['barmstrong'], 1, this.track),
@@ -38,33 +36,11 @@ class Game {
       new Racer(3, 'Dish', this.assets['dish'], 3, this.track)
     ];
     
-    // Expose moveRacer for debug buttons
-    window.moveRacer = (racerIndex, direction) => {
-      const game = window.gameInstance;
-      if (!game || !game.racers || !game.racers[racerIndex]) return;
-      const racer = game.racers[racerIndex];
-      const step = 10;
-      if (direction === 'up') racer.yPosOnScreen -= step;
-      if (direction === 'down') racer.yPosOnScreen += step;
-      if (direction === 'left') racer.x -= step;
-      if (direction === 'right') racer.x += step;
-      
-      // Update coordinate display
-      const coordEl = document.getElementById('racer' + racerIndex + '-coord');
-      if (coordEl) {
-        coordEl.textContent = '(' + Math.round(racer.x) + ', ' + Math.round(racer.yPosOnScreen) + ')';
-      }
-      
-      game.renderer.render(game.track, game.racers);
-    };
-    
-    // Pre-Scroll: Apply 1.25s offset so track is already positioned before menu shows
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
     
     this.renderer.render(this.track, this.racers);
     
-    // Auto-start race when ready
     this.startRace();
     
     this.lastTime = performance.now();
@@ -75,7 +51,7 @@ class Game {
     const assetNames = ['env2', 'start', 'env1', 'finish'];
     const racerNames = ['jesse', 'barmstrong', 'deployer', 'dish'];
     const allNames = [...assetNames, ...racerNames];
-    const version = 'v1.0.0'; // Static version for caching
+    const version = 'v1.0.0';
     const promises = allNames.map(name => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -96,15 +72,14 @@ class Game {
   startRace() {
     if (this.state === 'racing') return;
     this.state = 'racing';
+    window.parent.postMessage({ type: 'raceState', state: 'started' }, '*');
     this.raceTime = 0;
     this.winner = null;
     this.lastTime = performance.now();
     
-    // Re-apply pre-scroll offset after reset
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
     
-    // Sync racers with pre-scroll offset
     for (const racer of this.racers) {
       racer.reset();
     }
@@ -120,18 +95,14 @@ class Game {
     const movement = this.scrollSpeed * deltaTime / 1000;
     this.track.updateMovement(movement);
     
-    // Update all racers and check for winner
     for (const racer of this.racers) {
       racer.update(movement, deltaTime, this.track);
-      
-      // Check if any racer finished (progress >= TOTAL_RACE_DISTANCE)
       if (racer.finished && !this.winner) {
         this.winner = racer;
         this.showWinnerUI(racer.name);
       }
     }
     
-    // Keep running until last tile passes screen
     const lastTile = this.track.tiles[this.track.tiles.length - 1];
     if (lastTile && lastTile.y < 600) {
       this.finishRace();
@@ -140,11 +111,11 @@ class Game {
 
   finishRace() {
     this.state = 'finished';
+    window.parent.postMessage({ type: 'raceState', state: 'finished' }, '*');
     document.getElementById('back-btn').style.display = 'block';
     document.getElementById('winner-text').style.display = 'none';
   }
 
-  // Show winner UI when a racer completes the race
   showWinnerUI(winnerName) {
     const winnerEl = document.getElementById('winner-text');
     winnerEl.textContent = `🏆 ${winnerName} WINS! 🏆`;
@@ -153,18 +124,6 @@ class Game {
   }
 
   render() {
-    // Update debug coordinates only during racing
-    if (this.state === 'racing') {
-      for (let i = 0; i < this.racers.length; i++) {
-        const coordEl = document.getElementById('racer' + i + '-coord');
-        if (coordEl && this.racers[i] && this.track) {
-          const name = this.racers[i].name;
-          const totalDistance = Math.round((this.track.totalScroll + (this.racers[i].yPosOnScreen - this.racers[i].startY)) * 1.95);
-          coordEl.textContent = name + ': ' + totalDistance;
-        }
-      }
-    }
-    
     this.renderer.render(this.track, this.racers);
   }
 
@@ -174,8 +133,6 @@ class Game {
     
     if (deltaTime < 1000) {
       this.update(deltaTime);
-      
-      // Only render continuously during racing
       if (this.state === 'racing') {
         this.render();
       }
@@ -183,7 +140,6 @@ class Game {
     
     requestAnimationFrame((t) => this.loop(t));
   }
-
 }
 
 document.addEventListener('DOMContentLoaded', () => new Game());
