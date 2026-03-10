@@ -58,8 +58,12 @@ export default function Home() {
           setUser(profile);
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) setIsMinted((await response.json()).isMinted);
+
+          // Explicitly set the state to the start menu
+          setActiveView('start');
+          setStartSubView('menu');
         }
-        setGameState('login');
+        setGameState('login'); // Mark loading as complete
       } catch (error) {
         console.error('Initialization failed:', error);
         toast.error('Could not connect to Farcaster.');
@@ -130,7 +134,9 @@ export default function Home() {
       case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
       case 'garage': return <GarageScreen />;
       case 'leaderboard': return <LeaderboardScreen />;
-      default: return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
+      default:
+        // This default case should ideally not be reached with valid NavView types
+        return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
     }
   };
 
