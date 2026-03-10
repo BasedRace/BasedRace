@@ -150,9 +150,9 @@ export default function Home() {
   };
 
   return (
-    <main className="w-screen h-screen bg-black relative overflow-hidden">
-      <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover" unoptimized />
-      <div className={`w-full h-full relative z-10 ${!isRacing ? 'pb-24' : ''}`}>
+    <main className="w-full h-[100dvh] bg-black relative flex flex-col overflow-hidden">
+      <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover -z-10" unoptimized />
+      <div className="flex-1 w-full overflow-y-auto relative z-10">
         {renderActiveView()}
       </div>
       {!isRacing && <NavBar activeView={activeView} onNavigate={handleNavigate} />}

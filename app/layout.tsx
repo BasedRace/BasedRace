@@ -21,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" style={{ margin: 0, padding: 0 }}>
-      <body style={{ margin: 0, padding: 0, overflow: 'hidden' }}>
+    <html lang="en" style={{ margin: 0, padding: 0, height: '100%' }}>
+      <body style={{ margin: 0, padding: 0, overflow: 'hidden', height: '100%', width: '100%', position: 'fixed' }}>
         <Providers>
           {children}
           <Toaster richColors position="top-center" />
