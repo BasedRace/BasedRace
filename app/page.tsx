@@ -14,7 +14,7 @@ import { ProfileScreen } from '../src/components/ProfileScreen';
 import { MintingScreen } from '../src/components/MintingScreen';
 import { GameScreen } from '../src/components/GameScreen';
 import { GarageScreen } from '../src/components/GarageScreen';
-import { LeaderboardScreen } from '../src/components/LeaderboardScreen';
+import { RankScreen } from '../src/components/RankScreen';
 import { NavBar, NavView } from '../src/components/NavBar';
 import { StartScreen } from '../src/components/StartScreen';
 import { RaceBettingScreen } from '../src/components/RaceBettingScreen';
@@ -144,7 +144,7 @@ export default function Home() {
       case 'profile': return <ProfileScreen user={user} />;
       case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
       case 'garage': return <GarageScreen />;
-      case 'leaderboard': return <LeaderboardScreen />;
+      case 'rank': return <RankScreen />;
       default: return <ProfileScreen user={user} />;
     }
   };
