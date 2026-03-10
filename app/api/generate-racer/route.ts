@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
         // Use sharp.trim() to safely remove the solid white border
         console.log('Trimming white background from image...');
-                imageBuffer = await sharp(rawImageBuffer).trim().resize(550, 550).png().toBuffer();
+                imageBuffer = await sharp(rawImageBuffer).flatten({ background: { r: 0, g: 0, b: 0, alpha: 0 } }).resize(550, 550).png().toBuffer();
         
         storageFileName = `racer-${fid}-${Date.now()}.png`;
         console.log(`Image processed. Filename: ${storageFileName}`);
