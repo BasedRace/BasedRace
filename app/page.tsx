@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { sdk } from '@farcaster/miniapp-sdk';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from 'wagmi';
 import { toast } from 'sonner';
 import BasedRaceNFTABI from '../src/lib/BasedRaceNFTABI.json';
 import { CONTRACT_ADDRESS, MINT_FEE } from '../src/lib/constants';
@@ -29,53 +29,53 @@ export default function Home() {
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // New loading state
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = useWaitForTransactionReceipt({ hash });
 
-  // Single, robust effect for initialization and data synchronization
+  // Effect for initialization and data synchronization
   useEffect(() => {
     const initialize = async () => {
-      // Don't proceed until the wallet is connected and we have an address
-      if (!isConnected || !connectedWalletAddress) {
-        // Keep polling or let wagmi's reactivity handle it
-        return;
-      }
-
       try {
-        await sdk.actions.ready();
+        // The wagmi config now calls sdk.actions.ready()
         const context = await sdk.context;
-        if (context?.user) {
+        
+        // According to docs, the connector should auto-connect if a wallet is present.
+        // We still check for isConnected to be safe.
+        if (context?.user && isConnected && connectedWalletAddress) {
           const profile: UserProfile = {
             fid: context.user.fid,
             username: context.user.username || '',
             displayName: context.user.displayName || '',
             pfpUrl: context.user.pfpUrl || '',
-            walletAddress: connectedWalletAddress, // Now we have the address
+            walletAddress: connectedWalletAddress,
           };
           setUser(profile);
-          
-          // Fetch mint status
+
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) {
             const data = await response.json();
             setIsMinted(data.isMinted);
           }
           
-          // All data is loaded, unlock the UI
+          setIsLoading(false);
+        } else {
+          // If not connected, it might be the first time user, prompt to connect.
+          // The Login button will be enabled, but its action will be to connect.
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('SDK initialization failed:', error);
+        console.error('Initialization failed:', error);
         toast.error('Could not connect to Farcaster.');
-        setIsLoading(false); // Stop loading even on error
+        setIsLoading(false);
       }
     };
 
     initialize();
-  }, [isConnected, connectedWalletAddress]); // Reruns whenever wallet status changes
+  }, [isConnected, connectedWalletAddress]);
 
   // Effect for handling transaction state changes
   useEffect(() => {
@@ -105,7 +105,16 @@ export default function Home() {
 
 
   // Event Handlers
-  const handleOnChainMint = async (metadataUrl: string, fid: number) => {
+  const handleLogin = () => {
+    if (isConnected) {
+      setGameState('menu');
+    } else {
+      // If the user isn't auto-connected, the login button prompts them to connect.
+      connect({ connector: connectors[0] });
+    }
+  };
+
+  const handleOnChainMint = (metadataUrl: string, fid: number) => {
     if (!isConnected || !user?.walletAddress) {
       toast.error("Please connect your wallet first.");
       return;
@@ -135,7 +144,7 @@ export default function Home() {
   const renderGameState = () => {
     switch(gameState) {
       case 'login':
-        return <LoginScreen onLogin={() => setGameState('menu')} isLoading={isLoading} />;
+        return <LoginScreen onLogin={handleLogin} isLoading={isLoading} />;
       case 'menu':
         return <MainMenu onStart={() => setGameState('playing')} onProfile={() => setGameState('profile')} onMint={() => setGameState('minting')} />;
       case 'profile':
@@ -151,7 +160,7 @@ export default function Home() {
       case 'playing':
         return <GameScreen />;
       default:
-        return <LoginScreen onLogin={() => setGameState('menu')} isLoading={isLoading} />;
+        return <LoginScreen onLogin={handleLogin} isLoading={isLoading} />;
     }
   };
 
