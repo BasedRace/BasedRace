@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image'; // Import Image component
+import Image from 'next/image';
 import { sdk } from '@farcaster/miniapp-sdk';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from 'wagmi';
 import { toast } from 'sonner';
@@ -10,13 +10,15 @@ import { CONTRACT_ADDRESS, MINT_FEE } from '../src/lib/constants';
 
 // Component Imports
 import { LoginScreen } from '../src/components/LoginScreen';
-import { MainMenu } from '../src/components/MainMenu';
 import { ProfileScreen } from '../src/components/ProfileScreen';
 import { MintingScreen } from '../src/components/MintingScreen';
 import { GameScreen } from '../src/components/GameScreen';
+import { GarageScreen } from '../src/components/GarageScreen';
+import { LeaderboardScreen } from '../src/components/LeaderboardScreen';
+import { NavBar, NavView } from '../src/components/NavBar';
 
 // Type Definitions
-type GameState = 'loading' | 'login' | 'menu' | 'profile' | 'playing' | 'minting';
+type GameState = 'loading' | 'login'; // Simplified initial states
 type UserProfile = {
   fid: number;
   username: string;
@@ -26,7 +28,8 @@ type UserProfile = {
 } | null;
 
 export default function Home() {
-  const [gameState, setGameState] = useState<GameState>('loading'); // Start in loading state
+  const [gameState, setGameState] = useState<GameState>('loading');
+  const [activeView, setActiveView] = useState<NavView>('start');
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
@@ -41,8 +44,6 @@ export default function Home() {
     const initialize = async () => {
       try {
         const context = await sdk.context;
-        
-        // If the user is fully connected, jump straight to the menu
         if (context?.user && isConnected && connectedWalletAddress) {
           const profile: UserProfile = {
             fid: context.user.fid,
@@ -52,78 +53,44 @@ export default function Home() {
             walletAddress: connectedWalletAddress,
           };
           setUser(profile);
-
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
-          if (response.ok) {
-            const data = await response.json();
-            setIsMinted(data.isMinted);
-          }
-          
-          setGameState('menu'); // Skip login screen
-        } else {
-          // If not fully connected, show the login screen as a fallback.
-          setGameState('login');
+          if (response.ok) setIsMinted((await response.json()).isMinted);
+          setGameState('login'); // Mark loading as complete
+        } else if (!isConnected) {
+          setGameState('login'); // Show connect screen
         }
       } catch (error) {
         console.error('Initialization failed:', error);
         toast.error('Could not connect to Farcaster.');
-        setGameState('login'); // Go to login on error
+        setGameState('login');
       }
     };
-
     initialize();
   }, [isConnected, connectedWalletAddress]);
 
-  // Effect for handling transaction state changes
+  // Transaction state change effect
   useEffect(() => {
     if (isConfirmed) {
-      const handleConfirmation = async () => {
-        try {
-          const response = await fetch('/api/racer/minted', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fid: user!.fid, isMinted: true }),
-          });
-          if (!response.ok) throw new Error('Failed to update mint status in DB.');
-          
-          toast.success(`Mint successful! Tx: ${hash?.slice(0, 10)}...`);
-          setIsMinted(true);
-          setGameState('menu');
-        } catch (error) {
-          console.error("Error updating mint status:", error);
-          toast.warning(`Mint confirmed on-chain, but failed to update status.`);
-        }
-      };
-      handleConfirmation();
+      toast.success(`Mint successful! Tx: ${hash?.slice(0, 10)}...`);
+      setIsMinted(true);
+      setActiveView('profile'); // Navigate to profile after mint
+      fetch('/api/racer/minted', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fid: user!.fid, isMinted: true }),
+      }).catch(err => toast.warning('Mint recorded on-chain, but DB update failed.'));
     }
     if (writeError) toast.error(`Transaction failed: ${writeError.message}`);
     if (confirmError) toast.error(`Confirmation failed: ${confirmError.message}`);
   }, [isConfirmed, writeError, confirmError, hash, user]);
 
-
-  // Event Handlers
-  const handleConnect = () => {
-    // The login button now only prompts a connection.
-    connect({ connector: connectors[0] });
-  };
+  const handleConnect = () => connect({ connector: connectors[0] });
 
   const handleOnChainMint = (metadataUrl: string, fid: number) => {
-    if (!isConnected || !user?.walletAddress) {
-      toast.error("Please connect your wallet first.");
-      return;
-    }
-    if (isMinted) {
-      toast.info("You have already minted your Based Racer!");
-      return;
-    }
-    if (!metadataUrl) {
-      toast.warning("Racer data not available. Please try again.");
-      return;
-    }
-    if (isPending || isConfirming) {
-      toast.info("A mint transaction is already in progress.");
-      return;
-    }
+    if (!isConnected || !user?.walletAddress) return toast.error("Please connect your wallet first.");
+    if (isMinted) return toast.info("You have already minted your Based Racer!");
+    if (!metadataUrl) return toast.warning("Racer data not available. Please try again.");
+    if (isPending || isConfirming) return toast.info("A mint transaction is already in progress.");
     
     writeContract({
       address: CONTRACT_ADDRESS,
@@ -134,39 +101,38 @@ export default function Home() {
     });
   };
 
-  const renderGameState = () => {
-    switch(gameState) {
-      case 'loading':
-        // You could return a full-page loading spinner here
-        return <div className="w-screen h-screen bg-black" />;
-      case 'login':
-        return <LoginScreen onLogin={handleConnect} />;
-      case 'menu':
-        return <MainMenu onStart={() => setGameState('playing')} onProfile={() => setGameState('profile')} onMint={() => setGameState('minting')} />;
-      case 'profile':
-        return <ProfileScreen user={user} onBack={() => setGameState('menu')} />;
-      case 'minting':
-        return <MintingScreen 
-                  user={user} 
-                  onBack={() => setGameState('menu')} 
-                  onMint={handleOnChainMint}
-                  setGeneratedMetadataUrl={setGeneratedMetadataUrl}
-                  generatedMetadataUrl={generatedMetadataUrl}
-                />;
-      case 'playing':
-        return <GameScreen />;
-      default:
-        return <LoginScreen onLogin={handleConnect} />;
+  if (gameState === 'loading') {
+    return <div className="w-screen h-screen bg-black" />;
+  }
+
+  if (!isConnected || !user) {
+    return <LoginScreen onLogin={handleConnect} />;
+  }
+
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'start': return <GameScreen />;
+      case 'profile': return <ProfileScreen user={user} onBack={() => {}} />; // onBack is unused now
+      case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
+      case 'garage': return <GarageScreen />;
+      case 'leaderboard': return <LeaderboardScreen />;
+      default: return <GameScreen />;
     }
   };
 
   return (
-    <main>
-      {/* Preload the main menu background image */}
-      <div style={{ position: 'absolute', width: 1, height: 1, zIndex: -1, overflow: 'hidden', opacity: 0 }}>
+    <main className="w-screen h-screen bg-black">
+      {/* Preload Image */}
+      <div className="absolute w-px h-px -z-10 overflow-hidden opacity-0">
         <Image src="/ui/mainmenu.webp" alt="" priority unoptimized aria-hidden="true" width={10} height={10}/>
       </div>
+      
+      {/* Main Content Area */}
+      <div className="w-full h-full pb-20">{renderActiveView()}</div>
 
+      {/* Navigation */}
+      <NavBar activeView={activeView} onNavigate={setActiveView} />
+      
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }
@@ -174,7 +140,6 @@ export default function Home() {
         .pixel-btn { box-shadow: 6px 6px 0 0 #233e63, 8px 8px 0 0 #99b1c5; }
         .pixel-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 #233e63, 2px 2px 0 0 #99b1c5; }
       `}</style>
-      {renderGameState()}
     </main>
   );
 }
