@@ -37,6 +37,11 @@ export default function Home() {
   // Effect for initialization and fetching user data
   useEffect(() => {
     const initSDKAndFetchMintStatus = async () => {
+      // Don't proceed until the wallet is connected and we have an address
+      if (!isConnected || !connectedWalletAddress) {
+        return;
+      }
+
       try {
         await sdk.actions.ready();
         const context = await sdk.context;
@@ -62,7 +67,7 @@ export default function Home() {
       }
     };
     initSDKAndFetchMintStatus();
-  }, [connectedWalletAddress]);
+  }, [isConnected, connectedWalletAddress]);
 
   // Effect for handling transaction state changes
   useEffect(() => {
