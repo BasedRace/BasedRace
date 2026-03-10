@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { config } from './wagmi';
 
 export const metadata: Metadata = {
   title: 'Based Race',
@@ -13,6 +16,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+const queryClient = new QueryClient();
+
 export default function RootLayout({
   children,
 }: {
@@ -20,7 +25,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" style={{ margin: 0, padding: 0 }}>
-      <body style={{ margin: 0, padding: 0, overflow: 'hidden' }}>{children}</body>
+      <body style={{ margin: 0, padding: 0, overflow: 'hidden' }}>
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        </WagmiProvider>
+      </body>
     </html>
   );
 }
