@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
-import sharp from 'sharp';
+import { Image } from 'imagescript';
 
 // Initialize Supabase admin client
 const supabaseAdmin = createClient(
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     // 2. If no racer exists, generate a new one with the specified Gemini Image model
     console.log('No existing racer found. Generating image with "gemini-3.1-flash-image-preview" model...');
     
-    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view, output resolution 550x550 pixels. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appearance directly translated from the provided reference appearance from this image (profile pic), scaled to fit the go-kart. The driver's appearance is based on this image, holding the steering wheel. The background must be a solid, pure white color: #FFFFFF.`;
+    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view, output resolution 550x550 pixels. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appearance directly translated from the provided reference appearance from this image (profile pic). The driver\'s appearance is based on this image, holding the steering wheel. The background must be a solid, pure white color: #FFFFFF.`;
     
     let imageBuffer;
     let storageFileName;
@@ -79,9 +79,18 @@ export async function POST(req: NextRequest) {
         const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
 
-        // Use sharp.trim() to safely remove the solid white border
-        console.log('Trimming white background from image...');
-                imageBuffer = await sharp(rawImageBuffer).flatten({ background: { r: 0, g: 0, b: 0, alpha: 0 } }).resize(550, 550).png().toBuffer();
+        console.log('Processing image with ImageScript...');
+        const image = await Image.decode(rawImageBuffer);
+
+        // Make white background transparent (R:255, G:255, B:255, A:255)
+        // Imagescript uses 0-255 for color channels and alpha. WHITE is 0xFFFFFFFF
+        image.opacity((pixel) => (pixel === 0xFFFFFFFF ? 0 : 255));
+
+        // Resize to 550x550
+        image.resize(550, 550);
+
+        // Encode as PNG
+        imageBuffer = await image.encode(0);
         
         storageFileName = `racer-${fid}-${Date.now()}.png`;
         console.log(`Image processed. Filename: ${storageFileName}`);

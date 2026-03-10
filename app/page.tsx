@@ -96,7 +96,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        // backgroundColor: '#e7f2eb',
+                backgroundColor: '#e7f2eb',
         width: '66%',
         height: '55%',
       }}
