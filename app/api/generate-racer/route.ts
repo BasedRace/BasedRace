@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
-import { Image } from 'imagescript';
+import sharp from 'sharp';
 
 // Initialize Supabase admin client
 const supabaseAdmin = createClient(
@@ -79,18 +79,9 @@ export async function POST(req: NextRequest) {
         const imageBase64 = firstPart.inlineData.data;
         const rawImageBuffer = Buffer.from(imageBase64, 'base64');
 
-        console.log('Processing image with ImageScript...');
-        const image = await Image.decode(rawImageBuffer);
-
-        // Make white background transparent (R:255, G:255, B:255, A:255)
-        // Imagescript uses 0-255 for color channels and alpha. WHITE is 0xFFFFFFFF
-        image.opacity((pixel) => (pixel === 0xFFFFFFFF ? 0 : 255));
-
-        // Resize to 550x550
-        image.resize(550, 550);
-
-        // Encode as PNG
-        imageBuffer = await image.encode(0);
+        // Use sharp.flatten() to safely remove the solid white border and resize
+        console.log('Processing image with sharp for transparency and resize...');
+        imageBuffer = await sharp(rawImageBuffer).flatten({ background: { r: 0, g: 0, b: 0, alpha: 0 } }).resize(550, 550).png().toBuffer();
         
         storageFileName = `racer-${fid}-${Date.now()}.png`;
         console.log(`Image processed. Filename: ${storageFileName}`);
