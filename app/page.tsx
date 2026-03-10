@@ -173,7 +173,6 @@ export default function Home() {
       try {
         await sdk.actions.ready();
         const context = await sdk.context;
-        const provider = await sdk.getEip1193Provider();
 
         if (context && context.user) {
           const currentUserProfile: UserProfile = {
@@ -181,7 +180,7 @@ export default function Home() {
             username: context.user.username || '',
             displayName: context.user.displayName || '',
             pfpUrl: context.user.pfpUrl || '',
-            walletAddress: (provider && (await provider.request({ method: 'eth_accounts' }))[0]) as `0x${string}` || undefined, // Get wallet address from provider
+            walletAddress: connectedWalletAddress, // Use connectedWalletAddress from useAccount()
           };
           setUser(currentUserProfile);
           
@@ -201,7 +200,7 @@ export default function Home() {
       }
     };
     initSDKAndFetchMintStatus();
-  }, []); // Empty dependency array to run once on mount
+  }, [connectedWalletAddress]); // Added connectedWalletAddress to dependencies
 
   const handleLogin = () => setGameState('menu');
   const handleProfile = () => setGameState('profile');
