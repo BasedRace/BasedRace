@@ -6,6 +6,7 @@ import { sdk } from '@farcaster/miniapp-sdk';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther } from 'viem';
 import BasedRaceNFTABI from '../src/lib/BasedRaceNFTABI.json';
+import { toast } from 'sonner';
 
 const CONTRACT_ADDRESS: `0x${string}` = '0x18B2Ae4A7eDB05ECf19b5a9f07a814e150b8c6a0';
 const MINT_FEE = parseEther('0.001');
@@ -209,15 +210,15 @@ export default function Home() {
   const handleMint = () => setGameState('minting');
   const handleOnChainMint = async (metadataUrl: string, fid: number) => {
     if (!user?.walletAddress) {
-      alert("Please connect your wallet first.");
+      toast.error("Please connect your wallet first.");
       return;
     }
     if (isMinted) {
-      alert("You have already minted your Based Racer!");
+      toast.info("You have already minted your Based Racer!");
       return;
     }
     if (!metadataUrl) {
-      alert("Metadata URL not available. Please generate your racer first.");
+      toast.warning("Metadata URL not available. Please generate your racer first.");
       return;
     }
 
@@ -258,7 +259,7 @@ export default function Home() {
 
       if (writeError) {
         console.error("Write contract error:", writeError);
-        alert(`Minting transaction failed: ${writeError.message}`);
+        toast.error(`Minting transaction failed: ${writeError.message}`);
         return;
       }
 
@@ -278,17 +279,17 @@ export default function Home() {
             throw new Error(errorData.error || 'Failed to update mint status in DB.');
           }
           console.log("Database updated: is_minted set to true for FID:", fid);
-          alert(`Your Based Racer NFT has been minted! Transaction Hash: ${hash}`);
+          toast.success(`Your Based Racer NFT has been minted! Tx: ${hash}`);
           setIsMinted(true); // Update local state
           handleBackToMenu(); // Go back to menu after mint
         } catch (error) {
           console.error("Error updating mint status in DB:", error);
-          alert(`Mint successful on-chain, but failed to update status: ${(error as Error).message}`);
+          toast.warning(`Mint successful, but status update failed: ${(error as Error).message}`);
         }
       }
     } catch (error) {
       console.error("Full minting process error:", error);
-      alert(`Minting process failed: ${(error as Error).message}`);
+      toast.error(`Minting process failed: ${(error as Error).message}`);
     }
   };
 
