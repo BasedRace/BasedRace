@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image'; // Import Image component
 import { sdk } from '@farcaster/miniapp-sdk';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from 'wagmi';
 import { toast } from 'sonner';
@@ -161,6 +162,11 @@ export default function Home() {
 
   return (
     <main>
+      {/* Preload the main menu background image */}
+      <div style={{ position: 'absolute', width: 1, height: 1, zIndex: -1, overflow: 'hidden', opacity: 0 }}>
+        <Image src="/ui/mainmenu.webp" alt="" priority unoptimized aria-hidden="true" width={10} height={10}/>
+      </div>
+
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }
