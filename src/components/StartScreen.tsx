@@ -13,13 +13,13 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
     >
       <button 
         onClick={onSelectRaceBetting} 
-        className="pixel-font pixel-border w-full text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] text-4xl py-20"
+        className="pixel-font pixel-border w-full text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] text-5xl py-24 sm:text-6xl sm:py-32"
       >
         RACE BETTING
       </button>
       <button 
         onClick={onSelectTournament} 
-        className="pixel-font pixel-border w-full text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] text-4xl py-20"
+        className="pixel-font pixel-border w-full text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] text-5xl py-24 sm:text-6xl sm:py-32"
       >
         TOURNAMENT
       </button>
