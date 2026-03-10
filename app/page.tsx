@@ -18,6 +18,7 @@ import { RankScreen } from '../src/components/RankScreen';
 import { NavBar, NavView } from '../src/components/NavBar';
 import { StartScreen } from '../src/components/StartScreen';
 import { RaceBettingScreen } from '../src/components/RaceBettingScreen';
+import { LandingPage } from '../src/components/LandingPage';
 
 // Type Definitions
 type GameState = 'loading' | 'login';
@@ -32,7 +33,8 @@ type UserProfile = {
 
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('loading');
-  const [activeView, setActiveView] = useState<NavView>('profile');
+  // Changed initial view to 'landing'
+  const [activeView, setActiveView] = useState<NavView | 'landing'>('landing');
   const [startSubView, setStartSubView] = useState<StartSubView>('menu');
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
@@ -134,6 +136,14 @@ export default function Home() {
 
   const renderActiveView = () => {
     switch (activeView) {
+      case 'landing':
+        return (
+          <LandingPage 
+            onSelectMint={() => setActiveView('mint')} 
+            isMinted={isMinted}
+            nftImageUrl={isMinted ? `/api/racer/image?fid=${user.fid}` : null}
+          />
+        );
       case 'start':
         switch (startSubView) {
           case 'tournament': return <GameScreen />;
@@ -144,7 +154,7 @@ export default function Home() {
               onSelectRaceBetting={() => setStartSubView('betting')} 
             />;
         }
-      case 'profile': return <ProfileScreen user={user} onBack={() => setActiveView('start')} />;
+      case 'profile': return <ProfileScreen user={user} />;
       case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
       case 'garage': return <GarageScreen />;
       case 'rank': return <RankScreen />;
@@ -158,7 +168,7 @@ export default function Home() {
       <div className="flex-1 w-full overflow-y-auto relative z-10">
         {renderActiveView()}
       </div>
-      {!isRacing && <NavBar activeView={activeView} onNavigate={handleNavigate} />}
+      {!isRacing && <NavBar activeView={activeView as NavView} onNavigate={handleNavigate} />}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }
