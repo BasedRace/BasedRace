@@ -15,7 +15,7 @@ import { MintingScreen } from '../src/components/MintingScreen';
 import { GameScreen } from '../src/components/GameScreen';
 
 // Type Definitions
-type GameState = 'login' | 'menu' | 'profile' | 'playing' | 'minting';
+type GameState = 'loading' | 'login' | 'menu' | 'profile' | 'playing' | 'minting';
 type UserProfile = {
   fid: number;
   username: string;
@@ -25,11 +25,10 @@ type UserProfile = {
 } | null;
 
 export default function Home() {
-  const [gameState, setGameState] = useState<GameState>('login');
+  const [gameState, setGameState] = useState<GameState>('loading'); // Start in loading state
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -40,11 +39,9 @@ export default function Home() {
   useEffect(() => {
     const initialize = async () => {
       try {
-        // The wagmi config now calls sdk.actions.ready()
         const context = await sdk.context;
         
-        // According to docs, the connector should auto-connect if a wallet is present.
-        // We still check for isConnected to be safe.
+        // If the user is fully connected, jump straight to the menu
         if (context?.user && isConnected && connectedWalletAddress) {
           const profile: UserProfile = {
             fid: context.user.fid,
@@ -61,16 +58,15 @@ export default function Home() {
             setIsMinted(data.isMinted);
           }
           
-          setIsLoading(false);
+          setGameState('menu'); // Skip login screen
         } else {
-          // If not connected, it might be the first time user, prompt to connect.
-          // The Login button will be enabled, but its action will be to connect.
-          setIsLoading(false);
+          // If not fully connected, show the login screen as a fallback.
+          setGameState('login');
         }
       } catch (error) {
         console.error('Initialization failed:', error);
         toast.error('Could not connect to Farcaster.');
-        setIsLoading(false);
+        setGameState('login'); // Go to login on error
       }
     };
 
@@ -105,13 +101,9 @@ export default function Home() {
 
 
   // Event Handlers
-  const handleLogin = () => {
-    if (isConnected) {
-      setGameState('menu');
-    } else {
-      // If the user isn't auto-connected, the login button prompts them to connect.
-      connect({ connector: connectors[0] });
-    }
+  const handleConnect = () => {
+    // The login button now only prompts a connection.
+    connect({ connector: connectors[0] });
   };
 
   const handleOnChainMint = (metadataUrl: string, fid: number) => {
@@ -143,8 +135,11 @@ export default function Home() {
 
   const renderGameState = () => {
     switch(gameState) {
+      case 'loading':
+        // You could return a full-page loading spinner here
+        return <div className="w-screen h-screen bg-black" />;
       case 'login':
-        return <LoginScreen onLogin={handleLogin} isLoading={isLoading} />;
+        return <LoginScreen onLogin={handleConnect} />;
       case 'menu':
         return <MainMenu onStart={() => setGameState('playing')} onProfile={() => setGameState('profile')} onMint={() => setGameState('minting')} />;
       case 'profile':
@@ -160,7 +155,7 @@ export default function Home() {
       case 'playing':
         return <GameScreen />;
       default:
-        return <LoginScreen onLogin={handleLogin} isLoading={isLoading} />;
+        return <LoginScreen onLogin={handleConnect} />;
     }
   };
 
