@@ -35,7 +35,7 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
             className={`flex flex-col items-center justify-around bg-[#e7f2eb] p-0.5 text-center text-[#0f10f4] transition-all duration-150 focus:outline-none ${activeClasses} h-40 pixel-font overflow-hidden`}
           >
             <span className="text-5xl leading-none">{icon}</span>
-            <span className="text-[8px] sm:text-[9px] uppercase font-black tracking-tighter leading-tight w-full break-words px-0.5">
+            <span className="text-[7px] sm:text-[9px] uppercase font-black tracking-tighter leading-tight w-full break-words px-0.5">
               {label}
             </span>
           </button>
