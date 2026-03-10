@@ -13,13 +13,17 @@ type UserProfile = {
 } | null;
 
 // Minting Preview Component
-const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: { user: UserProfile, onBack: () => void, onMint: (metadataUrl: string, fid: number) => void, setGeneratedMetadataUrl: (url: string | null) => void }) => {
+const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: {
+  user: UserProfile,
+  onBack: () => void,
+  onMint: (metadataUrl: string, fid: number) => void,
+  setGeneratedMetadataUrl: (url: string | null) => void
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // This function will only run when the `user` object is available.
     const generateAndSetRacer = async () => {
       setIsLoading(true);
       setError(null);
@@ -44,7 +48,7 @@ const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: { use
 
         const data = await response.json();
         setGeneratedImageUrl(data.imageUrl);
-        setGeneratedMetadataUrl(data.metadataUrl);
+        setGeneratedMetadataUrl(data.metadataUrl); // Set metadata URL from API response
       } catch (err) {
         setError((err as Error).message);
         console.error(err);
@@ -56,23 +60,18 @@ const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: { use
     if (user) {
       generateAndSetRacer();
     }
-  }, [user]); // The effect re-runs if the user object changes from null to a real user
+  }, [user, setGeneratedMetadataUrl]); // Added setGeneratedMetadataUrl to dependencies
 
-  // Main render logic for the component
   const renderContent = () => {
-    // If user data is not loaded yet, show a loading state
     if (!user) {
       return <div className="pixel-font text-lg text-[#233e63]">Loading User...</div>;
     }
-    // If we are fetching the image, show generating state
     if (isLoading) {
       return <div className="pixel-font text-lg text-[#233e63]">Generating...</div>;
     }
-    // If there was an error
     if (error) {
       return <div className="pixel-font text-sm text-red-500 text-center">Error: {error}</div>;
     }
-    // If successful, show the image in a styled container that matches the modal background
     if (generatedImageUrl) {
       return (
         <div className="w-full h-full flex items-center justify-center p-2" style={{ borderRadius: '8px' }}>
@@ -88,7 +87,6 @@ const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: { use
     return null;
   };
 
-
   return (
     <div 
       className="pixel-border flex flex-col items-center justify-between p-5"
@@ -97,7 +95,7 @@ const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: { use
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-                backgroundColor: '#e7f2eb',
+        backgroundColor: '#e7f2eb',
         width: '66%',
         height: '55%',
       }}
@@ -119,8 +117,8 @@ const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: { use
         {/* Button Group */}
         <div className="w-full mt-auto pt-4">
           <button
-            onClick={() => onMint(generatedMetadataUrl!, user!.fid)}
-            disabled={isLoading || !!error || !generatedImageUrl}
+            onClick={() => onMint(generatedMetadataUrl!, user!.fid)} // Pass metadataUrl and fid to onMint
+            disabled={isLoading || !!error || !generatedImageUrl || !generatedMetadataUrl}
             className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               backgroundColor: '#e7f2eb',
@@ -156,7 +154,7 @@ const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: { use
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('login');
   const [user, setUser] = useState<UserProfile>(null);
-  const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
+  const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null); // Corrected to a single definition
 
   useEffect(() => {
     const initSDK = async () => {
@@ -284,7 +282,12 @@ export default function Home() {
         return (
           <div className="w-screen h-screen m-0 p-0 overflow-hidden relative bg-black">
             <Image src="/ui/mainmenu.webp" alt="Minting Background" fill className="object-cover" unoptimized />
-            <MintingPreview user={user} onBack={handleBackToMenu} onMint={handleOnChainMint} />
+            <MintingPreview 
+              user={user} 
+              onBack={handleBackToMenu} 
+              onMint={handleOnChainMint} 
+              setGeneratedMetadataUrl={setGeneratedMetadataUrl} // Pass setter to MintingPreview
+            />
           </div>
         );
       case 'menu':

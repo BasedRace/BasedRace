@@ -3,6 +3,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 
+// Temporary type definition to satisfy TypeScript until Supabase types are regenerated/updated
+type RacerData = {
+  fid: number;
+  username: string;
+  image_url: string;
+  status: string;
+  tier: string;
+  metadata_url: string | null;
+  is_minted: boolean;
+};
+
 // Initialize Supabase admin client
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,7 +62,7 @@ export async function POST(req: NextRequest) {
         throw new Error('Failed to query database.');
     }
     
-    let currentRacer = existingRacer;
+    let currentRacer: Partial<RacerData> = existingRacer; // Cast to Partial<RacerData>
 
     if (currentRacer) {
       console.log(`Racer found in cache. Returning URL: ${currentRacer.image_url}`);
@@ -61,12 +72,96 @@ export async function POST(req: NextRequest) {
       } else {
         // If metadata_url is missing for an existing racer, generate it now
         console.log('Existing racer found without metadata_url. Generating metadata...');
+        // Ensure necessary properties exist to call generateAndStoreMetadata
+        if (!currentRacer.status || !currentRacer.tier || !currentRacer.image_url) {
+          throw new Error('Incomplete data for existing racer to generate metadata.');
+        }
         const { imageUrl, metadataUrl } = await generateAndStoreMetadata(fid, username, currentRacer.status, currentRacer.tier, currentRacer.image_url);
         return NextResponse.json({ imageUrl, metadataUrl });
       }
     }
 
-    // ... (rest of the existing code)
+    // 2. If no racer exists, generate a new one with the specified Gemini Image model
+    console.log('No existing racer found. Generating image with "gemini-3.1-flash-image-preview" model...');
+    
+    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view, output resolution 550x550 pixels. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appearance directly translated from the provided reference appearance from this image (profile pic). The driver's appearance is based on this image, holding the steering wheel. The background must be a solid, pure white color: #FFFFFF.`;
+    
+    let imageBuffer: Buffer;
+    let storageFileName: string;
+
+    const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
+    
+    const result = await genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" })
+                                .generateContent([prompt, pfpImagePart]);
+    
+    const firstPart = result.response.candidates?.[0].content.parts[0];
+
+    if (!firstPart || !('inlineData' in firstPart) || !firstPart.inlineData) {
+         throw new Error('Invalid response from AI model. Response did not contain image data.');
+    }
+    
+    const imageBase64 = firstPart.inlineData.data;
+    const rawImageBuffer = Buffer.from(imageBase64, 'base64');
+
+    console.log('Processing image with sharp for custom transparency and resize...');
+
+    const imageSharp = sharp(rawImageBuffer);
+    const metadata = await imageSharp.metadata();
+
+    if (!metadata.width || !metadata.height) {
+        throw new Error('Could not get image metadata for processing.');
+    }
+
+    const { data, info } = await imageSharp.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+
+    // Iterate over pixel data (RGBA)
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        // const a = data[i + 3]; // Alpha channel
+
+        // Check if pixel is close to white (R, G, B > 245)
+        if (r > 245 && g > 245 && b > 245) {
+            data[i + 3] = 0; // Set alpha to 0 (transparent)
+        }
+    }
+
+    imageBuffer = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+        .resize(550, 550)
+        .png()
+        .toBuffer();
+    
+    storageFileName = `racer-${fid}-${Date.now()}.png`;
+    console.log(`Image processed. Filename: ${storageFileName}`);
+
+
+    // 3. Upload the generated image to Supabase Storage
+    console.log('Uploading image to Supabase Storage...');
+    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+      .from('racer-images')
+      .upload(storageFileName, imageBuffer, {
+        contentType: 'image/png',
+        upsert: false, // Use false to avoid overwriting existing files unexpectedly
+      });
+
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError);
+      throw new Error('Failed to upload image to storage.');
+    }
+    console.log('Upload successful.');
+
+    // 4. Get the public URL of the uploaded image
+    console.log('Getting public URL for the image...');
+    const { data: { publicUrl } } = supabaseAdmin.storage
+      .from('racer-images')
+      .getPublicUrl(storageFileName);
+
+    if (!publicUrl) {
+        throw new Error('Failed to get public URL for the image.');
+    }
+    console.log(`Public URL obtained: ${publicUrl}`);
+
     // 5. Save the record to the Supabase database
     console.log('Saving racer record to the database...');
     const { error: insertError } = await supabaseAdmin.from('racers').insert({
@@ -101,7 +196,7 @@ export async function POST(req: NextRequest) {
     // 7. Update the racer record with the metadata_url
     console.log('Updating racer record with metadata_url...');
     const { error: updateMetadataError } = await supabaseAdmin.from('racers')
-      .update({ metadata_url: metadataUrl })
+      .update({ metadata_url: metadataUrl } as Partial<RacerData>) // Cast to Partial<RacerData>
       .eq('fid', fid);
 
     if (updateMetadataError) {
