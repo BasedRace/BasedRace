@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { sdk } from '@farcaster/miniapp-sdk';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther } from 'viem';
-import BasedRaceNFTABI from '../config/BasedRaceNFTABI.json';
+import BasedRaceNFTABI from '../src/lib/BasedRaceNFTABI.json';
 
 const CONTRACT_ADDRESS: `0x${string}` = '0x18B2Ae4A7eDB05ECf19b5a9f07a814e150b8c6a0';
 const MINT_FEE = parseEther('0.001');
