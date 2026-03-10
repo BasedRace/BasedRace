@@ -16,9 +16,12 @@ import { GameScreen } from '../src/components/GameScreen';
 import { GarageScreen } from '../src/components/GarageScreen';
 import { LeaderboardScreen } from '../src/components/LeaderboardScreen';
 import { NavBar, NavView } from '../src/components/NavBar';
+import { StartScreen } from '../src/components/StartScreen';
+import { RaceBettingScreen } from '../src/components/RaceBettingScreen';
 
 // Type Definitions
-type GameState = 'loading' | 'login'; // Simplified initial states
+type GameState = 'loading' | 'login';
+type StartSubView = 'menu' | 'tournament' | 'betting';
 type UserProfile = {
   fid: number;
   username: string;
@@ -30,6 +33,7 @@ type UserProfile = {
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('loading');
   const [activeView, setActiveView] = useState<NavView>('start');
+  const [startSubView, setStartSubView] = useState<StartSubView>('menu');
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
@@ -39,7 +43,6 @@ export default function Home() {
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = useWaitForTransactionReceipt({ hash });
 
-  // Effect for initialization and data synchronization
   useEffect(() => {
     const initialize = async () => {
       try {
@@ -55,10 +58,8 @@ export default function Home() {
           setUser(profile);
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) setIsMinted((await response.json()).isMinted);
-          setGameState('login'); // Mark loading as complete
-        } else if (!isConnected) {
-          setGameState('login'); // Show connect screen
         }
+        setGameState('login');
       } catch (error) {
         console.error('Initialization failed:', error);
         toast.error('Could not connect to Farcaster.');
@@ -68,12 +69,11 @@ export default function Home() {
     initialize();
   }, [isConnected, connectedWalletAddress]);
 
-  // Transaction state change effect
   useEffect(() => {
     if (isConfirmed) {
       toast.success(`Mint successful! Tx: ${hash?.slice(0, 10)}...`);
       setIsMinted(true);
-      setActiveView('profile'); // Navigate to profile after mint
+      setActiveView('profile');
       fetch('/api/racer/minted', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -85,6 +85,14 @@ export default function Home() {
   }, [isConfirmed, writeError, confirmError, hash, user]);
 
   const handleConnect = () => connect({ connector: connectors[0] });
+
+  const handleNavigate = (view: NavView) => {
+    // Reset sub-view when navigating away from 'start'
+    if (activeView === 'start' && view !== 'start') {
+      setStartSubView('menu');
+    }
+    setActiveView(view);
+  };
 
   const handleOnChainMint = (metadataUrl: string, fid: number) => {
     if (!isConnected || !user?.walletAddress) return toast.error("Please connect your wallet first.");
@@ -104,35 +112,35 @@ export default function Home() {
   if (gameState === 'loading') {
     return <div className="w-screen h-screen bg-black" />;
   }
-
   if (!isConnected || !user) {
     return <LoginScreen onLogin={handleConnect} />;
   }
 
   const renderActiveView = () => {
     switch (activeView) {
-      case 'start': return <GameScreen />;
-      case 'profile': return <ProfileScreen user={user} onBack={() => {}} />; // onBack is unused now
+      case 'start':
+        switch (startSubView) {
+          case 'tournament': return <GameScreen />;
+          case 'betting': return <RaceBettingScreen />;
+          case 'menu':
+          default:
+            return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
+        }
+      case 'profile': return <ProfileScreen user={user} onBack={() => {}} />;
       case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
       case 'garage': return <GarageScreen />;
       case 'leaderboard': return <LeaderboardScreen />;
-      default: return <GameScreen />;
+      default: return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
     }
   };
 
   return (
     <main className="w-screen h-screen bg-black">
-      {/* Preload Image */}
       <div className="absolute w-px h-px -z-10 overflow-hidden opacity-0">
         <Image src="/ui/mainmenu.webp" alt="" priority unoptimized aria-hidden="true" width={10} height={10}/>
       </div>
-      
-      {/* Main Content Area */}
       <div className="w-full h-full pb-20">{renderActiveView()}</div>
-
-      {/* Navigation */}
-      <NavBar activeView={activeView} onNavigate={setActiveView} />
-      
+      <NavBar activeView={activeView} onNavigate={handleNavigate} />
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }
