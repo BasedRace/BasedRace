@@ -13,35 +13,33 @@ export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPage
     
     <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
       
-      {/* 1. BUTTON: Sekarang lebih kecil dan proporsional 
-          - py-4: Mengurangi tinggi tombol agar tidak terlalu besar.
-          - text-[10px]: Mengecilkan font agar pas dengan tombol yang lebih kecil.
-          - max-w-[200px]: Membatasi lebar tombol.
+      {/* 1. BUTTON DINAMIS
+          - text-[#0f10f4]: Warna biru ikonik dikembalikan untuk semua status.
       */}
       <button 
         onClick={onSelectMint}
-        className="pixel-font w-full max-w-[200px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
-                   text-[10px] py-4 px-2 shadow-[4px记录_4px_0px_#99b1c5] 
-                   active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[80px]"
+        className={`pixel-font w-full max-w-[200px] text-center pixel-btn transition-all duration-150 
+                   text-[#0f10f4] text-[10px] py-4 px-2 active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[80px]
+                   ${isMinted 
+                     ? 'bg-[#8a63d2] shadow-[4px_4px_0px_#4b348b]' 
+                     : 'bg-[#e7f2eb] shadow-[4px_4px_0px_#99b1c5]'
+                   }`}
       >
         <span className="block uppercase tracking-tighter">
-          {isMinted ? "VIEW YOUR RACER" : "MINT PERSONAL RACER"}
+          {isMinted ? "🚀 SHARE RACER" : "MINT PERSONAL RACER"}
         </span>
       </button>
 
-      {/* 2. IMAGE CONTAINER: 
-          - w-48 h-48: Kembali ke ukuran sebelumnya (lebih besar).
-          - Tanpa 'pixel-border' dan 'bg-black': Sekarang bersih tanpa kotak.
-      */}
+      {/* 2. IMAGE CONTAINER */}
       <div className="w-150 h-150 relative overflow-hidden flex items-center justify-center">
         {isMinted && nftImageUrl ? (
-          <Image 
+          <img 
             src={nftImageUrl} 
             alt="Your Unique Based Racer NFT" 
-            fill 
-            className="object-contain p-2" 
-            unoptimized 
-            priority
+            className="w-full h-full object-contain p-2"
+            onError={(e) => {
+              e.currentTarget.src = "/ui/dummy.png";
+            }}
           />
         ) : (
           <img 
