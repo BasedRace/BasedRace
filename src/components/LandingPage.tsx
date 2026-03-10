@@ -11,7 +11,7 @@ interface LandingPageProps {
 export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPageProps) => (
   <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-28">
     
-    <div className="flex flex-col items-center gap-8 w-full max-w-[240px] relative z-30">
+    <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
       
       {/* 1. BUTTON: Sekarang lebih kecil dan proporsional 
           - py-4: Mengurangi tinggi tombol agar tidak terlalu besar.
