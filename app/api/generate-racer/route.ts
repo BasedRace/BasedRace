@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         throw new Error('Failed to query database.');
     }
     
-    let currentRacer: Partial<RacerData> = existingRacer; // Cast to Partial<RacerData>
+    let currentRacer: Partial<RacerData> | null = existingRacer;
 
     if (currentRacer) {
       console.log(`Racer found in cache. Returning URL: ${currentRacer.image_url}`);
