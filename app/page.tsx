@@ -13,7 +13,7 @@ type UserProfile = {
 } | null;
 
 // Minting Preview Component
-const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: () => void, onMint: () => void }) => {
+const MintingPreview = ({ user, onBack, onMint, setGeneratedMetadataUrl }: { user: UserProfile, onBack: () => void, onMint: (metadataUrl: string, fid: number) => void, setGeneratedMetadataUrl: (url: string | null) => void }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
@@ -44,6 +44,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
 
         const data = await response.json();
         setGeneratedImageUrl(data.imageUrl);
+        setGeneratedMetadataUrl(data.metadataUrl);
       } catch (err) {
         setError((err as Error).message);
         console.error(err);
@@ -118,7 +119,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
         {/* Button Group */}
         <div className="w-full mt-auto pt-4">
           <button
-            onClick={onMint}
+            onClick={() => onMint(generatedMetadataUrl!, user!.fid)}
             disabled={isLoading || !!error || !generatedImageUrl}
             className="pixel-font w-full text-center pixel-btn transition-all duration-150 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
@@ -155,6 +156,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('login');
   const [user, setUser] = useState<UserProfile>(null);
+  const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const initSDK = async () => {
@@ -181,10 +183,41 @@ export default function Home() {
   const handleBackToMenu = () => setGameState('menu');
   const handleStart = () => setGameState('playing');
   const handleMint = () => setGameState('minting');
-  const handleOnChainMint = () => {
+  const handleOnChainMint = async (metadataUrl: string, fid: number) => {
     // Placeholder for actual on-chain transaction logic
-    console.log("Preparing on-chain transaction for user:", user);
-    alert("Minting functionality coming soon!");
+    console.log("Preparing on-chain transaction for user:", user, "with metadata URL:", metadataUrl);
+    // In a real scenario, you would interact with your smart contract here:
+    // const transactionResult = await smartContract.safeMint(user.walletAddress, metadataUrl);
+
+    // Simulate a successful mint for demonstration purposes
+    const isMintSuccessful = true; // Replace with actual transaction outcome
+
+    if (isMintSuccessful) {
+      console.log("Mint transaction simulated successfully. Updating database...");
+      try {
+        const response = await fetch('/api/racer/minted', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ fid, isMinted: true }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to update mint status in DB.');
+        }
+        console.log("Database updated: is_minted set to true for FID:", fid);
+        alert("Your Based Racer NFT has been minted!");
+        // Optionally, transition to a new state or refresh profile to show minted status
+        handleBackToMenu(); // Go back to menu after mint
+      } catch (error) {
+        console.error("Error updating mint status in DB:", error);
+        alert(`Mint successful on-chain, but failed to update status: ${(error as Error).message}`);
+      }
+    } else {
+      alert("Minting transaction failed.");
+    }
   };
 
   const renderGameState = () => {

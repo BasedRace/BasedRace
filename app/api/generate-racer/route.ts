@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     console.log(`Checking database for existing racer with FID: ${fid}`);
     const { data: existingRacer, error: dbError } = await supabaseAdmin
       .from('racers')
-      .select('image_url')
+      .select('image_url, status, tier')
       .eq('fid', fid)
       .single();
 
@@ -51,92 +51,22 @@ export async function POST(req: NextRequest) {
         throw new Error('Failed to query database.');
     }
     
-    if (existingRacer) {
-      console.log(`Racer found in cache. Returning URL: ${existingRacer.image_url}`);
-      return NextResponse.json({ imageUrl: existingRacer.image_url });
+    let currentRacer = existingRacer;
+
+    if (currentRacer) {
+      console.log(`Racer found in cache. Returning URL: ${currentRacer.image_url}`);
+      // Also return metadata_url if it exists
+      if (currentRacer.metadata_url) {
+        return NextResponse.json({ imageUrl: currentRacer.image_url, metadataUrl: currentRacer.metadata_url });
+      } else {
+        // If metadata_url is missing for an existing racer, generate it now
+        console.log('Existing racer found without metadata_url. Generating metadata...');
+        const { imageUrl, metadataUrl } = await generateAndStoreMetadata(fid, username, currentRacer.status, currentRacer.tier, currentRacer.image_url);
+        return NextResponse.json({ imageUrl, metadataUrl });
+      }
     }
 
-    // 2. If no racer exists, generate a new one with the specified Gemini Image model
-    console.log('No existing racer found. Generating image with "gemini-3.1-flash-image-preview" model...');
-    
-    const prompt = `Detailed pixel-art illustration, classic 16-bit go-kart game style, isometric 3/4 view, output resolution 550x550 pixels. The go-kart features a main chassis, a front nose section, small yellow headlights, side pods, black tires, and grey rims. Grey exhaust smoke comes from the rear-right. The color scheme of the go-kart is derived from the palette in this image (profile pic). The seated driver character has highly detailed, pixelated features, character appearance directly translated from the provided reference appearance from this image (profile pic). The driver\'s appearance is based on this image, holding the steering wheel. The background must be a solid, pure white color: #FFFFFF.`;
-    
-    let imageBuffer;
-    let storageFileName;
-
-    
-        const pfpImagePart = await urlToGenerativePart(pfpUrl, 'image/png');
-        
-        const result = await genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" })
-                                    .generateContent([prompt, pfpImagePart]);
-        
-        const firstPart = result.response.candidates?.[0].content.parts[0];
-
-        if (!firstPart || !('inlineData' in firstPart) || !firstPart.inlineData) {
-             throw new Error('Invalid response from AI model. Response did not contain image data.');
-        }
-        
-        const imageBase64 = firstPart.inlineData.data;
-        const rawImageBuffer = Buffer.from(imageBase64, 'base64');
-
-        console.log('Processing image with sharp for custom transparency and resize...');
-
-        const imageSharp = sharp(rawImageBuffer);
-        const metadata = await imageSharp.metadata();
-
-        if (!metadata.width || !metadata.height) {
-            throw new Error('Could not get image metadata for processing.');
-        }
-
-        const { data, info } = await imageSharp.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-
-        // Iterate over pixel data (RGBA)
-        for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-            // const a = data[i + 3]; // Alpha channel
-
-            // Check if pixel is close to white (R, G, B > 245)
-            if (r > 245 && g > 245 && b > 245) {
-                data[i + 3] = 0; // Set alpha to 0 (transparent)
-            }
-        }
-
-        imageBuffer = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
-            .resize(550, 550)
-            .png()
-            .toBuffer();
-        
-        storageFileName = `racer-${fid}-${Date.now()}.png`;
-        console.log(`Image processed. Filename: ${storageFileName}`);
-
-    // 3. Upload the generated image to Supabase Storage
-    console.log('Uploading image to Supabase Storage...');
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-      .from('racer-images')
-      .upload(storageFileName, imageBuffer, {
-        contentType: 'image/png',
-        upsert: false, // Use false to avoid overwriting existing files unexpectedly
-      });
-
-    if (uploadError) {
-      console.error('Supabase upload error:', uploadError);
-      throw new Error('Failed to upload image to storage.');
-    }
-    console.log('Upload successful.');
-
-    // 4. Get the public URL of the uploaded image
-    console.log('Getting public URL for the image...');
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('racer-images')
-      .getPublicUrl(storageFileName);
-
-    if (!publicUrl) {
-        throw new Error('Failed to get public URL for the image.');
-    }
-    console.log(`Public URL obtained: ${publicUrl}`);
-
+    // ... (rest of the existing code)
     // 5. Save the record to the Supabase database
     console.log('Saving racer record to the database...');
     const { error: insertError } = await supabaseAdmin.from('racers').insert({
@@ -153,11 +83,80 @@ export async function POST(req: NextRequest) {
     }
     console.log('Database record saved successfully.');
 
-    // 6. Return the new image URL to the frontend
-    return NextResponse.json({ imageUrl: publicUrl });
+    // Retrieve the newly inserted racer to get default status and tier
+    const { data: newRacerData, error: fetchError } = await supabaseAdmin
+      .from('racers')
+      .select('status, tier, image_url')
+      .eq('fid', fid)
+      .single();
+
+    if (fetchError || !newRacerData) {
+        console.error('Failed to fetch newly inserted racer data:', fetchError);
+        throw new Error('Failed to retrieve full racer data after insertion.');
+    }
+    
+    // 6. Generate and store NFT metadata
+    const { metadataUrl } = await generateAndStoreMetadata(fid, username, newRacerData.status, newRacerData.tier, publicUrl);
+
+    // 7. Update the racer record with the metadata_url
+    console.log('Updating racer record with metadata_url...');
+    const { error: updateMetadataError } = await supabaseAdmin.from('racers')
+      .update({ metadata_url: metadataUrl })
+      .eq('fid', fid);
+
+    if (updateMetadataError) {
+      console.error('Supabase update metadata_url error:', updateMetadataError);
+      throw new Error('Failed to save metadata_url to database.');
+    }
+    console.log('Metadata URL saved successfully.');
+
+    // 8. Return the new image URL and metadata URL to the frontend
+    return NextResponse.json({ imageUrl: publicUrl, metadataUrl });
 
   } catch (error) {
     console.error('Full generation error in API route:', error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
+}
+
+// Helper function to generate and store NFT metadata
+async function generateAndStoreMetadata(fid: number, username: string, status: string, tier: string, imageUrl: string) {
+  const metadata = {
+    name: `Based Racer #${fid}`,
+    description: "A unique AI-generated racer for the Based Race tournament.",
+    image: imageUrl,
+    attributes: [
+      { trait_type: "Racer", value: `Based Racer (${fid})` },
+      { trait_type: "Status", value: status },
+      { trait_type: "Tier", value: tier },
+    ],
+  };
+
+  const metadataFileName = `${fid}.json`;
+  const metadataContent = JSON.stringify(metadata, null, 2); // Pretty print JSON
+
+  console.log(`Uploading metadata for FID ${fid} to Storage...`);
+  const { data: metadataUploadData, error: metadataUploadError } = await supabaseAdmin.storage
+    .from('racer-metadata')
+    .upload(metadataFileName, metadataContent, {
+      contentType: 'application/json',
+      upsert: true, // Overwrite if exists
+    });
+
+  if (metadataUploadError) {
+    console.error('Supabase metadata upload error:', metadataUploadError);
+    throw new Error('Failed to upload NFT metadata to storage.');
+  }
+  console.log('Metadata upload successful.');
+
+  const { data: { publicUrl: metadataPublicUrl } } = supabaseAdmin.storage
+    .from('racer-metadata')
+    .getPublicUrl(metadataFileName);
+
+  if (!metadataPublicUrl) {
+    throw new Error('Failed to get public URL for metadata.');
+  }
+  console.log(`Metadata Public URL obtained: ${metadataPublicUrl}`);
+
+  return { imageUrl, metadataUrl: metadataPublicUrl };
 }
