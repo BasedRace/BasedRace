@@ -74,7 +74,7 @@ const MintingPreview = ({ user, onBack, onMint }: { user: UserProfile, onBack: (
     // If successful, show the image in a styled container that matches the modal background
     if (generatedImageUrl) {
       return (
-        <div className="w-full h-full flex items-center justify-center p-2" style={{ backgroundColor: '#e7f2eb', borderRadius: '8px' }}>
+        <div className="w-full h-full flex items-center justify-center p-2" style={{ borderRadius: '8px' }}>
           <img 
             src={generatedImageUrl} 
             alt="Your generated racer" 
