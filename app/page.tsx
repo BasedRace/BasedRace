@@ -141,7 +141,7 @@ export default function Home() {
           case 'menu': default:
             return <StartScreen onSelectTournament={() => setStartSubView('tournament')} onSelectRaceBetting={() => setStartSubView('betting')} />;
         }
-      case 'profile': return <ProfileScreen user={user} />;
+      case 'profile': return <ProfileScreen user={user} onBack={() => setActiveView('start')} />;
       case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
       case 'garage': return <GarageScreen />;
       case 'rank': return <RankScreen />;
