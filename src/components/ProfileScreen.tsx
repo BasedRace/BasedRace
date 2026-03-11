@@ -13,18 +13,21 @@ type UserProfile = {
 
 export const ProfileScreen = ({ user }: { user: UserProfile; onBack?: () => void }) => (
   <div className="w-full h-full flex items-center justify-center relative">
-    <div 
-      className="pixel-border bg-[#e7f2eb] w-2/3 h-1/2 flex flex-col items-center p-5 relative"
-    >
-      <div className="pixel-font text-xl text-[#233e63] mb-5">PROFILE</div>
+    <div className="pixel-border bg-[#e7f2eb] w-11/12 max-w-sm h-3/4 flex flex-col p-5 relative">
+      <div className="pixel-font text-xl text-[#233e63] mb-5 text-center w-full">PROFILE</div>
       {user ? (
-        <div className="flex flex-col items-center gap-4 flex-grow justify-center">
-          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#233e63]">
+        <div className="flex flex-row items-start gap-4 w-full">
+          {/* Smaller PFP, moved to the left */}
+          <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-[#233e63] flex-shrink-0">
             <img src={user.pfpUrl} alt={user.displayName} className="w-full h-full object-cover" />
           </div>
-          <div className="pixel-font text-sm text-[#0f10f4] text-center">{user.displayName || user.username}</div>
-          <div className="pixel-font text-xs text-[#233e63]">@{user.username}</div>
-          <div className="pixel-font text-xs text-[#99b1c5]">FID: {user.fid}</div>
+          {/* Details are now in a vertical flex column to the right */}
+          <div className="flex flex-col items-start gap-1 overflow-hidden">
+            <div className="pixel-font text-sm text-[#0f10f4] truncate w-full">{user.displayName || user.username}</div>
+            <div className="pixel-font text-xs text-[#233e63]">@{user.username}</div>
+            <div className="pixel-font text-xs text-[#99b1c5]">FID: {user.fid}</div>
+            {user.walletAddress && <div className="pixel-font text-xs text-[#99b1c5] truncate w-full">Wallet: {user.walletAddress}</div>}
+          </div>
         </div>
       ) : (
         <div className="pixel-font text-sm text-[#233e63] flex-grow flex items-center justify-center">Loading...</div>
