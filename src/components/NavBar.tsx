@@ -1,8 +1,5 @@
 'use client';
 
-// Note: Haptic feedback functionality has been removed as it was causing a build error.
-// The sdk.actions.vibrate() function does not exist in the current SDK version.
-
 export type NavView = 'start' | 'profile' | 'mint' | 'garage' | 'rank' | 'landing';
 
 const navItems: { view: Exclude<NavView, 'landing'>, icon: string, label: string }[] = [
@@ -18,29 +15,30 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
     <nav 
       className="grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font" 
       style={{ 
-        borderTop: '4px solid #233e63', 
-        // Perbaikan: mengubah 'px' menjadi nilai numerik '0px' agar valid
-        paddingBottom: 'calc(0px + env(safe-area-inset-bottom))'
+        borderTop: '8px solid #233e63', // Border dipertebal agar terlihat kokoh
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        // Kita kunci tinggi Nav di sini agar konsisten
+        height: '450px' 
       }}
     >
       {navItems.map(({ view, icon, label }) => {
         const isActive = activeView === view;
         const activeClasses = isActive 
-          ? 'border-2 border-[#99b1c5] shadow-[0_0_15px_rgba(153,177,197,0.6)]' 
-          : 'border-2 border-transparent';
+          ? 'bg-[#99b1c5] text-white' // Warna berubah total saat aktif
+          : 'bg-[#e7f2eb] text-[#0f10f4]';
         
-        const labelSize = view === 'profile' 
-          ? 'text-[10px] sm:text-[12px]' 
-          : 'text-[11px] sm:text-[14px]';
-
         return (
           <button
             key={view}
-            onClick={() => onNavigate(view)} // Simplified direct call
-            className={`flex flex-col items-center justify-around bg-[#e7f2eb] p-0.5 text-center text-[#0f10f4] transition-all duration-150 focus:outline-none ${activeClasses} h-80 pixel-font overflow-hidden`}
+            onClick={() => onNavigate(view)}
+            // Kita gunakan h-full agar tombol mengikuti tinggi nav (450px)
+            className={`flex flex-col items-center justify-center gap-6 transition-all duration-150 focus:outline-none ${activeClasses} h-full pixel-font overflow-hidden border-x border-[#233e63]`}
           >
-            <span className="text-6xl leading-none">{icon}</span>
-            <span className={`${labelSize} uppercase font-black tracking-tighter leading-tight w-full break-words px-0.5`}>
+            {/* Ikon dibuat RAKSASA agar seimbang dengan 450px */}
+            <span className="text-[120px] leading-none drop-shadow-md">{icon}</span>
+            
+            {/* Label dibuat jauh lebih besar agar terbaca */}
+            <span className="text-[24px] uppercase font-black tracking-tighter leading-tight w-full break-words px-1">
               {label}
             </span>
           </button>
