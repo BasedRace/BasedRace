@@ -38,7 +38,7 @@ export default function Home() {
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
-  const [nftImageUrl, setNftImageUrl] = useState<string | null>(null); // State baru untuk menyimpan URL gambar dari Supabase
+  const [nftImageUrl, setNftImageUrl] = useState<string | null>(null); 
   const [isRacing, setIsRacing] = useState<boolean>(false);
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
@@ -61,12 +61,11 @@ export default function Home() {
           };
           setUser(profile);
 
-          // Fetch status dan imageUrl dari API yang sudah di-update
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) {
             const data = await response.json();
             setIsMinted(data.isMinted);
-            setNftImageUrl(data.imageUrl); // Menyimpan URL gambar dari kolom image_url Supabase
+            setNftImageUrl(data.imageUrl); 
           }
         }
         setGameState('login');
@@ -103,13 +102,11 @@ export default function Home() {
       setIsMinted(true);
       setActiveView('profile');
       
-      // Update database status minted
       fetch('/api/racer/minted', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fid: user!.fid, isMinted: true }),
       }).then(async () => {
-        // Refresh status untuk mendapatkan image_url terbaru setelah mint
         const res = await fetch(`/api/racer/status?fid=${user!.fid}`);
         if (res.ok) {
           const data = await res.json();
@@ -128,13 +125,11 @@ export default function Home() {
     setActiveView(view);
   };
 
-  // Dynamic Action: Mint or Share
   const handleAction = async () => {
     if (!isMinted) {
       setActiveView('mint');
     } else {
       if (user) {
-        // Gunakan URL gambar dari Supabase (nftImageUrl) atau fallback ke API generator
         const finalNftUrl = nftImageUrl || `${window.location.origin}/api/racer/image?fid=${user.fid}`;
         const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
         const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster!`;
@@ -182,7 +177,7 @@ export default function Home() {
           <LandingPage
             onAction={handleAction}
             isMinted={isMinted}
-            nftImageUrl={isMinted ? nftImageUrl : null} // Menggunakan URL gambar dari Supabase
+            nftImageUrl={isMinted ? nftImageUrl : null} 
           />
         );
       case 'start':
@@ -216,14 +211,39 @@ export default function Home() {
   };
 
   return (
-    <main className="w-full h-[100dvh] bg-black relative flex flex-col overflow-hidden">
-      <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover -z-10" unoptimized />
+    <main className="fixed inset-0 w-full h-full bg-[#233e63] flex flex-col overflow-hidden">
+      <Image 
+        src="/ui/mainmenu.webp" 
+        alt="Main Menu" 
+        fill 
+        priority 
+        className="object-cover -z-10" 
+        unoptimized 
+      />
+      
       <div className="flex-1 w-full overflow-y-auto relative z-10">
         {renderActiveView()}
       </div>
-      {!isRacing && <NavBar activeView={activeView as NavView} onNavigate={handleNavigate} />}
+
+      {!isRacing && (
+        <NavBar 
+          activeView={activeView as NavView} 
+          onNavigate={handleNavigate} 
+        />
+      )}
+
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          height: 100% !important;
+          width: 100% !important;
+          overflow: hidden;
+          background-color: #233e63;
+        }
+
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }
         .pixel-border { box-shadow: 4px 0 0 0 #233e63, -4px 0 0 0 #233e63, 0 4px 0 0 #233e63, 0 -4px 0 0 #233e63, 6px 0 0 0 #99b1c5, -6px 0 0 0 #99b1c5, 0 6px 0 0 #99b1c5, 0 -6px 0 0 #99b1c5; }
         .pixel-btn { box-shadow: 6px 6px 0 0 #233e63, 8px 8px 0 0 #99b1c5; }
