@@ -3,7 +3,7 @@
 import Image from 'next/image';
 
 interface LandingPageProps {
-  onAction: () => void; // Menggunakan satu fungsi aksi yang dinamis
+  onAction: () => void;
   isMinted: boolean;
   nftImageUrl?: string | null;
 }
@@ -12,7 +12,9 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-28">
     <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
       
-      {/* 1. BUTTON: Berubah Teks & Fungsi, tapi warna tetap seperti sebelumnya */}
+      {/* 1. BUTTON: Warna tetap putih (#e7f2eb) dan teks biru (#0f10f4) 
+          Fungsi dan teks berubah secara dinamis berdasarkan status minting.
+      */}
       <button 
         onClick={onAction}
         className="pixel-font w-full max-w-[200px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
@@ -25,7 +27,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
       </button>
 
       {/* 2. IMAGE CONTAINER: 
-          Menampilkan NFT user jika sudah mint, jika belum tampilkan dummy.
+          Menampilkan NFT user jika isMinted true, jika tidak tampilkan dummy.
       */}
       <div className="w-150 h-150 relative overflow-hidden flex items-center justify-center">
         {isMinted && nftImageUrl ? (
@@ -34,7 +36,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
             alt="Your Unique Based Racer NFT" 
             className="w-full h-full object-contain p-2"
             onError={(e) => {
-              // Jika URL NFT bermasalah, tetap tampilkan dummy agar tidak kosong
+              // Pengaman jika API gambar gagal memuat, tampilkan kembali dummy
               e.currentTarget.src = "/ui/dummy.png";
             }}
           />
