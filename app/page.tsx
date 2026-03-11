@@ -33,13 +33,12 @@ type UserProfile = {
 
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>('loading');
-  // Changed initial view to 'landing'
   const [activeView, setActiveView] = useState<NavView | 'landing'>('landing');
   const [startSubView, setStartSubView] = useState<StartSubView>('menu');
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
-  const [isRacing, setIsRacing] = useState<boolean>(false); // New state for race
+  const [isRacing, setIsRacing] = useState<boolean>(false);
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -72,7 +71,6 @@ export default function Home() {
     initialize();
   }, [isConnected, connectedWalletAddress]);
 
-  // Effect to handle messages from the game iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'raceState') {
@@ -110,39 +108,29 @@ export default function Home() {
     if (view === 'start') setStartSubView('menu');
     setActiveView(view);
   };
-const handleAction = async () => {
-  if (!isMinted) {
-    // Jika belum mint, buka tampilan minting
-    setActiveView('mint');
-  } else {
-    // Jika sudah mint, jalankan fungsi Share (Auto-compose)
-    if (user) {
-      const nftUrl = `${window.location.origin}/api/racer/image?fid=${user.fid}`;
-      const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race"; /
-      
-      const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster!`;
 
-      try {
-        await sdk.actions.openCastComposer({
-          text: templateText,
-          embeds: [appUrl, nftUrl],
-        });
-      } catch (error) {
-        console.error("Gagal membuka composer:", error);
+  const handleAction = async () => {
+    if (!isMinted) {
+      setActiveView('mint');
+    } else {
+      if (user) {
+        const nftUrl = `${window.location.origin}/api/racer/image?fid=${user.fid}`;
+        const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
+        const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster!`;
+
+        try {
+          await sdk.actions.openCastComposer({
+            text: templateText,
+            embeds: [appUrl, nftUrl],
+          });
+        } catch (error) {
+          console.error("Gagal membuka composer:", error);
+          toast.error("Failed to open share composer.");
+        }
       }
     }
-  }
-};
+  };
 
-case 'landing':
-  return (
-    <LandingPage 
-      onAction={handleAction} 
-      isMinted={isMinted}
-      nftImageUrl={isMinted ? `/api/racer/image?fid=${user?.fid}&t=${Date.now()}` : null}
-    />
-  );
-  
   const handleOnChainMint = (metadataUrl: string, fid: number) => {
     if (!isConnected || !user?.walletAddress) return toast.error("Please connect your wallet first.");
     if (isMinted) return toast.info("You have already minted your Based Racer!");
@@ -171,9 +159,9 @@ case 'landing':
       case 'landing':
         return (
           <LandingPage 
-            onSelectMint={() => setActiveView('mint')} 
+            onAction={handleAction} 
             isMinted={isMinted}
-            nftImageUrl={isMinted ? `/api/racer/image?fid=${user.fid}` : null}
+            nftImageUrl={isMinted ? `/api/racer/image?fid=${user.fid}&t=${Date.now()}` : null}
           />
         );
       case 'start':
