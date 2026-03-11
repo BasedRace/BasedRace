@@ -12,16 +12,14 @@ const navItems: { view: Exclude<NavView, 'landing'>, icon: string, label: string
 
 export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavigate: (view: any) => void }) => {
   return (
-    <nav 
-      className="grid grid-cols-5 gap-px bg-[#233e63] pixel-font w-full sticky bottom-0 left-0" 
-      style={{ 
-        borderTop: '2px solid #233e63', 
-        // Menggunakan padding-bottom untuk menelan safe area
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        // Latar belakang nav disamakan dengan warna grid agar area bawah tertutup sempurna
-        backgroundColor: '#233e63',
-      }}
-    >
+   <nav 
+  className="grid grid-cols-5 gap-px bg-[#233e63] w-full" 
+  style={{ 
+    borderTop: '2px solid #233e63',
+    paddingBottom: 'env(safe-area-inset-bottom)', 
+    backgroundColor: '#233e63', 
+  }}
+>
       {navItems.map(({ view, icon, label }) => {
         const isActive = activeView === view;
         const activeClasses = isActive 
