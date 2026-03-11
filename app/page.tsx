@@ -45,6 +45,7 @@ export default function Home() {
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = useWaitForTransactionReceipt({ hash });
 
+  // Initialize App & Context
   useEffect(() => {
     const initialize = async () => {
       try {
@@ -71,6 +72,7 @@ export default function Home() {
     initialize();
   }, [isConnected, connectedWalletAddress]);
 
+  // Handle Game Iframe Messages
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'raceState') {
@@ -87,6 +89,7 @@ export default function Home() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
+  // Handle Transaction Results
   useEffect(() => {
     if (isConfirmed) {
       toast.success(`Mint successful! Tx: ${hash?.slice(0, 10)}...`);
@@ -96,7 +99,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fid: user!.fid, isMinted: true }),
-      }).catch(err => toast.warning('Mint recorded on-chain, but DB update failed.'));
+      }).catch(() => toast.warning('Mint recorded on-chain, but DB update failed.'));
     }
     if (writeError) toast.error(`Transaction failed: ${writeError.message}`);
     if (confirmError) toast.error(`Confirmation failed: ${confirmError.message}`);
@@ -109,6 +112,7 @@ export default function Home() {
     setActiveView(view);
   };
 
+  // Dynamic Action: Mint or Share
   const handleAction = async () => {
     if (!isMinted) {
       setActiveView('mint');
@@ -119,7 +123,8 @@ export default function Home() {
         const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster!`;
 
         try {
-          await sdk.actions.openCastComposer({
+          // Casting to any to avoid TypeScript build error on openCastComposer
+          await (sdk.actions as any).openCastComposer({
             text: templateText,
             embeds: [appUrl, nftUrl],
           });
@@ -131,12 +136,12 @@ export default function Home() {
     }
   };
 
-  const handleOnChainMint = (metadataUrl: string, fid: number) => {
+  const handleOnChainMint = (metadataUrl: string) => {
     if (!isConnected || !user?.walletAddress) return toast.error("Please connect your wallet first.");
     if (isMinted) return toast.info("You have already minted your Based Racer!");
     if (!metadataUrl) return toast.warning("Racer data not available. Please try again.");
     if (isPending || isConfirming) return toast.info("A mint transaction is already in progress.");
-    
+
     writeContract({
       address: CONTRACT_ADDRESS,
       abi: BasedRaceNFTABI,
@@ -149,7 +154,7 @@ export default function Home() {
   if (gameState === 'loading') {
     return <div className="w-screen h-screen bg-black" />;
   }
-  
+
   if (!isConnected || !user) {
     return <LoginScreen onLogin={handleConnect} />;
   }
@@ -158,8 +163,8 @@ export default function Home() {
     switch (activeView) {
       case 'landing':
         return (
-          <LandingPage 
-            onAction={handleAction} 
+          <LandingPage
+            onAction={handleAction}
             isMinted={isMinted}
             nftImageUrl={isMinted ? `/api/racer/image?fid=${user.fid}&t=${Date.now()}` : null}
           />
@@ -168,14 +173,26 @@ export default function Home() {
         switch (startSubView) {
           case 'tournament': return <GameScreen />;
           case 'betting': return <RaceBettingScreen />;
-          case 'menu': default:
-            return <StartScreen 
-              onSelectTournament={() => setStartSubView('tournament')} 
-              onSelectRaceBetting={() => setStartSubView('betting')} 
-            />;
+          case 'menu':
+          default:
+            return (
+              <StartScreen
+                onSelectTournament={() => setStartSubView('tournament')}
+                onSelectRaceBetting={() => setStartSubView('betting')}
+              />
+            );
         }
       case 'profile': return <ProfileScreen user={user} />;
-      case 'mint': return <MintingScreen user={user} onBack={() => setActiveView('profile')} onMint={handleOnChainMint} setGeneratedMetadataUrl={setGeneratedMetadataUrl} generatedMetadataUrl={generatedMetadataUrl} />;
+      case 'mint':
+        return (
+          <MintingScreen
+            user={user}
+            onBack={() => setActiveView('profile')}
+            onMint={handleOnChainMint}
+            setGeneratedMetadataUrl={setGeneratedMetadataUrl}
+            generatedMetadataUrl={generatedMetadataUrl}
+          />
+        );
       case 'garage': return <GarageScreen />;
       case 'rank': return <RankScreen />;
       default: return <ProfileScreen user={user} />;
