@@ -12,14 +12,13 @@ const navItems: { view: Exclude<NavView, 'landing'>, icon: string, label: string
 
 export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavigate: (view: any) => void }) => {
   return (
+    /* FIXED POSITION: Memaksa menempel ke bawah layar tanpa celah */
     <nav 
-      className="grid grid-cols-5 gap-px bg-[#233e63] w-full relative" 
+      className="fixed bottom-0 left-0 right-0 grid grid-cols-5 gap-px bg-[#233e63] z-[9999]" 
       style={{ 
         borderTop: '2px solid #233e63',
         paddingBottom: 'env(safe-area-inset-bottom)',
         backgroundColor: '#233e63',
-        /* Trik: Box shadow ini akan mengisi ruang hingga 500px ke bawah layar */
-        boxShadow: '0 500px 0 500px #233e63', 
       }}
     >
       {navItems.map(({ view, icon, label }) => {
