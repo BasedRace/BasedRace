@@ -118,9 +118,9 @@ const handleAction = async () => {
     // Jika sudah mint, jalankan fungsi Share (Auto-compose)
     if (user) {
       const nftUrl = `${window.location.origin}/api/racer/image?fid=${user.fid}`;
-      const appUrl = "https://based-race.vercel.app"; // Ganti dengan URL app Anda
+      const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race"; /
       
-      const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster! @based-race`;
+      const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster!`;
 
       try {
         await sdk.actions.openCastComposer({
