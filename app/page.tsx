@@ -38,6 +38,7 @@ export default function Home() {
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
+  const [nftImageUrl, setNftImageUrl] = useState<string | null>(null); // State baru untuk menyimpan URL gambar dari Supabase
   const [isRacing, setIsRacing] = useState<boolean>(false);
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
@@ -59,8 +60,14 @@ export default function Home() {
             walletAddress: connectedWalletAddress,
           };
           setUser(profile);
+
+          // Fetch status dan imageUrl dari API yang sudah di-update
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
-          if (response.ok) setIsMinted((await response.json()).isMinted);
+          if (response.ok) {
+            const data = await response.json();
+            setIsMinted(data.isMinted);
+            setNftImageUrl(data.imageUrl); // Menyimpan URL gambar dari kolom image_url Supabase
+          }
         }
         setGameState('login');
       } catch (error) {
@@ -95,10 +102,19 @@ export default function Home() {
       toast.success(`Mint successful! Tx: ${hash?.slice(0, 10)}...`);
       setIsMinted(true);
       setActiveView('profile');
+      
+      // Update database status minted
       fetch('/api/racer/minted', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fid: user!.fid, isMinted: true }),
+      }).then(async () => {
+        // Refresh status untuk mendapatkan image_url terbaru setelah mint
+        const res = await fetch(`/api/racer/status?fid=${user!.fid}`);
+        if (res.ok) {
+          const data = await res.json();
+          setNftImageUrl(data.imageUrl);
+        }
       }).catch(() => toast.warning('Mint recorded on-chain, but DB update failed.'));
     }
     if (writeError) toast.error(`Transaction failed: ${writeError.message}`);
@@ -118,15 +134,15 @@ export default function Home() {
       setActiveView('mint');
     } else {
       if (user) {
-        const nftUrl = `${window.location.origin}/api/racer/image?fid=${user.fid}`;
+        // Gunakan URL gambar dari Supabase (nftImageUrl) atau fallback ke API generator
+        const finalNftUrl = nftImageUrl || `${window.location.origin}/api/racer/image?fid=${user.fid}`;
         const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
         const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster!`;
 
         try {
-          // Menggunakan composeCast sesuai dokumentasi terbaru Farcaster SDK v2
           await (sdk.actions as any).composeCast({
             text: templateText,
-            embeds: [appUrl, nftUrl],
+            embeds: [appUrl, finalNftUrl],
           });
         } catch (error) {
           console.error("Gagal membuka composer:", error);
@@ -166,7 +182,7 @@ export default function Home() {
           <LandingPage
             onAction={handleAction}
             isMinted={isMinted}
-            nftImageUrl={isMinted ? `/api/racer/image?fid=${user.fid}&t=${Date.now()}` : null}
+            nftImageUrl={isMinted ? nftImageUrl : null} // Menggunakan URL gambar dari Supabase
           />
         );
       case 'start':
