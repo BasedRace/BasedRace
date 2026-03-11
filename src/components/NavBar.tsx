@@ -15,25 +15,25 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
     <div 
       style={{
         position: 'fixed',
-        bottom: '24px', // Jarak dari bawah agar melayang (floating)
+        bottom: '24px', 
         left: '50%',
-        transform: 'translateX(-50%)', // Teknik murni CSS untuk centering
-        width: '90%', // Lebar navbar melayang
-        maxWidth: '450px',
+        transform: 'translateX(-50%)', 
+        width: '95%', 
+        maxWidth: '500px',
         zIndex: 9999,
         display: 'flex',
         justifyContent: 'center',
-        pointerEvents: 'none' // Agar area luar box tidak menghalangi klik game
+        pointerEvents: 'none'
       }}
     >
       <nav 
         className="grid grid-cols-5 gap-px bg-[#233e63] p-0.5 shadow-[0_6px_0_0_rgba(0,0,0,0.3)]"
         style={{ 
           width: '100%',
-          height: '55px',
+          height: '60px',
           border: '2px solid #233e63',
           imageRendering: 'pixelated',
-          pointerEvents: 'auto' // Tombol di dalam tetap bisa diklik
+          pointerEvents: 'auto'
         }}
       >
         {navItems.map(({ view, icon, label }) => {
