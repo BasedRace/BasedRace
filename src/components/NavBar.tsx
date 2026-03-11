@@ -48,4 +48,3 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
     </nav>
   );
 };
-```
