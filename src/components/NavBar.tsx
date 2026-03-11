@@ -14,9 +14,8 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
   return (
  <div className="fixed bottom-6 left-0 right-0 z-[9999] flex justify-center px-4 pointer-events-none">
       <nav 
-        /* pointer-events-auto: Memastikan tombol tetap bisa diklik */
         className="grid grid-cols-5 gap-px bg-[#233e63] p-0.5 shadow-[0_6px_0_0_rgba(0,0,0,0.3)] w-full max-w-md pointer-events-auto" 
-        style={{ 
+         style={{ 
           height: '55px',
           border: '2px solid #233e63',
           imageRendering: 'pixelated'
@@ -44,7 +43,3 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
             </span>
           </button>
         );
-      })}
-    </nav>
-  );
-};
