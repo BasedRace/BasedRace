@@ -15,30 +15,29 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
     <nav 
       className="grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font" 
       style={{ 
-        borderTop: '8px solid #233e63', // Border dipertebal agar terlihat kokoh
+        borderTop: '2px solid #233e63', 
         paddingBottom: 'env(safe-area-inset-bottom)',
-        // Kita kunci tinggi Nav di sini agar konsisten
-        height: '450px' 
+        height: '55px' // Tinggi total navbar dikunci di 55px
       }}
     >
       {navItems.map(({ view, icon, label }) => {
         const isActive = activeView === view;
         const activeClasses = isActive 
-          ? 'bg-[#99b1c5] text-white' // Warna berubah total saat aktif
+          ? 'bg-[#99b1c5] text-white shadow-[inset_0_0_8px_rgba(0,0,0,0.2)]' 
           : 'bg-[#e7f2eb] text-[#0f10f4]';
         
         return (
           <button
             key={view}
             onClick={() => onNavigate(view)}
-            // Kita gunakan h-full agar tombol mengikuti tinggi nav (450px)
-            className={`flex flex-col items-center justify-center gap-6 transition-all duration-150 focus:outline-none ${activeClasses} h-full pixel-font overflow-hidden border-x border-[#233e63]`}
+            // h-full agar tombol mengisi ruang 55px dari nav
+            className={`flex flex-col items-center justify-center transition-all duration-150 focus:outline-none ${activeClasses} h-full pixel-font overflow-hidden`}
           >
-            {/* Ikon dibuat RAKSASA agar seimbang dengan 450px */}
-            <span className="text-[120px] leading-none drop-shadow-md">{icon}</span>
+            {/* Ikon dikecilkan agar muat di 55px */}
+            <span className="text-xl leading-none">{icon}</span>
             
-            {/* Label dibuat jauh lebih besar agar terbaca */}
-            <span className="text-[24px] uppercase font-black tracking-tighter leading-tight w-full break-words px-1">
+            {/* Teks dibuat sangat kecil (8px - 10px) */}
+            <span className="text-[8px] sm:text-[10px] uppercase font-black tracking-tighter leading-tight mt-0.5">
               {label}
             </span>
           </button>
