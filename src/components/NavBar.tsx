@@ -1,8 +1,3 @@
-Okay, I will display the entire content of `BasedRace/src/components/NavBar.tsx` with the changes applied.
-
-Here is the updated code for `BasedRace/src/components/NavBar.tsx`:
-
-```typescript
 'use client';
 
 // Note: Haptic feedback functionality has been removed as it was causing a build error.
