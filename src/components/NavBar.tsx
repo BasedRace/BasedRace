@@ -13,11 +13,10 @@ const navItems: { view: Exclude<NavView, 'landing'>, icon: string, label: string
 export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavigate: (view: any) => void }) => {
   return (
     <nav 
-      className="grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font" 
+      className="fixed bottom-6 left-4 right-4 grid grid-cols-5 gap-px bg-[#233e63] p-0.5 shadow-[0_6px_0_0_rgba(0,0,0,0.3)] z-[9999] pixel-font" 
       style={{ 
-        borderTop: '2px solid #233e63', 
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        height: '55px' // Tinggi total navbar dikunci di 55px
+        height: '55px',
+        border: '2px solid #233e63' 
       }}
     >
       {navItems.map(({ view, icon, label }) => {
