@@ -123,8 +123,8 @@ export default function Home() {
         const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster!`;
 
         try {
-          // Casting to any to avoid TypeScript build error on openCastComposer
-          await (sdk.actions as any).openCastComposer({
+          // Menggunakan composeCast sesuai dokumentasi terbaru Farcaster SDK v2
+          await (sdk.actions as any).composeCast({
             text: templateText,
             embeds: [appUrl, nftUrl],
           });
