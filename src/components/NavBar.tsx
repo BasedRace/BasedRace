@@ -13,15 +13,13 @@ const navItems: { view: Exclude<NavView, 'landing'>, icon: string, label: string
 export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavigate: (view: any) => void }) => {
   return (
     <nav 
-      className="grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font" 
+      className="grid grid-cols-5 gap-px bg-[#233e63] pixel-font w-full sticky bottom-0 left-0" 
       style={{ 
         borderTop: '2px solid #233e63', 
-        // 1. Tambahkan background biru yang sama agar area bawah tidak terlihat terpisah
-        backgroundColor: '#233e63',
-        // 2. Gunakan padding-bottom untuk memberi ruang bagi safe area
+        // Menggunakan padding-bottom untuk menelan safe area
         paddingBottom: 'env(safe-area-inset-bottom)',
-        // 3. Gunakan minHeight, bukan height statis
-        minHeight: '55px' 
+        // Latar belakang nav disamakan dengan warna grid agar area bawah tertutup sempurna
+        backgroundColor: '#233e63',
       }}
     >
       {navItems.map(({ view, icon, label }) => {
@@ -34,8 +32,8 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
           <button
             key={view}
             onClick={() => onNavigate(view)}
-            // 4. Pastikan tombol memiliki tinggi minimal 55px
-            className={`flex flex-col items-center justify-center transition-all duration-150 focus:outline-none ${activeClasses} min-h-[55px] pixel-font overflow-hidden`}
+            // Kita gunakan h-[55px] di sini agar tombol memiliki ukuran tetap
+            className={`flex flex-col items-center justify-center transition-all duration-150 focus:outline-none ${activeClasses} h-[55px] pixel-font overflow-hidden`}
           >
             <span className="text-xl leading-none">{icon}</span>
             <span className="text-[8px] uppercase font-black tracking-tighter leading-tight mt-1">
