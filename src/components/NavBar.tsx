@@ -16,28 +16,29 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
       className="grid grid-cols-5 gap-px bg-[#233e63] p-px pixel-font" 
       style={{ 
         borderTop: '2px solid #233e63', 
+        // 1. Tambahkan background biru yang sama agar area bawah tidak terlihat terpisah
+        backgroundColor: '#233e63',
+        // 2. Gunakan padding-bottom untuk memberi ruang bagi safe area
         paddingBottom: 'env(safe-area-inset-bottom)',
-        height: '55px' // Tinggi total navbar dikunci di 55px
+        // 3. Gunakan minHeight, bukan height statis
+        minHeight: '55px' 
       }}
     >
       {navItems.map(({ view, icon, label }) => {
         const isActive = activeView === view;
         const activeClasses = isActive 
-          ? 'bg-[#99b1c5] text-white shadow-[inset_0_0_8px_rgba(0,0,0,0.2)]' 
+          ? 'bg-[#99b1c5] text-white' 
           : 'bg-[#e7f2eb] text-[#0f10f4]';
         
         return (
           <button
             key={view}
             onClick={() => onNavigate(view)}
-            // h-full agar tombol mengisi ruang 55px dari nav
-            className={`flex flex-col items-center justify-center transition-all duration-150 focus:outline-none ${activeClasses} h-full pixel-font overflow-hidden`}
+            // 4. Pastikan tombol memiliki tinggi minimal 55px
+            className={`flex flex-col items-center justify-center transition-all duration-150 focus:outline-none ${activeClasses} min-h-[55px] pixel-font overflow-hidden`}
           >
-            {/* Ikon dikecilkan agar muat di 55px */}
             <span className="text-xl leading-none">{icon}</span>
-            
-            {/* Teks dibuat sangat kecil (8px - 10px) */}
-            <span className="text-[8px] sm:text-[10px] uppercase font-black tracking-tighter leading-tight mt-0.5">
+            <span className="text-[8px] uppercase font-black tracking-tighter leading-tight mt-1">
               {label}
             </span>
           </button>
