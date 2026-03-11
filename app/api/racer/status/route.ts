@@ -18,22 +18,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing or invalid FID' }, { status: 400 });
     }
 
-    console.log(`Fetching is_minted status for FID: ${fid}`);
+    console.log(`Fetching data for FID: ${fid}`);
 
+    // TAMBAHKAN 'image_url' di dalam .select()
     const { data, error } = await supabaseAdmin.from('racers')
-      .select('is_minted')
+      .select('is_minted, image_url') 
       .eq('fid', fid)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = 'No rows found'
-      console.error('Supabase fetch is_minted error:', error);
-      throw new Error(`Failed to fetch is_minted status: ${error.message}`);
+    if (error && error.code !== 'PGRST116') {
+      console.error('Supabase fetch error:', error);
+      throw new Error(`Failed to fetch status: ${error.message}`);
     }
 
     const isMinted = data ? data.is_minted : false;
+    const imageUrl = data ? data.image_url : null; // Ambil image_url jika data ada
 
-    console.log(`is_minted status for FID: ${fid} is ${isMinted}`);
-    return NextResponse.json({ isMinted });
+    console.log(`Status for FID ${fid}: isMinted=${isMinted}, imageUrl=${imageUrl}`);
+
+    // Kembalikan isMinted DAN imageUrl agar bisa dipakai frontend
+    return NextResponse.json({ isMinted, imageUrl });
 
   } catch (error) {
     console.error('Error in /api/racer/status:', error);
