@@ -3,34 +3,30 @@
 import Image from 'next/image';
 
 interface LandingPageProps {
-  onSelectMint: () => void;
+  onAction: () => void; // Menggunakan satu fungsi aksi yang dinamis
   isMinted: boolean;
   nftImageUrl?: string | null;
 }
 
-export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPageProps) => (
+export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProps) => (
   <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-28">
-    
     <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
       
-      {/* 1. BUTTON DINAMIS
-          - text-[#0f10f4]: Warna biru ikonik dikembalikan untuk semua status.
-      */}
+      {/* 1. BUTTON: Berubah Teks & Fungsi, tapi warna tetap seperti sebelumnya */}
       <button 
-        onClick={onSelectMint}
-        className={`pixel-font w-full max-w-[200px] text-center pixel-btn transition-all duration-150 
-                   text-[#0f10f4] text-[10px] py-4 px-2 active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[80px]
-                   ${isMinted 
-                     ? 'bg-[#8a63d2] shadow-[4px_4px_0px_#4b348b]' 
-                     : 'bg-[#e7f2eb] shadow-[4px_4px_0px_#99b1c5]'
-                   }`}
+        onClick={onAction}
+        className="pixel-font w-full max-w-[200px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
+                   text-[10px] py-4 px-2 shadow-[4px_4px_0px_#99b1c5] 
+                   active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[80px]"
       >
         <span className="block uppercase tracking-tighter">
           {isMinted ? "🚀 SHARE RACER" : "MINT PERSONAL RACER"}
         </span>
       </button>
 
-      {/* 2. IMAGE CONTAINER */}
+      {/* 2. IMAGE CONTAINER: 
+          Menampilkan NFT user jika sudah mint, jika belum tampilkan dummy.
+      */}
       <div className="w-150 h-150 relative overflow-hidden flex items-center justify-center">
         {isMinted && nftImageUrl ? (
           <img 
@@ -38,6 +34,7 @@ export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPage
             alt="Your Unique Based Racer NFT" 
             className="w-full h-full object-contain p-2"
             onError={(e) => {
+              // Jika URL NFT bermasalah, tetap tampilkan dummy agar tidak kosong
               e.currentTarget.src = "/ui/dummy.png";
             }}
           />
@@ -49,7 +46,6 @@ export const LandingPage = ({ onSelectMint, isMinted, nftImageUrl }: LandingPage
           />
         )}
       </div>
-
     </div>
   </div>
 );
