@@ -15,7 +15,7 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
     <div 
       style={{
         position: 'fixed',
-        bottom: '24px', 
+        bottom: '15px', 
         left: '50%',
         transform: 'translateX(-50%)', 
         width: '95%', 
@@ -30,7 +30,7 @@ export const NavBar = ({ activeView, onNavigate }: { activeView: NavView, onNavi
         className="grid grid-cols-5 gap-px bg-[#233e63] p-0.5 shadow-[0_6px_0_0_rgba(0,0,0,0.3)]"
         style={{ 
           width: '100%',
-          height: '60px',
+          height: '65px',
           border: '2px solid #233e63',
           imageRendering: 'pixelated',
           pointerEvents: 'auto'
