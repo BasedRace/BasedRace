@@ -110,7 +110,39 @@ export default function Home() {
     if (view === 'start') setStartSubView('menu');
     setActiveView(view);
   };
+const handleAction = async () => {
+  if (!isMinted) {
+    // Jika belum mint, buka tampilan minting
+    setActiveView('mint');
+  } else {
+    // Jika sudah mint, jalankan fungsi Share (Auto-compose)
+    if (user) {
+      const nftUrl = `${window.location.origin}/api/racer/image?fid=${user.fid}`;
+      const appUrl = "https://based-race.vercel.app"; // Ganti dengan URL app Anda
+      
+      const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster! @based-race`;
 
+      try {
+        await sdk.actions.openCastComposer({
+          text: templateText,
+          embeds: [appUrl, nftUrl],
+        });
+      } catch (error) {
+        console.error("Gagal membuka composer:", error);
+      }
+    }
+  }
+};
+
+case 'landing':
+  return (
+    <LandingPage 
+      onAction={handleAction} 
+      isMinted={isMinted}
+      nftImageUrl={isMinted ? `/api/racer/image?fid=${user?.fid}&t=${Date.now()}` : null}
+    />
+  );
+  
   const handleOnChainMint = (metadataUrl: string, fid: number) => {
     if (!isConnected || !user?.walletAddress) return toast.error("Please connect your wallet first.");
     if (isMinted) return toast.info("You have already minted your Based Racer!");
