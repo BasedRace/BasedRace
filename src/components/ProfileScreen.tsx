@@ -38,7 +38,7 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileS
         style={{ imageRendering: 'pixelated' }}
       >
         {/* Row 1: PFP + Username & FID */}
-        <div className="flex flex-row items-center gap-3 w-full">
+        <div className="flex flex-row items-center gap-3 w-full pb-4 border-b-2 border-[#233e63]">
           <div
             className="flex-shrink-0 relative border-2 border-[#233e63] overflow-hidden"
             style={{ width: '50px', height: '50px' }}
@@ -53,9 +53,9 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileS
 
         {/* Row 2: Tier & Wins */}
         <div className="flex flex-row items-center justify-start gap-4 w-full">
-          <span className="pixel-font text-[10px] text-gray-600">Tier: <span className="text-black text-base">{user.tier || 'N/A'}</span></span>
+          <span className="pixel-font text-sm text-gray-600">Tier: <span className="text-black text-base">{user.tier || 'N/A'}</span></span>
           <span className="pixel-font text-base text-black">|</span>
-          <span className="pixel-font text-[10px] text-gray-600">Wins: <span className="text-black text-base">{user.wins || 0}</span></span>
+          <span className="pixel-font text-sm text-gray-600">Wins: <span className="text-black text-base">{user.wins || 0}</span></span>
         </div>
 
         {/* Row 3: Full-width EXP Bar + EXP text label underneath */}
@@ -69,7 +69,7 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileS
                 }}
             ></div>
             </div>
-            <div className="pixel-font text-[8px] text-gray-600 pt-1">EXP: {currentExp} / 1000 XP</div>
+            <div className="pixel-font text-sm text-gray-600 pt-1">EXP: {currentExp} / 1000 XP</div>
         </div>
 
         {/* Row 4: The NFT Image (if minted) OR the Mint Button (if not minted) */}
