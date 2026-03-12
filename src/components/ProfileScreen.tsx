@@ -18,12 +18,9 @@ export const ProfileScreen = ({ user }: { user: UserProfile; onBack?: () => void
       {user ? (
         <div className="flex flex-row items-center gap-4 w-full">
           {/* PFP container with border, acting as a frame */}
-          <div
-            className="w-20 h-20 rounded-full border-4 border-[#233e63] flex-shrink-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${user.pfpUrl})` }}
-            role="img"
-            aria-label={`${user.displayName}'s profile picture`}
-          ></div>
+          <div className="relative w-20 h-20 border-4 border-[#233e63] flex-shrink-0 overflow-hidden">
+            <img src={user.pfpUrl} alt={user.displayName} className="absolute top-0 left-0 w-full h-full object-cover" />
+          </div>
           {/* Details container */}
           <div className="flex flex-col items-start gap-1 overflow-hidden">
             <div className="pixel-font text-sm leading-tight text-[#0f10f4] truncate w-full">{user.displayName || user.username}</div>
