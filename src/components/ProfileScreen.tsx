@@ -66,7 +66,7 @@ export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
       {/* Racer NFT Showcase */}
       <div className="w-full flex flex-col items-center">
         <h3 className="pixel-font text-lg text-white mb-2">Racer NFT</h3>
-        <div className="w-full max-w-sm h-64 bg-black/50 pixel-border flex items-center justify-center">
+        <div className="w-full max-w-sm h-80 bg-black/50 pixel-border flex items-center justify-center">
           {nftImageUrl ? (
             <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
           ) : (
