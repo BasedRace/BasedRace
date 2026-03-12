@@ -28,10 +28,10 @@ export const ProfileScreen = ({ user }: { user: UserProfile; onBack?: () => void
           </div>
           {/* Details are now in a vertical flex column to the right */}
           <div className="flex flex-col items-start gap-1 overflow-hidden">
-            <div className="pixel-font text-sm text-[#0f10f4] truncate w-full">{user.displayName || user.username}</div>
-            <div className="pixel-font text-xs text-[#233e63]">@{user.username}</div>
-            <div className="pixel-font text-xs text-[#99b1c5]">FID: {user.fid}</div>
-            {user.walletAddress && <div className="pixel-font text-xs text-[#99b1c5] truncate w-full">Wallet: {user.walletAddress}</div>}
+            <div className="pixel-font text-xs text-[#0f10f4] truncate w-full">{user.displayName || user.username}</div>
+            <div className="pixel-font text-[10px] leading-tight text-[#233e63]">@{user.username}</div>
+            <div className="pixel-font text-[10px] leading-tight text-[#99b1c5]">FID: {user.fid}</div>
+            {user.walletAddress && <div className="pixel-font text-[10px] leading-tight text-[#99b1c5] truncate w-full">Wallet: {user.walletAddress}</div>}
           </div>
         </div>
       ) : (
