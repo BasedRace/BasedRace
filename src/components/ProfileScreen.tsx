@@ -77,7 +77,7 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint, onShare }:
         <div className="w-full flex flex-col items-center pt-2">
           {is_minted ? (
             <>
-              <div className="w-full max-w-xs h-48 bg-white/20 border-2 border-[#233e63] flex items-center justify-center">
+              <div className="w-full max-w-xs h-auto bg-white/20 border-2 border-[#233e63] flex items-center justify-center" style={{ height: '300px' }}>
                 {nftImageUrl ? (
                   <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
                 ) : (
@@ -86,7 +86,7 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint, onShare }:
               </div>
               <button
                 onClick={onShare}
-                className="w-full pixel-font bg-[#0f10f4] text-white text-[10px] shadow-[0_4px_0_0_#07088a] active:translate-y-1 mt-4 py-2 hover:scale-105 transition-transform"
+                className="w-full pixel-font bg-white/20 text-white text-[20px] shadow-[0_4px_0_0_#07088a] active:translate-y-1 mt-4 py-2 hover:scale-105 transition-transform"
               >
                 SHARE RACER
               </button>
