@@ -31,6 +31,7 @@ type UserProfile = {
   walletAddress?: `0x${string}`;
   tier?: string;
   exp?: number;
+  wins?: number;
 } | null;
 
 export default function Home() {
@@ -73,6 +74,7 @@ export default function Home() {
               ...profile,
               tier: data.tier,
               exp: data.exp,
+              wins: data.wins,
             };
           }
           setUser(profile);
@@ -202,7 +204,7 @@ export default function Home() {
               />
             );
         }
-      case 'profile': return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')}/>;
+      case 'profile': return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted}/>;
       case 'mint':
         return (
           <MintingScreen
@@ -215,7 +217,7 @@ export default function Home() {
         );
       case 'garage': return <GarageScreen />;
       case 'rank': return <RankScreen />;
-      default: return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} />;
+      default: return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted} />;
     }
   };
 

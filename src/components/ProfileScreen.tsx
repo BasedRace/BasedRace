@@ -8,18 +8,18 @@ type UserProfile = {
   walletAddress?: `0x${string}`;
   tier?: string;
   exp?: number;
+  wins?: number;
 } | null;
 
 type ProfileScreenProps = {
   user: UserProfile;
   nftImageUrl: string | null;
+  is_minted: boolean;
   onBack?: () => void;
   onMint: () => void;
 };
 
-export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps) => {
-  const is_minted = nftImageUrl !== null;
-
+export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileScreenProps) => {
   if (!user) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -28,15 +28,16 @@ export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps)
     );
   }
 
-  const expPercentage = Math.min(((user?.exp || 0) / 1000) * 100, 100);
+  const currentExp = user?.exp || 0;
+  const expPercentage = Math.min((currentExp / 1000) * 100, 100);
 
   return (
     <div className="w-full h-full flex items-center justify-center p-4">
       <div
-        className="flex flex-col gap-4 p-4 bg-[#0a0d10] pixel-border w-full max-w-[350px]"
+        className="flex flex-col gap-4 p-4 bg-[#0a0d10] border-4 border-[#233e63] w-full max-w-[350px]"
         style={{ imageRendering: 'pixelated' }}
       >
-        {/* 1. TOP ROW (Identity) */}
+        {/* Row 1: PFP + Username & FID */}
         <div className="flex flex-row items-center gap-3 w-full">
           <div
             className="flex-shrink-0 relative border-2 border-[#233e63] overflow-hidden"
@@ -50,31 +51,37 @@ export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps)
           </div>
         </div>
 
-        {/* 2. SECOND ROW (Stats) */}
+        {/* Row 2: Tier & Wins */}
         <div className="flex flex-row items-center justify-start gap-4 w-full">
-            <span className="pixel-font text-[10px] text-gray-400">Tier: <span className="text-white text-base">{user.tier || 'N/A'}</span></span>
-            <span className="pixel-font text-base text-white">|</span>
-            <span className="pixel-font text-[10px] text-gray-400">Wins: <span className="text-white text-base">0</span></span>
+          <span className="pixel-font text-[10px] text-gray-400">Tier: <span className="text-white text-base">{user.tier || 'N/A'}</span></span>
+          <span className="pixel-font text-base text-white">|</span>
+          <span className="pixel-font text-[10px] text-gray-400">Wins: <span className="text-white text-base">{user.wins || 0}</span></span>
         </div>
 
-        {/* 3. THIRD ROW (EXP Bar) */}
-        <div className="w-full h-[10px] bg-gray-900 border border-[#233e63] relative">
-          <div
-            className="bg-yellow-500 h-full"
-            style={{ width: `${expPercentage}%` }}
-          ></div>
+        {/* Row 3: Full-width EXP Bar + EXP text label underneath */}
+        <div>
+            <div className="w-full h-[10px] bg-gray-900 border border-[#233e63] relative">
+            <div
+                className="bg-yellow-500 h-full"
+                style={{ 
+                    width: `${expPercentage}%`,
+                    boxShadow: '0 0 8px #f59e0b'
+                }}
+            ></div>
+            </div>
+            <div className="pixel-font text-[8px] text-gray-400 pt-1">EXP: {currentExp} / 1000 XP</div>
         </div>
 
-        {/* 4. BOTTOM ROW (NFT / Mint Action) */}
+        {/* Row 4: The NFT Image (if minted) OR the Mint Button (if not minted) */}
         <div className="w-full flex flex-col items-center pt-2">
           {is_minted ? (
-            <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
+            <div className="w-full max-w-xs h-48 bg-black/20 border-2 border-[#233e63] flex items-center justify-center">
               <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
             </div>
           ) : (
             <button
               onClick={onMint}
-              className="w-full pixel-font text-lg text-black bg-yellow-500 hover:bg-yellow-600 pixel-border border-yellow-700 px-6 py-3"
+              className="w-full pixel-font text-lg text-black bg-yellow-500 active:translate-y-1 px-6 py-3"
               style={{ boxShadow: '0 4px 0 0 #a16207' }}
             >
               MINT PERSONAL RACER
