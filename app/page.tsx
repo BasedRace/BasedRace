@@ -40,7 +40,7 @@ export default function Home() {
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
-  const [nftImageUrl, setNftImageUrl] = useState<string | null>(null); // State baru untuk menyimpan URL gambar dari Supabase
+  const [nftImageUrl, setNftImageUrl] = useState<string | null>(null); 
   const [isRacing, setIsRacing] = useState<boolean>(false);
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
@@ -52,6 +52,9 @@ export default function Home() {
   useEffect(() => {
     const initialize = async () => {
       try {
+        // --- ADDED: Tell the Farcaster SDK that the UI is ready ---
+        await sdk.actions.ready();
+        
         const context = await sdk.context;
         if (context?.user && isConnected && connectedWalletAddress) {
           const profile: UserProfile = {
@@ -63,13 +66,11 @@ export default function Home() {
           };
           setUser(profile);
 
-          // Fetch status dan imageUrl dari API yang sudah di-update
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) {
             const data = await response.json();
             setIsMinted(data.isMinted);
             setNftImageUrl(data.imageUrl);
-            // Simpan tier dan exp ke profil pengguna
             profile.tier = data.tier;
             profile.exp = data.exp;
           }
@@ -108,13 +109,11 @@ export default function Home() {
       setIsMinted(true);
       setActiveView('profile');
       
-      // Update database status minted
       fetch('/api/racer/minted', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fid: user!.fid, isMinted: true }),
       }).then(async () => {
-        // Refresh status untuk mendapatkan image_url terbaru setelah mint
         const res = await fetch(`/api/racer/status?fid=${user!.fid}`);
         if (res.ok) {
           const data = await res.json();
@@ -133,13 +132,11 @@ export default function Home() {
     setActiveView(view);
   };
 
-  // Dynamic Action: Mint or Share
   const handleAction = async () => {
     if (!isMinted) {
       setActiveView('mint');
     } else {
       if (user) {
-        // Gunakan URL gambar dari Supabase (nftImageUrl) atau fallback ke API generator
         const finalNftUrl = nftImageUrl || `${window.location.origin}/api/racer/image?fid=${user.fid}`;
         const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
         const templateText = `I just minted my custom Based Racer! 🏎️💨\n\nCome and race with me in the Based Race Mini-app on Farcaster!`;
@@ -187,7 +184,7 @@ export default function Home() {
           <LandingPage
             onAction={handleAction}
             isMinted={isMinted}
-            nftImageUrl={isMinted ? nftImageUrl : null} // Menggunakan URL gambar dari Supabase
+            nftImageUrl={isMinted ? nftImageUrl : null}
           />
         );
       case 'start':
