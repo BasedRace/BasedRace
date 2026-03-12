@@ -52,28 +52,30 @@ export default function Home() {
   useEffect(() => {
     const initialize = async () => {
       try {
-        // --- ADDED: Tell the Farcaster SDK that the UI is ready ---
         await sdk.actions.ready();
         
         const context = await sdk.context;
         if (context?.user && isConnected && connectedWalletAddress) {
-          const profile: UserProfile = {
+          let profile: UserProfile = {
             fid: context.user.fid,
             username: context.user.username || '',
             displayName: context.user.displayName || '',
             pfpUrl: context.user.pfpUrl || '',
             walletAddress: connectedWalletAddress,
           };
-          setUser(profile);
 
           const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
           if (response.ok) {
             const data = await response.json();
             setIsMinted(data.isMinted);
             setNftImageUrl(data.imageUrl);
-            profile.tier = data.tier;
-            profile.exp = data.exp;
+            profile = {
+              ...profile,
+              tier: data.tier,
+              exp: data.exp,
+            };
           }
+          setUser(profile);
         }
         setGameState('login');
       } catch (error) {
