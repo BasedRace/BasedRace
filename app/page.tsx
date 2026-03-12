@@ -200,7 +200,7 @@ export default function Home() {
               />
             );
         }
-      case 'profile': return <ProfileScreen user={user} />;
+      case 'profile': return <ProfileScreen user={user} nftImageUrl={nftImageUrl} />;
       case 'mint':
         return (
           <MintingScreen
@@ -213,7 +213,7 @@ export default function Home() {
         );
       case 'garage': return <GarageScreen />;
       case 'rank': return <RankScreen />;
-      default: return <ProfileScreen user={user} />;
+      default: return <ProfileScreen user={user} nftImageUrl={nftImageUrl} />;
     }
   };
 
