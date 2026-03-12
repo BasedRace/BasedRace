@@ -78,20 +78,18 @@ export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps)
 
         {/* NFT Showcase */}
         <div className="w-full flex flex-col items-center pt-4">
-          {is_minted ? (
-            <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
+          <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
+            {is_minted ? (
               <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
-            </div>
-          ) : (
-            <div className="w-full flex items-center justify-center">
-                <button 
-                    onClick={onMint}
-                    className="pixel-font text-lg text-white bg-yellow-500 hover:bg-yellow-600 pixel-border px-6 py-3"
-                >
-                    MINT PERSONAL RACER
-                </button>
-            </div>
-          )}
+            ) : (
+              <button 
+                onClick={onMint}
+                className="pixel-font text-lg text-white bg-yellow-500 hover:bg-yellow-600 pixel-border px-6 py-3"
+              >
+                MINT PERSONAL RACER
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
