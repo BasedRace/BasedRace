@@ -33,13 +33,29 @@ export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps)
 
   return (
     <div className="w-full h-full flex items-center justify-center p-4">
-      <div 
-        className="flex flex-col p-4 bg-black/60 pixel-border w-full h-auto max-h-[90%] overflow-y-auto"
+      <div
+        className="flex flex-col p-4 bg-[#0a0d10] pixel-border w-[300px] h-auto"
         style={{ imageRendering: 'pixelated' }}
       >
+        {/* NFT Showcase */}
+        <div className="w-full flex flex-col items-center pb-4">
+          <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
+            {is_minted ? (
+              <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
+            ) : (
+              <button
+                onClick={onMint}
+                className="pixel-font text-lg text-white bg-yellow-500 hover:bg-yellow-600 pixel-border px-6 py-3"
+              >
+                MINT PERSONAL RACER
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Identity Row */}
         <div className="flex flex-row items-center gap-3 w-full">
-          <div 
+          <div
             className="flex-shrink-0 relative border-2 border-[#233e63] overflow-hidden"
             style={{ width: '50px', height: '50px' }}
           >
@@ -48,17 +64,6 @@ export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps)
           <div className="flex flex-col items-start gap-1 overflow-hidden">
             <div className="pixel-font text-base leading-tight text-white truncate w-full">{user.displayName}</div>
             <div className="pixel-font text-xs leading-tight text-gray-400">FID: {user.fid}</div>
-          </div>
-        </div>
-
-        {/* EXP Bar */}
-        <div className="h-5 bg-gray-900 border-2 border-[#233e63] mt-3 relative w-full">
-          <div 
-            className="bg-yellow-500 h-full"
-            style={{ width: `${percentage}%`, boxShadow: '0 0 10px #f59e0b' }}
-          ></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="pixel-font text-white text-[8px]">{currentExp} / {maxExp}</span>
           </div>
         </div>
 
@@ -76,19 +81,14 @@ export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps)
           </div>
         </div>
 
-        {/* NFT Showcase */}
-        <div className="w-full flex flex-col items-center pt-4">
-          <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
-            {is_minted ? (
-              <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
-            ) : (
-              <button 
-                onClick={onMint}
-                className="pixel-font text-lg text-white bg-yellow-500 hover:bg-yellow-600 pixel-border px-6 py-3"
-              >
-                MINT PERSONAL RACER
-              </button>
-            )}
+        {/* EXP Bar */}
+        <div className="h-5 bg-gray-900 border-2 border-[#233e63] mt-3 relative w-full">
+          <div
+            className="bg-yellow-500 h-full"
+            style={{ width: `${percentage}%`, boxShadow: '0 0 10px #f59e0b' }}
+          ></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="pixel-font text-white text-[8px]">{currentExp} / {maxExp}</span>
           </div>
         </div>
       </div>
