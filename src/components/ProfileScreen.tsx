@@ -24,7 +24,7 @@ export const ProfileScreen = ({ user }: { user: UserProfile; onBack?: () => void
               <img src={user.pfpUrl} alt={user.displayName} className="absolute top-0 left-0 w-full h-full object-cover" />
             </div>
             {/* Details container with smaller text */}
-            <div className="flex flex-col items-start gap-1 overflow-hidden">
+            <div className="flex flex-col items-start gap-0.5 overflow-hidden">
               <div className="pixel-font text-xs leading-tight text-[#0f10f4] truncate w-full">{user.displayName || user.username}</div>
               <div className="pixel-font text-[10px] leading-tight text-[#233e63]">@{user.username}</div>
               <div className="pixel-font text-[10px] leading-tight text-[#99b1c5]">FID: {user.fid}</div>
