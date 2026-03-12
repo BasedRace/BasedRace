@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   description: 'Race to win!',
   other: {
     'base:app_id': '69b157c7c3360530fd09a86e',
+    'noindex': 'false',
   },
 };
 
@@ -32,6 +33,5 @@ export default function RootLayout({
         </Providers>
       </body>
     </html>
-    noindex: false,
   );
 }
