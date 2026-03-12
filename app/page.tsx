@@ -204,7 +204,7 @@ export default function Home() {
               />
             );
         }
-      case 'profile': return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted}/>;
+      case 'profile': return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted} onShare={handleAction} />;
       case 'mint':
         return (
           <MintingScreen
@@ -217,7 +217,7 @@ export default function Home() {
         );
       case 'garage': return <GarageScreen />;
       case 'rank': return <RankScreen />;
-      default: return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted} />;
+      default: return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted} onShare={handleAction} />;
     }
   };
 

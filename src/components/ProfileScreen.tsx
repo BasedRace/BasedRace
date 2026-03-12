@@ -17,9 +17,10 @@ type ProfileScreenProps = {
   is_minted: boolean;
   onBack?: () => void;
   onMint: () => void;
+  onShare: () => void;
 };
 
-export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileScreenProps) => {
+export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint, onShare }: ProfileScreenProps) => {
   if (!user) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -75,13 +76,21 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileS
         {/* Row 4: The NFT Image (if minted) OR the Mint Button (if not minted) */}
         <div className="w-full flex flex-col items-center pt-2">
           {is_minted ? (
-            <div className="w-full max-w-xs h-48 bg-white/20 border-2 border-[#233e63] flex items-center justify-center">
-              {nftImageUrl ? (
-                <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
-              ) : (
-                <div className="pixel-font text-sm text-gray-600">Loading NFT...</div>
-              )}
-            </div>
+            <>
+              <div className="w-full max-w-xs h-48 bg-white/20 border-2 border-[#233e63] flex items-center justify-center">
+                {nftImageUrl ? (
+                  <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
+                ) : (
+                  <div className="pixel-font text-sm text-gray-600">Loading NFT...</div>
+                )}
+              </div>
+              <button
+                onClick={onShare}
+                className="w-full pixel-font bg-[#0f10f4] text-white text-[10px] shadow-[0_4px_0_0_#07088a] active:translate-y-1 mt-4 py-2 hover:scale-105 transition-transform"
+              >
+                SHARE RACER
+              </button>
+            </>
           ) : (
             <button
               onClick={onMint}
