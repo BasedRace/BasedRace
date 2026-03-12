@@ -19,7 +19,7 @@ export const ProfileScreen = ({ user }: { user: UserProfile; onBack?: () => void
 
   return (
     <div className="w-full h-full flex items-center justify-center relative">
-      <div className="pixel-border bg-[#e7f2eb] w-11/12 max-w-sm h-auto flex flex-col p-5 relative">
+      <div className="pixel-border bg-[#e7f2eb] w-11/12 max-w-sm h-3/4 flex flex-col p-5 relative">
         <div className="pixel-font text-xl text-[#233e63] text-center w-full">PROFILE</div>
         <div className="w-full h-px bg-[#99b1c5] my-4"></div>
         {user ? (
