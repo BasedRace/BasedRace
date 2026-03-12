@@ -86,7 +86,7 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint, onShare }:
               </div>
               <button
                 onClick={onShare}
-                className="w-full pixel-font bg-white/20 text-white text-[20px] shadow-[0_4px_0_0_#07088a] active:translate-y-1 mt-4 py-2 hover:scale-105 transition-transform"
+                className="w-full pixel-font bg-[#233e63] text-white text-[20px] shadow-[0_4px_0_0_#233e63] active:translate-y-1 mt-4 py-2 hover:scale-105 transition-transform"
               >
                 SHARE RACER
               </button>
