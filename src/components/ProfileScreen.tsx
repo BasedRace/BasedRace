@@ -34,13 +34,13 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileS
   return (
     <div className="w-full h-full flex items-center justify-center p-4">
       <div
-        className="flex flex-col gap-4 p-4 bg-[#e7f2eb] border-4 border-[#1a1b23] w-full max-w-[350px]"
+        className="flex flex-col gap-4 p-4 bg-[#e7f2eb] border-4 border-[#233e63] w-full max-w-[350px]"
         style={{ imageRendering: 'pixelated' }}
       >
         {/* Row 1: PFP + Username & FID */}
         <div className="flex flex-row items-center gap-3 w-full">
           <div
-            className="flex-shrink-0 relative border-2 border-[#1a1b23] overflow-hidden"
+            className="flex-shrink-0 relative border-2 border-[#233e63] overflow-hidden"
             style={{ width: '50px', height: '50px' }}
           >
             <img src={user.pfpUrl} alt={user.displayName} className="w-full h-full object-cover" />
@@ -60,7 +60,7 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileS
 
         {/* Row 3: Full-width EXP Bar + EXP text label underneath */}
         <div>
-            <div className="w-full h-[10px] bg-gray-200 border border-[#1a1b23] relative">
+            <div className="w-full h-[10px] bg-gray-200 border border-[#233e63] relative">
             <div
                 className="bg-yellow-500 h-full"
                 style={{ 
@@ -75,7 +75,7 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileS
         {/* Row 4: The NFT Image (if minted) OR the Mint Button (if not minted) */}
         <div className="w-full flex flex-col items-center pt-2">
           {is_minted ? (
-            <div className="w-full max-w-xs h-48 bg-white/20 border-2 border-[#1a1b23] flex items-center justify-center">
+            <div className="w-full max-w-xs h-48 bg-white/20 border-2 border-[#233e63] flex items-center justify-center">
               {nftImageUrl ? (
                 <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
               ) : (
