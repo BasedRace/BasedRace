@@ -5,10 +5,24 @@ import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
   title: 'Based Race',
-  description: 'Race to win!',
+  description: 'Play, Mint, and Rewarded!',
   other: {
     'base:app_id': '69b157c7c3360530fd09a86e',
-    'noindex': 'false',
+    'fc:frame': JSON.stringify({
+      version: "next",
+      imageUrl: `https://basedrace.vercel.app/logo.png`,
+      button: {
+        title: "Let's Race!",
+        action: {
+          type: "launch_frame",
+          name: "Based Race",
+          url: `https://basedrace.vercel.app/`,
+          splashImageUrl: `https://basedrace.vercel.app/logo.png`,
+          splashBackgroundColor: "#FFFFFF",
+        },
+      },
+      noindex: false,
+    }),
   },
 };
 
