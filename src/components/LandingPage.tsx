@@ -22,7 +22,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
                    active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[80px]"
       >
         <span className="block uppercase tracking-tighter">
-          {isMinted ? "🚀 SHARE RACER" : "MINT PERSONAL RACER"}
+          {isMinted ? "SHARE RACER" : "MINT PERSONAL RACER"}
         </span>
       </button>
 
