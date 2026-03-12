@@ -18,9 +18,6 @@ type ProfileScreenProps = {
 };
 
 export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps) => {
-  const maxExp = 1000;
-  const currentExp = user?.exp ?? 0;
-  const percentage = user?.exp ? (currentExp / maxExp) * 100 : 0;
   const is_minted = nftImageUrl !== null;
 
   if (!user) {
@@ -31,29 +28,15 @@ export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps)
     );
   }
 
+  const expPercentage = Math.min(((user?.exp || 0) / 1000) * 100, 100);
+
   return (
     <div className="w-full h-full flex items-center justify-center p-4">
       <div
-        className="flex flex-col p-4 bg-[#0a0d10] pixel-border w-[300px] h-auto"
+        className="flex flex-col gap-4 p-4 bg-[#0a0d10] pixel-border w-full max-w-[350px]"
         style={{ imageRendering: 'pixelated' }}
       >
-        {/* NFT Showcase */}
-        <div className="w-full flex flex-col items-center pb-4">
-          <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
-            {is_minted ? (
-              <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
-            ) : (
-              <button
-                onClick={onMint}
-                className="pixel-font text-lg text-white bg-yellow-500 hover:bg-yellow-600 pixel-border px-6 py-3"
-              >
-                MINT PERSONAL RACER
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Identity Row */}
+        {/* 1. TOP ROW (Identity) */}
         <div className="flex flex-row items-center gap-3 w-full">
           <div
             className="flex-shrink-0 relative border-2 border-[#233e63] overflow-hidden"
@@ -67,29 +50,36 @@ export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps)
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="w-full py-4 border-t-2 border-[#233e63] mt-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col items-center">
-              <span className="pixel-font text-[10px] text-gray-400">Tier</span>
-              <span className="pixel-font text-base text-white">{user.tier || 'N/A'}</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="pixel-font text-[10px] text-gray-400">Wins</span>
-              <span className="pixel-font text-base text-white">0</span>
-            </div>
-          </div>
+        {/* 2. SECOND ROW (Stats) */}
+        <div className="flex flex-row items-center justify-start gap-4 w-full">
+            <span className="pixel-font text-[10px] text-gray-400">Tier: <span className="text-white text-base">{user.tier || 'N/A'}</span></span>
+            <span className="pixel-font text-base text-white">|</span>
+            <span className="pixel-font text-[10px] text-gray-400">Wins: <span className="text-white text-base">0</span></span>
         </div>
 
-        {/* EXP Bar */}
-        <div className="h-5 bg-gray-900 border-2 border-[#233e63] mt-3 relative w-full">
+        {/* 3. THIRD ROW (EXP Bar) */}
+        <div className="w-full h-[10px] bg-gray-900 border border-[#233e63] relative">
           <div
             className="bg-yellow-500 h-full"
-            style={{ width: `${percentage}%`, boxShadow: '0 0 10px #f59e0b' }}
+            style={{ width: `${expPercentage}%` }}
           ></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="pixel-font text-white text-[8px]">{currentExp} / {maxExp}</span>
-          </div>
+        </div>
+
+        {/* 4. BOTTOM ROW (NFT / Mint Action) */}
+        <div className="w-full flex flex-col items-center pt-2">
+          {is_minted ? (
+            <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
+              <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
+            </div>
+          ) : (
+            <button
+              onClick={onMint}
+              className="w-full pixel-font text-lg text-black bg-yellow-500 hover:bg-yellow-600 pixel-border border-yellow-700 px-6 py-3"
+              style={{ boxShadow: '0 4px 0 0 #a16207' }}
+            >
+              MINT PERSONAL RACER
+            </button>
+          )}
         </div>
       </div>
     </div>
