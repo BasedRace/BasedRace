@@ -76,7 +76,11 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint }: ProfileS
         <div className="w-full flex flex-col items-center pt-2">
           {is_minted ? (
             <div className="w-full max-w-xs h-48 bg-black/20 border-2 border-[#233e63] flex items-center justify-center">
-              <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
+              {nftImageUrl ? (
+                <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
+              ) : (
+                <div className="pixel-font text-sm text-gray-400">Loading NFT...</div>
+              )}
             </div>
           ) : (
             <button
