@@ -29,6 +29,8 @@ type UserProfile = {
   displayName: string;
   pfpUrl: string;
   walletAddress?: `0x${string}`;
+  tier?: string;
+  exp?: number;
 } | null;
 
 export default function Home() {
@@ -66,7 +68,10 @@ export default function Home() {
           if (response.ok) {
             const data = await response.json();
             setIsMinted(data.isMinted);
-            setNftImageUrl(data.imageUrl); // Menyimpan URL gambar dari kolom image_url Supabase
+            setNftImageUrl(data.imageUrl);
+            // Simpan tier dan exp ke profil pengguna
+            profile.tier = data.tier;
+            profile.exp = data.exp;
           }
         }
         setGameState('login');
