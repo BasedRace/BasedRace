@@ -58,10 +58,10 @@ export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
               <span className="pixel-font text-base text-[#233e63]">0</span>
             </div>
           </div>
-          <div className="w-full h-5 bg-[#99b1c5] border-2 border-[#233e63] relative">
+          <div className="w-full h-8 bg-[#99b1c5] border-2 border-[#233e63] relative">
             <div className="bg-[#0f10f4] h-full" style={{ width: `${expPercentage}%` }}></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="pixel-font text-[10px] text-white">EXP: {currentExp}/{MAX_EXP}</span>
+              <span className="pixel-font text-xs text-white">EXP: {currentExp}/{MAX_EXP}</span>
             </div>
           </div>
         </div>
