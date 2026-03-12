@@ -18,7 +18,7 @@ export const ProfileScreen = ({ user }: { user: UserProfile; onBack?: () => void
       {user ? (
         <div className="flex flex-row items-start gap-4 w-full">
           {/* Smaller PFP, moved to the left */}
-          <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-[#233e63] flex-shrink-0">
+          <div className="w-12 h-12 rounded-full overflow-hidden border-4 border-[#233e63] flex-shrink-0">
             <img src={user.pfpUrl} alt={user.displayName} className="w-full h-full object-cover" />
           </div>
           {/* Details are now in a vertical flex column to the right */}
