@@ -32,33 +32,44 @@ export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
   return (
     <div className="w-full h-full flex items-center justify-center p-4">
       <div 
-        className="pixel-border bg-[#e7f2eb] w-11/12 max-w-sm h-auto max-h-[90%] flex flex-col p-4 relative overflow-y-auto"
+        className="flex flex-col p-4 bg-black/60 pixel-border w-full h-auto max-h-[90%] overflow-y-auto"
         style={{ imageRendering: 'pixelated' }}
       >
-        {/* Header */}
-        <div className="w-full flex flex-row items-center gap-4 pb-4 border-b-2 border-[#99b1c5]">
-          <div className="relative w-16 h-16 border-4 border-[#233e63] flex-shrink-0 overflow-hidden">
-            <img src={user.pfpUrl} alt={user.displayName} className="absolute top-0 left-0 w-full h-full object-cover" />
+        {/* Identity Row */}
+        <div className="flex flex-row items-center gap-3 w-full">
+          <div 
+            className="flex-shrink-0 relative border-2 border-[#233e63] overflow-hidden"
+            style={{ width: '50px', height: '50px' }}
+          >
+            <img src={user.pfpUrl} alt={user.displayName} className="w-full h-full object-cover" />
           </div>
-          <div className="flex flex-col items-start gap-1 overflow-hidden w-full">
-            <div className="pixel-font text-base leading-tight text-[#0f10f4] truncate w-full">{user.displayName}</div>
-            <div className="pixel-font text-xs leading-tight text-gray-600">FID: {user.fid}</div>
-            <div className="w-full bg-gray-900 pixel-border mt-2">
-              <div className="bg-green-500 h-4" style={{ width: `${percentage}%` }}></div>
-            </div>
+          <div className="flex flex-col items-start gap-1 overflow-hidden">
+            <div className="pixel-font text-base leading-tight text-white truncate w-full">{user.displayName}</div>
+            <div className="pixel-font text-xs leading-tight text-gray-400">FID: {user.fid}</div>
+          </div>
+        </div>
+
+        {/* EXP Bar */}
+        <div className="h-5 bg-gray-900 border-2 border-[#233e63] mt-3 relative w-full">
+          <div 
+            className="bg-yellow-500 h-full"
+            style={{ width: `${percentage}%`, boxShadow: '0 0 10px #f59e0b' }}
+          ></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="pixel-font text-white text-[8px]">{currentExp} / {maxExp}</span>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="w-full py-4 border-b-2 border-[#99b1c5]">
+        <div className="w-full py-4 border-t-2 border-[#233e63] mt-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col items-center">
-              <span className="pixel-font text-[10px] text-gray-500">Tier</span>
-              <span className="pixel-font text-base text-[#233e63]">{user.tier || 'N/A'}</span>
+              <span className="pixel-font text-[10px] text-gray-400">Tier</span>
+              <span className="pixel-font text-base text-white">{user.tier || 'N/A'}</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="pixel-font text-[10px] text-gray-500">Wins</span>
-              <span className="pixel-font text-base text-[#233e63]">0</span>
+              <span className="pixel-font text-[10px] text-gray-400">Wins</span>
+              <span className="pixel-font text-base text-white">0</span>
             </div>
           </div>
         </div>
@@ -70,8 +81,8 @@ export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
               <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
             ) : (
               <div className="text-center">
-                <p className="pixel-font text-gray-600">No Racer Detected</p>
-                <a href="#" className="pixel-font text-[#0f10f4] hover:underline mt-1 inline-block">
+                <p className="pixel-font text-gray-400">No Racer Detected</p>
+                <a href="#" className="pixel-font text-yellow-500 hover:underline mt-1 inline-block">
                   Mint Now
                 </a>
               </div>
