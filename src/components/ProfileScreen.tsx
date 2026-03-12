@@ -14,12 +14,14 @@ type ProfileScreenProps = {
   user: UserProfile;
   nftImageUrl: string | null;
   onBack?: () => void;
+  onMint: () => void;
 };
 
-export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
+export const ProfileScreen = ({ user, nftImageUrl, onMint }: ProfileScreenProps) => {
   const maxExp = 1000;
   const currentExp = user?.exp ?? 0;
   const percentage = user?.exp ? (currentExp / maxExp) * 100 : 0;
+  const is_minted = nftImageUrl !== null;
 
   if (!user) {
     return (
@@ -76,18 +78,20 @@ export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
 
         {/* NFT Showcase */}
         <div className="w-full flex flex-col items-center pt-4">
-          <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
-            {nftImageUrl ? (
+          {is_minted ? (
+            <div className="w-full max-w-xs h-48 bg-black/20 pixel-border flex items-center justify-center">
               <img src={nftImageUrl} alt="Racer NFT" className="w-full h-full object-contain" />
-            ) : (
-              <div className="text-center">
-                <p className="pixel-font text-gray-400">No Racer Detected</p>
-                <a href="#" className="pixel-font text-yellow-500 hover:underline mt-1 inline-block">
-                  Mint Now
-                </a>
-              </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="w-full flex items-center justify-center">
+                <button 
+                    onClick={onMint}
+                    className="pixel-font text-lg text-white bg-yellow-500 hover:bg-yellow-600 pixel-border px-6 py-3"
+                >
+                    MINT PERSONAL RACER
+                </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
