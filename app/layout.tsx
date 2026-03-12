@@ -6,8 +6,9 @@ import { Toaster } from 'sonner';
 export const metadata: Metadata = {
   title: 'Based Race',
   description: 'Race to win!',
-  noindex: 'false',
-  follow: 'true',
+  robots: {
+  noindex: false,
+  follow: true,
   },
   other: {
     'base:app_id': '69b157c7c3360530fd09a86e',
