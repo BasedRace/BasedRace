@@ -17,9 +17,9 @@ type ProfileScreenProps = {
 };
 
 export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
-  const MAX_EXP = 1000;
+  const maxExp = 1000;
   const currentExp = user?.exp ?? 0;
-  const expPercentage = user?.exp ? (currentExp / MAX_EXP) * 100 : 0;
+  const percentage = user?.exp ? (currentExp / maxExp) * 100 : 0;
 
   if (!user) {
     return (
@@ -43,12 +43,15 @@ export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
           <div className="flex flex-col items-start gap-1 overflow-hidden w-full">
             <div className="pixel-font text-base leading-tight text-[#0f10f4] truncate w-full">{user.displayName}</div>
             <div className="pixel-font text-xs leading-tight text-gray-600">FID: {user.fid}</div>
+            <div className="w-full bg-gray-900 pixel-border mt-2">
+              <div className="bg-green-500 h-4" style={{ width: `${percentage}%` }}></div>
+            </div>
           </div>
         </div>
 
-        {/* Stats and EXP */}
+        {/* Stats */}
         <div className="w-full py-4 border-b-2 border-[#99b1c5]">
-          <div className="grid grid-cols-2 gap-4 mb-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col items-center">
               <span className="pixel-font text-[10px] text-gray-500">Tier</span>
               <span className="pixel-font text-base text-[#233e63]">{user.tier || 'N/A'}</span>
@@ -56,12 +59,6 @@ export const ProfileScreen = ({ user, nftImageUrl }: ProfileScreenProps) => {
             <div className="flex flex-col items-center">
               <span className="pixel-font text-[10px] text-gray-500">Wins</span>
               <span className="pixel-font text-base text-[#233e63]">0</span>
-            </div>
-          </div>
-          <div className="w-full h-8 bg-[#99b1c5] border-2 border-[#233e63] relative">
-            <div className="bg-[#0f10f4] h-full" style={{ width: `${expPercentage}%` }}></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="pixel-font text-xs text-white">EXP: {currentExp}/{MAX_EXP}</span>
             </div>
           </div>
         </div>
