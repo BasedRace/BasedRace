@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from '../src/components/Providers';
 import { Toaster } from 'sonner';
+import { AudioProvider } from './components/AudioProvider';
 
 export const metadata: Metadata = {
   title: 'Based Race',
@@ -41,10 +42,12 @@ export default function RootLayout({
   return (
     <html lang="en" style={{ margin: 0, padding: 0, height: '100%' }}>
       <body style={{ margin: 0, padding: 0, overflow: 'hidden', height: '100%', width: '100%', position: 'fixed' }}>
-        <Providers>
-          {children}
-          <Toaster richColors position="top-center" />
-        </Providers>
+        <AudioProvider>
+          <Providers>
+            {children}
+            <Toaster richColors position="top-center" />
+          </Providers>
+        </AudioProvider>
       </body>
     </html>
   );
