@@ -201,6 +201,8 @@ export default function Home() {
               <StartScreen
                 onSelectTournament={() => setStartSubView('tournament')}
                 onSelectRaceBetting={() => setStartSubView('betting')}
+                isMinted={isMinted}
+                nftImageUrl={nftImageUrl}
               />
             );
         }
