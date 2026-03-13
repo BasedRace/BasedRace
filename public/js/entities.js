@@ -18,10 +18,10 @@ export class Racer {
     
     // Starting positions from user
     const startPositions = [
-        { x: -80, y: -30 },
-        { x: 190, y: 160 },
-        { x: 490, y: 320 },
-        { x: 790, y: 550 }
+        { x: -70, y: -10 },
+        { x: 200, y: 170 },
+        { x: 500, y: 360 },
+        { x: 800, y: 550 }
     ];
     
     const pos = startPositions[laneIndex] || { x: 0, y: 0 };
@@ -85,10 +85,10 @@ export class Racer {
   // Reset to start
   reset() {
     const startPositions = [
-        { x: -80, y: -30 },
-        { x: 190, y: 160 },
-        { x: 490, y: 320 },
-        { x: 790, y: 550 }
+        { x: -70, y: -10 },
+        { x: 200, y: 170 },
+        { x: 500, y: 360 },
+        { x: 800, y: 550 }
     ];
     const pos = startPositions[this.laneIndex] || { x: 0, y: 0 };
     this.startX = pos.x;

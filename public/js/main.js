@@ -20,8 +20,6 @@ class Game {
     this.assets = {};
     this.racers = [];
 
-    this.initDebugger();
-    
     window.gameInstance = this;
 
     window.addEventListener('message', (event) => {
@@ -32,41 +30,6 @@ class Game {
     
     // Initial render even when waiting
     this.loop(performance.now());
-  }
-
-  initDebugger() {
-      const printBtn = document.getElementById('print-coords');
-      printBtn.addEventListener('click', () => this.printLaneCoords());
-
-      for (let i = 1; i <= 4; i++) {
-          document.getElementById(`lane${i}-x`).addEventListener('input', () => this.updateLaneCoords());
-          document.getElementById(`lane${i}-y`).addEventListener('input', () => this.updateLaneCoords());
-      }
-  }
-
-  updateLaneCoords() {
-      if (!this.racers || this.racers.length === 0) return;
-
-      for (let i = 0; i < this.racers.length; i++) {
-          const laneIndex = i + 1;
-          const x = parseInt(document.getElementById(`lane${laneIndex}-x`).value);
-          const y = parseInt(document.getElementById(`lane${laneIndex}-y`).value);
-          
-          if (!isNaN(x) && !isNaN(y)) {
-              this.racers[i].x = x;
-              this.racers[i].yPosOnScreen = y;
-              // Also update start positions if you want them to be remembered for resets
-              this.racers[i].startX = x;
-              this.racers[i].startY = y;
-          }
-      }
-  }
-
-  printLaneCoords() {
-      const coords = this.racers.map((racer, i) => {
-          return { lane: i + 1, x: racer.x, y: racer.yPosOnScreen };
-      });
-      console.log("Final Lane Coordinates:", JSON.stringify(coords, null, 2));
   }
 
   async prepareRace(data) {
@@ -118,7 +81,6 @@ class Game {
     });
 
     await Promise.all(racerPromises);
-    this.updateLaneCoords(); // Apply initial debugger values
     this.startRace();
   }
 
@@ -138,7 +100,6 @@ class Game {
     for (const racer of this.racers) {
       racer.reset();
     }
-    this.updateLaneCoords(); // Ensure coords are set from debugger before race
 
     this.state = 'racing';
   }
