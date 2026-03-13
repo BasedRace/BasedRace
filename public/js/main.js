@@ -19,16 +19,19 @@ class Game {
     this.track = null;
     this.assets = {};
     this.uiAssets = {};
-    this.sfx = {};
+    this.sounds = {};
     this.racers = [];
     this.countdownValue = 3;
     this.isAssetsLoaded = false;
-    this.userInteracted = false;
+    this.audioContext = null;
 
     window.gameInstance = this;
 
+    // A single user interaction is required to unlock audio in browsers.
     const onInteraction = () => {
-      this.userInteracted = true;
+      if (this.audioContext && this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
       window.removeEventListener('click', onInteraction);
       window.removeEventListener('keydown', onInteraction);
     };
@@ -51,13 +54,15 @@ class Game {
 
     this.state = 'loading';
     
+    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
     // Show a loading message while assets are being fetched
     this.renderer.drawLoading();
 
     const loadPromises = [
         this.loadTrackAssets(data.track),
         this.loadUIAssets(),
-        this.loadAudioAssets(),
+        this.loadSounds(),
     ];
 
     await Promise.all(loadPromises);
@@ -69,13 +74,13 @@ class Game {
     this.startRace();
   }
 
-  async loadAudioAssets() {
+  async loadSounds() {
     const audioAssetNames = ['beep.mp3', 'start_go.mp3', 'engine_loop.mp3', 'victory.mp3'];
     const audioPromises = audioAssetNames.map(fileName => {
         return new Promise((resolve) => {
             const audio = new Audio(`/assets/sounds/${fileName}`);
             audio.oncanplaythrough = () => {
-                this.sfx[fileName.split('.')[0]] = audio;
+                this.sounds[fileName.split('.')[0]] = audio;
                 resolve();
             };
             audio.onerror = () => {
@@ -85,11 +90,15 @@ class Game {
         });
     });
     await Promise.all(audioPromises);
+
+    if (this.sounds.engine_loop) {
+        this.sounds.engine_loop.loop = true;
+    }
   }
 
   playSound(soundName, loop = false, volume = 0.7) {
-    if (this.sfx[soundName] && this.userInteracted) {
-        const sound = this.sfx[soundName];
+    if (this.sounds[soundName] && this.audioContext && this.audioContext.state === 'running') {
+        const sound = this.sounds[soundName];
         sound.loop = loop;
         sound.volume = volume;
         sound.currentTime = 0;
@@ -98,9 +107,15 @@ class Game {
   }
 
   stopSound(soundName) {
-    if (this.sfx[soundName]) {
-        this.sfx[soundName].pause();
-        this.sfx[soundName].currentTime = 0;
+    if (this.sounds[soundName]) {
+        this.sounds[soundName].pause();
+        this.sounds[soundName].currentTime = 0;
+    }
+  }
+
+  stopAllSounds() {
+    for (const soundName in this.sounds) {
+        this.stopSound(soundName);
     }
   }
 
@@ -178,6 +193,8 @@ class Game {
 
     if (this.state === 'racing' || this.state === 'countdown') return;
     
+    this.stopAllSounds();
+
     this.raceTime = 0;
     this.winner = null;
     this.lastTime = performance.now();
@@ -190,18 +207,20 @@ class Game {
     }
 
     this.countdownValue = 3;
-    this.playSound('beep', false, 0.7); // For "READY"
-
     this.state = 'countdown';
+
+    // Play sound for Stage 3 (Red)
+    this.playSound('beep', false, 0.6);
+
     this.countdownInterval = setInterval(() => {
         this.countdownValue--;
-        if (this.countdownValue === 2) { // For "SET"
-            this.playSound('beep', false, 0.7);
-        } else if (this.countdownValue === 1) { // For "GO!"
-            this.playSound('start_go', false, 0.7);
+        if (this.countdownValue === 2) { // Stage 2 (Yellow)
+            this.playSound('beep', false, 0.6);
+        } else if (this.countdownValue === 1) { // Stage 1 (Green)
+            this.playSound('start_go', false, 0.6);
+            this.playSound('engine_loop', true, 0.2);
         } else if (this.countdownValue < 0) {
             this.state = 'racing';
-            this.playSound('engine_loop', true, 0.3);
             clearInterval(this.countdownInterval);
         }
     }, 1500); // Slower 1.5s countdown
@@ -227,7 +246,6 @@ class Game {
       racer.update(movement, deltaTime, this.track);
       if (racer.finished && !this.winner) {
         this.winner = racer;
-        this.stopSound('engine_loop');
         this.showWinnerUI(racer);
         window.parent.postMessage({ type: 'raceResult', winner: racer.name, isUserWinner: racer.isPlayer }, '*');
       }
@@ -245,11 +263,14 @@ class Game {
   }
 
   showWinnerUI(winner) {
+    this.stopSound('engine_loop');
+    this.playSound('victory', false, 0.7);
+
     const winnerEl = document.getElementById('winner-text');
     winnerEl.textContent = `🏆 ${winner.name} WINS! 🏆`;
     winnerEl.style.display = 'block';
     this.renderer.startConfetti();
-    this.playSound('victory', false, 0.7);
+    
     setTimeout(() => {
         winnerEl.style.display = 'none';
         document.getElementById('back-btn').style.display = 'block';
