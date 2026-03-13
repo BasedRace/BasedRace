@@ -62,12 +62,12 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
         </div>
       ) : (
         <div className="min-h-full w-full flex flex-col items-center justify-center p-4">
-            <h1 className="pixel-font text-3xl text-center text-black mb-10 w-[400px] h-[40px]">SELECT TRACK</h1>
+            <h1 className="pixel-font text-2xl text-center text-black mb-10 w-[400px] h-[40px]">SELECT TRACK</h1>
 
             <div className="flex items-center justify-center">
-                <button onClick={() => handleSelectTrack((selectedTrackIndex - 1 + TRACKS_CONFIG.length) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-black mr-[15px] w-[34px] h-[34px]">{'<'}</button>
+                <button onClick={() => handleSelectTrack((selectedTrackIndex - 1 + TRACKS_CONFIG.length) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-black border-4 border-[#233e63] mr-[15px] w-[34px] h-[34px]">{'<'}</button>
                 
-                <div className="relative w-[280px] h-[160px] border-4 pixel-border-mint bg-gray-900 flex items-center justify-center pixel-font">
+                <div className="relative w-[280px] h-[160px] border-4 border-[#233e63] bg-gray-900 flex items-center justify-center pixel-font">
                     {selectedTrack.preview === '?' ? (
                         <span className="text-white text-6xl">?</span>
                     ) : (
@@ -75,21 +75,21 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
                     )}
                 </div>
                 
-                <button onClick={() => handleSelectTrack((selectedTrackIndex + 1) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-black ml-[15px] w-[34px] h-[34px]">{ '>'}</button>
+                <button onClick={() => handleSelectTrack((selectedTrackIndex + 1) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-black border-4 border-[#233e63] ml-[15px] w-[34px] h-[34px]">{ '>'}</button>
             </div>
 
-            <p className="pixel-font text-lg text-black mt-[5px] mb-[20px]">{selectedTrack.name}</p>
+            <p className="pixel-font text-lg text-white uppercase mt-[5px] mb-[20px] border-4 border-[#233e63] bg-[#233e63] px-2">{selectedTrack.name}</p>
 
             <div className="flex flex-col items-center gap-6 mt-8">
                 <button
                     onClick={() => onSelectRaceBetting(selectedTrack)}
                     disabled={selectedTrack.preview === '?'}
-                    className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed"
+                    className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-black text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed"
                 >
                     {selectedTrack.preview === '?' ? 'LOCKED' : 'CONFIRM'}
                 </button>
 
-                <button onClick={() => setCurrentView('main')} className="pixel-font text-sm text-black pixel-border-mint mt-[15px]">Back to Menu</button>
+                <button onClick={() => setCurrentView('main')} className="pixel-font text-sm text-black pixel-border bg-[#e7f2eb] mt-[15px]">Back to Menu</button>
             </div>
         </div>
       )}
