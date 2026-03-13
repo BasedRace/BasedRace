@@ -169,8 +169,8 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
                     <div 
                         key={char.name}
                         onClick={() => handleCharacterSelect(char.name)}
-                        className={`pixel-border bg-[#e7f2eb] flex items-center justify-center cursor-pointer w-[70px] h-[70px] ${selectedCharacter === char.name ? 'ring-4 ring-yellow-400' : ''}`}
-                    >
+                        className={`pixel-border bg-[#e7f2eb] flex items-center justify-center cursor-pointer w-[70px] h-[70px] relative ${selectedCharacter === char.name ? 'ring-4 ring-yellow-400' : ''}`}>
+                        {selectedCharacter === char.name && <span className="absolute top-0 right-0 text-2xl">✅</span>}
                         <Image src={char.path} alt={char.name} width={60} height={60} className="object-contain" />
                     </div>
                 ))}
@@ -179,8 +179,8 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
             <h2 className="pixel-font border-4 border-[#233e63] text-lg text-black bg-[#233e63] px-2 mb-2">YOUR RACER</h2>
             <div 
                 onClick={handleBetOnSelfSelect}
-                className={`pixel-border bg-[#e7f2eb] flex items-center justify-center w-[70px] h-[70px] mb-4 ${isBetOnSelf ? 'ring-4 ring-yellow-400' : ''} ${!isMinted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-            >
+                className={`pixel-border bg-[#e7f2eb] flex items-center justify-center w-[70px] h-[70px] mb-4 relative ${isBetOnSelf ? 'ring-4 ring-yellow-400' : ''} ${!isMinted ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                {isBetOnSelf && <span className="absolute top-0 right-0 text-2xl">✅</span>}
                 {isMinted && nftImageUrl ? (
                     <Image src={nftImageUrl} alt="Your NFT" width={60} height={60} className="object-contain" />
                 ) : (
@@ -194,22 +194,22 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
                     <div 
                         key={amount}
                         onClick={() => setBetAmount(amount)}
-                        className={`pixel-border w-24 h-16 bg-[#e7f2eb] text-black flex items-center justify-center cursor-pointer text-lg pixel-font ${betAmount === amount ? 'ring-4 ring-yellow-400' : ''}`}
-                    >
+                        className={`pixel-border w-24 h-16 bg-[#e7f2eb] text-black flex items-center justify-center cursor-pointer text-lg pixel-font relative ${betAmount === amount ? 'ring-4 ring-yellow-400' : ''}`}>
+                        {betAmount === amount && <span className="absolute top-0 right-0 text-2xl">✅</span>}
                         🪙 {amount}
                     </div>
                 ))}
             </div>
 
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-4">
                  <button
                     onClick={handleFinalStart}
                     disabled={(!selectedCharacter && !isBetOnSelf) || !betAmount}
-                    className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed"
+                    className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center border-4 border-[#233e63] disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed"
                 >
                     START RACE!
                 </button>
-                <button onClick={() => setCurrentView('track-select')} className="pixel-font text-sm text-black pixel-border bg-[#e7f2eb] mt-2">Back</button>
+                <button onClick={() => setCurrentView('track-select')} className="pixel-font text-sm text-black pixel-border bg-[#e7f2eb]">Back</button>
             </div>
         </div>
       )}
