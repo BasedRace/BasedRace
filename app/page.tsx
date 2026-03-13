@@ -15,13 +15,14 @@ import { MintingScreen } from '../src/components/MintingScreen';
 import { GameScreen } from '../src/components/GameScreen';
 import { GarageScreen } from '../src/components/GarageScreen';
 import { RankScreen } from '../src/components/RankScreen';
-import { NavBar, NavView } from '../src/components/NavBar';
+import { NavBar, NavView as OriginalNavView } from '../src/components/NavBar';
 import { StartScreen } from '../src/components/StartScreen';
 import { RaceBettingScreen } from '../src/components/RaceBettingScreen';
 import { LandingPage } from '../src/components/LandingPage';
 
 // Type Definitions
-type GameState = 'loading' | 'login';
+type GameState = 'loading' | 'login'; // 'game' state is now handled by activeView
+type NavView = OriginalNavView | 'game'; // Add 'game' to NavView
 type StartSubView = 'menu' | 'tournament' | 'betting';
 type UserProfile = {
   fid: number;
@@ -41,7 +42,7 @@ export default function Home() {
   const [user, setUser] = useState<UserProfile>(null);
   const [generatedMetadataUrl, setGeneratedMetadataUrl] = useState<string | null>(null);
   const [isMinted, setIsMinted] = useState<boolean>(false);
-  const [nftImageUrl, setNftImageUrl] = useState<string | null>(null); 
+  const [nftImageUrl, setNftImageUrl] = useState<string | null>(null);
   const [isRacing, setIsRacing] = useState<boolean>(false);
   const [raceData, setRaceData] = useState<any>(null);
 
@@ -55,7 +56,7 @@ export default function Home() {
     const initialize = async () => {
       try {
         await sdk.actions.ready();
-        
+
         const context = await sdk.context;
         if (context?.user && isConnected && connectedWalletAddress) {
           let profile: UserProfile = {
@@ -113,7 +114,7 @@ export default function Home() {
       toast.success(`Mint successful! Tx: ${hash?.slice(0, 10)}...`);
       setIsMinted(true);
       setActiveView('profile');
-      
+
       fetch('/api/racer/minted', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -176,7 +177,7 @@ export default function Home() {
 
   const handleRaceBetting = (data: any) => {
     setRaceData(data);
-    setStartSubView('betting');
+    setActiveView('game');
   }
 
   if (gameState === 'loading') {
@@ -197,6 +198,8 @@ export default function Home() {
             nftImageUrl={isMinted ? nftImageUrl : null}
           />
         );
+      case 'game':
+        return <GameScreen raceData={raceData} />;
       case 'start':
         switch (startSubView) {
           case 'tournament': return <GameScreen />;
@@ -235,7 +238,7 @@ export default function Home() {
       <div className="flex-1 w-full overflow-y-auto relative z-10">
         {renderActiveView()}
       </div>
-      {!isRacing && <NavBar activeView={activeView as NavView} onNavigate={handleNavigate} />}
+      {activeView !== 'game' && <NavBar activeView={activeView as OriginalNavView} onNavigate={handleNavigate} />}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }

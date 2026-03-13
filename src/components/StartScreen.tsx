@@ -54,7 +54,7 @@ const shuffle = (array: any[]) => {
 
 export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted, nftImageUrl }: {
   onSelectTournament: () => void;
-  onSelectRaceBetting: (data: { track: any; finalRaceGrid: any[] }) => void;
+  onSelectRaceBetting: (data: { track: any; finalRaceGrid: any[], betAmount: number | null }) => void;
   isMinted?: boolean;
   nftImageUrl?: string | null;
 }) => {
@@ -82,7 +82,11 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
     }
   };
 
-  const handleStartRace = () => {
+  const handleFinalStart = () => {
+    if ((!selectedCharacter && !isBetOnSelf) || !betAmount) {
+        alert('Please select a character and a bet amount.');
+        return;
+    }
     let finalRaceGrid;
     let racers = CHARACTERS_CONFIG.map(c => ({ name: c.name, image: c.path, isPlayer: false }));
 
@@ -103,7 +107,8 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
 
     onSelectRaceBetting({
         track: selectedTrack,
-        finalRaceGrid
+        finalRaceGrid,
+        betAmount
     });
   };
 
@@ -198,7 +203,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
 
             <div className="flex flex-col items-center gap-2">
                  <button
-                    onClick={handleStartRace}
+                    onClick={handleFinalStart}
                     disabled={(!selectedCharacter && !isBetOnSelf) || !betAmount}
                     className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed"
                 >
