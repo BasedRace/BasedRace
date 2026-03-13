@@ -62,7 +62,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
         </div>
       ) : (
         <div className="min-h-full w-full flex flex-col items-center justify-center p-4">
-            <h1 className="pixel-font text-xl text-center text-black mb-10 w-[400px] h-[40px]">SELECT TRACK</h1>
+            <h1 className="text-[20px] pixel-font text-center text-black" style={{ height: '50px' }}>SELECT TRACK</h1>
 
             <div className="flex items-center justify-center">
                 <button onClick={() => handleSelectTrack((selectedTrackIndex - 1 + TRACKS_CONFIG.length) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-black border-4 border-[#233e63] mr-[15px] w-[34px] h-[34px]">{'<'}</button>
