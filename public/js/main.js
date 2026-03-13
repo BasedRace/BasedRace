@@ -22,6 +22,12 @@ class Game {
     window.gameInstance = this;
     
     this.init();
+
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'startRace') {
+        this.startRaceWithData(event.data.data);
+      }
+    });
   }
 
   async init() {
@@ -29,19 +35,13 @@ class Game {
     
     this.track = new Track(this.assets);
     
-    this.racers = [
-      new Racer(0, 'Jesse', this.assets['jesse'], 0, this.track),
-      new Racer(1, 'Barmstrong', this.assets['barmstrong'], 1, this.track),
-      new Racer(2, 'Deployer', this.assets['deployer'], 2, this.track),
-      new Racer(3, 'Dish', this.assets['dish'], 3, this.track)
-    ];
+    // Do not create racers here, wait for data
+    this.racers = [];
     
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
     
     this.renderer.render(this.track, this.racers);
-    
-    this.startRace();
     
     this.lastTime = performance.now();
     this.loop(this.lastTime);
@@ -49,7 +49,6 @@ class Game {
 
   async loadAssets() {
     const assetNames = ['env2', 'start', 'env1', 'finish'];
-    const racerNames = ['jesse', 'barmstrong', 'deployer', 'dish'];
     const version = 'v1.0.0';
 
     const trackPromises = assetNames.map(name => {
@@ -67,22 +66,41 @@ class Game {
       });
     });
 
-    const racerPromises = racerNames.map(name => {
+    await Promise.all(trackPromises);
+  }
+
+  shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  async startRaceWithData(raceData) {
+    this.shuffleArray(raceData);
+    this.racers = [];
+    
+    const racerPromises = raceData.map((racer, index) => {
       return new Promise((resolve) => {
         const img = new Image();
-        img.src = `/assets/character/${name.toLowerCase()}.png?v=${version}`;
+        img.crossOrigin = "anonymous";
+        img.src = racer.image;
         img.onload = () => {
-          this.assets[name] = img;
+          this.racers.push(new Racer(index, racer.name, img, index, this.track));
           resolve();
         };
         img.onerror = () => {
-          console.error(`Failed to load: ${name}`);
+          console.error(`Failed to load image for racer: ${racer.name}`);
+          // Still create the racer, but with a default or no image
+          this.racers.push(new Racer(index, racer.name, null, index, this.track));
           resolve();
         };
       });
     });
 
-    await Promise.all([...trackPromises, ...racerPromises]);
+    await Promise.all(racerPromises);
+
+    this.startRace();
   }
 
   startRace() {

@@ -176,13 +176,13 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
                 ))}
             </div>
 
-            <h2 className="pixel-font text-lg text-white mb-2">BET ON YOURSELF</h2>
+            <h2 className="pixel-font text-lg text-white mb-2">YOUR RACER</h2>
             <div 
                 onClick={handleBetOnSelfSelect}
-                className={`pixel-border bg-[#1a1b23] flex items-center justify-center w-36 h-36 mb-4 ${isBetOnSelf ? 'ring-4 ring-yellow-400' : ''} ${!isMinted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`pixel-border bg-[#1a1b23] flex items-center justify-center w-[70px] h-[70px] mb-4 ${isBetOnSelf ? 'ring-4 ring-yellow-400' : ''} ${!isMinted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             >
                 {isMinted && nftImageUrl ? (
-                    <Image src={nftImageUrl} alt="Your NFT" width={120} height={120} className="object-contain" />
+                    <Image src={nftImageUrl} alt="Your NFT" width={60} height={60} className="object-contain" />
                 ) : (
                     <p className="text-white pixel-font text-center text-sm p-2">No NFT Found</p>
                 )}
