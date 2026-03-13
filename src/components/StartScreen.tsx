@@ -138,7 +138,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
             <h2 className="pixel-font text-lg text-white mb-2">BET ON YOURSELF</h2>
             <div 
                 onClick={handleBetOnSelfSelect}
-                className={`pixel-border bg-[#1a1b23] flex items-center justify-center cursor-pointer w-36 h-36 mb-4 ${isBetOnSelf ? 'border-4 border-yellow-400' : 'border-4 border-[#233e63]'} ${!isMinted ? 'cursor-not-allowed' : ''}`}
+                className={`pixel-border bg-[#1a1b23] flex items-center justify-center w-36 h-36 mb-4 ${isBetOnSelf ? 'border-4 border-yellow-400' : 'border-4 border-[#233e63]'} ${!isMinted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             >
                 {isMinted && nftImageUrl ? (
                     <Image src={nftImageUrl} alt="Your NFT" width={120} height={120} className="object-contain" />
