@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from '../src/components/Providers';
 import { Toaster } from 'sonner';
-import { AudioProvider } from './components/AudioProvider';
+import { AudioProvider } from '../src/components/AudioProvider';
 
 export const metadata: Metadata = {
   title: 'Based Race',
