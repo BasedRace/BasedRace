@@ -127,6 +127,7 @@ class Game {
         return;
     }
     document.getElementById('winner-text').style.display = 'none';
+    document.getElementById('back-btn').style.display = 'none';
 
     if (this.state === 'racing' || this.state === 'countdown') return;
     
@@ -194,6 +195,7 @@ class Game {
     this.renderer.startConfetti();
     setTimeout(() => {
         winnerEl.style.display = 'none';
+        document.getElementById('back-btn').style.display = 'block';
     }, 4000);
   }
 
