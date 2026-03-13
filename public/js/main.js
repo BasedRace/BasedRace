@@ -50,12 +50,12 @@ class Game {
   async loadAssets() {
     const assetNames = ['env2', 'start', 'env1', 'finish'];
     const racerNames = ['jesse', 'barmstrong', 'deployer', 'dish'];
-    const allNames = [...assetNames, ...racerNames];
     const version = 'v1.0.0';
-    const promises = allNames.map(name => {
+
+    const trackPromises = assetNames.map(name => {
       return new Promise((resolve) => {
         const img = new Image();
-        img.src = `/assets/${name}.png?v=${version}`;
+        img.src = `/assets/tracks/base-forest/${name}.png?v=${version}`;
         img.onload = () => {
           this.assets[name] = img;
           resolve();
@@ -66,7 +66,23 @@ class Game {
         };
       });
     });
-    await Promise.all(promises);
+
+    const racerPromises = racerNames.map(name => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = `/assets/character/${name.toLowerCase()}.png?v=${version}`;
+        img.onload = () => {
+          this.assets[name] = img;
+          resolve();
+        };
+        img.onerror = () => {
+          console.error(`Failed to load: ${name}`);
+          resolve();
+        };
+      });
+    });
+
+    await Promise.all([...trackPromises, ...racerPromises]);
   }
 
   startRace() {
