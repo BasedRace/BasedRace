@@ -21,12 +21,13 @@ class Game {
     this.uiAssets = {};
     this.racers = [];
     this.countdownValue = 3;
+    this.isAssetsLoaded = false;
 
     window.gameInstance = this;
 
     window.addEventListener('message', (event) => {
       if (event.data.type === 'startRace') {
-        this.prepareRace(event.data.data);
+        this.initGameSequence(event.data.data);
       }
     });
     
@@ -34,16 +35,32 @@ class Game {
     this.loop(performance.now());
   }
 
-  async prepareRace(data) {
-    await this.loadTrackAssets(data.track);
-    await this.loadUIAssets();
-    await this.startRaceWithData(data.finalRaceGrid);
+  async initGameSequence(data) {
+    if (this.state !== 'waiting') return;
+
+    this.state = 'loading';
+    
+    // Show a loading message while assets are being fetched
+    this.renderer.drawLoading();
+
+    const loadPromises = [
+        this.loadTrackAssets(data.track),
+        this.loadUIAssets(),
+    ];
+
+    await Promise.all(loadPromises);
+    
+    // Racer assets need the track to be loaded first
+    await this.loadRacerAssets(data.finalRaceGrid);
+
+    this.isAssetsLoaded = true;
+    this.startRace();
   }
 
   async loadUIAssets() {
-    const uiAssetNames = ['lights_off.webp', 'lights_red.webp', 'lights_yellow.webp', 'lights_green.webp'];
+    const uiAssetNames = ['lights_off.webp', 'relights_red.webp', 'lights_yellow.webp', 'lights_green.webp'];
     const uiPromises = uiAssetNames.map(fileName => {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const img = new Image();
             img.src = `/assets/lights/${fileName}`;
             img.onload = () => {
@@ -52,7 +69,7 @@ class Game {
             };
             img.onerror = () => {
                 console.error(`Failed to load: ${fileName}`);
-                resolve();
+                reject(`Failed to load: ${fileName}`);
             };
         });
     });
@@ -61,7 +78,7 @@ class Game {
 
   async loadTrackAssets(trackConfig) {
     const trackPromises = trackConfig.segments.map(segment => {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const img = new Image();
         img.src = `${trackConfig.basePath}${segment}`;
         img.onload = () => {
@@ -70,7 +87,7 @@ class Game {
         };
         img.onerror = () => {
           console.error(`Failed to load: ${segment}`);
-          resolve();
+          reject(`Failed to load: ${segment}`);
         };
       });
     });
@@ -79,10 +96,9 @@ class Game {
     this.track = new Track(this.assets);
     this.track.generate(); // Generate a default track view
   }
-
-  async startRaceWithData(finalRaceGrid) {
+  
+  async loadRacerAssets(finalRaceGrid) {
     this.racers = [];
-    
     const racerPromises = finalRaceGrid.map((racerData, index) => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -95,20 +111,22 @@ class Game {
         };
         img.onerror = () => {
           console.error(`Failed to load image for racer: ${racerData.name}`);
-          const racer = new Racer(index, racerData.name, null, index, this.track, racerData.isPlayer)
+          const racer = new Racer(index, racerData.name, null, index, this.track, racerData.isPlayer);
           this.racers.push(racer);
-          resolve();
+          resolve(); // Resolve even on error to not block the game
         };
       });
     });
 
     await Promise.all(racerPromises);
-    this.startRace();
   }
 
   startRace() {
+    if (!this.isAssetsLoaded) {
+        this.renderer.drawLoading(); // Keep showing loading if a start is attempted early
+        return;
+    }
     document.getElementById('winner-text').style.display = 'none';
-    document.getElementById('back-btn').style.display = 'none';
 
     if (this.state === 'racing' || this.state === 'countdown') return;
     
@@ -127,17 +145,16 @@ class Game {
     this.state = 'countdown';
     this.countdownInterval = setInterval(() => {
         this.countdownValue--;
-        if (this.countdownValue === 0) {
+        if (this.countdownValue < 0) {
             this.state = 'racing';
             clearInterval(this.countdownInterval);
         }
-    }, 1000);
+    }, 1500); // Slower 1.5s countdown
   }
 
   update(deltaTime) {
     if (this.state === 'countdown') {
-        // Subtle vibration for racers
-        if (this.countdownValue <= 2) {
+        if (this.countdownValue <= 2) { 
             for (const racer of this.racers) {
                 racer.x += (Math.random() - 0.5) * 2;
             }
@@ -168,9 +185,6 @@ class Game {
 
   finishRace() {
     this.state = 'finished';
-    if (!this.winner) {
-        document.getElementById('back-btn').style.display = 'block';
-    }
   }
 
   showWinnerUI(winner) {
@@ -180,24 +194,35 @@ class Game {
     this.renderer.startConfetti();
     setTimeout(() => {
         winnerEl.style.display = 'none';
-        document.getElementById('back-btn').style.display = 'block';
     }, 4000);
   }
 
   render() {
-    this.renderer.render(this.track, this.racers);
+    if (this.track) {
+        this.renderer.render(this.track, this.racers);
+    } else {
+        this.renderer.clear();
+    }
+    
+    if (this.state === 'loading') {
+        this.renderer.drawLoading();
+        return;
+    }
+
     if (this.state === 'countdown') {
         let text = '';
-        let image = this.uiAssets.lights_off;
+        let image;
         if (this.countdownValue === 3) {
             text = 'READY';
-            image = this.uiAssets.lights_red;
+            image = this.uiAssets.relights_red;
         } else if (this.countdownValue === 2) {
             text = 'SET';
             image = this.uiAssets.lights_yellow;
-        } else if (this.countdownValue === 1) {
+        } else if (this.countdownValue >= 0) { 
             text = 'GO!';
             image = this.uiAssets.lights_green;
+        } else {
+            image = this.uiAssets.lights_off;
         }
         this.renderer.drawStartLights(image, text);
     }
@@ -206,15 +231,12 @@ class Game {
   loop(timestamp) {
     const deltaTime = timestamp - this.lastTime;
     this.lastTime = timestamp;
-    
-    // Always render, even if waiting
-    if (this.track) {
-        this.render();
-    }
 
-    if ((this.state === 'racing' || this.state === 'countdown') && deltaTime < 1000) {
-      this.update(deltaTime);
+    if (this.state !== 'waiting') {
+        this.update(deltaTime > 1000 ? 16 : deltaTime);
     }
+    
+    this.render();
     
     requestAnimationFrame((t) => this.loop(t));
   }
