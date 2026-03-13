@@ -6,24 +6,25 @@ const FINISH_DISTANCE = 15500;
 
 // Racer class for autonomous 4-racer system
 export class Racer {
-  constructor(id, name, asset, laneIndex, track) {
+  constructor(id, name, asset, laneIndex, track, isPlayer) {
     this.id = id;
     this.name = name;
     this.asset = asset;
     this.laneIndex = laneIndex;
     this.track = track;
+    this.isPlayer = isPlayer;
     this.w = 600;
     this.h = 600;
     
     // Starting positions from user
-    const startPositions = {
-      'Jesse': { x: -90, y: -30 },
-      'Barmstrong': { x: 190, y: 150 },
-      'Deployer': { x: 460, y: 300 },
-      'Dish': { x: 790, y: 530 }
-    };
+    const startPositions = [
+        { x: -90, y: -30 },
+        { x: 190, y: 150 },
+        { x: 460, y: 300 },
+        { x: 790, y: 530 }
+    ];
     
-    const pos = startPositions[name] || { x: 0, y: 0 };
+    const pos = startPositions[laneIndex] || { x: 0, y: 0 };
     this.startX = pos.x;
     this.startY = pos.y;
     this.x = pos.x;
@@ -83,13 +84,13 @@ export class Racer {
   
   // Reset to start
   reset() {
-    const startPositions = {
-      'Jesse': { x: -90, y: -30 },
-      'Barmstrong': { x: 190, y: 150 },
-      'Deployer': { x: 460, y: 300 },
-      'Dish': { x: 790, y: 530 }
-    };
-    const pos = startPositions[this.name] || { x: 0, y: 0 };
+    const startPositions = [
+        { x: -90, y: -30 },
+        { x: 190, y: 150 },
+        { x: 460, y: 300 },
+        { x: 790, y: 530 }
+    ];
+    const pos = startPositions[this.laneIndex] || { x: 0, y: 0 };
     this.startX = pos.x;
     this.startY = pos.y;
     this.x = pos.x;
