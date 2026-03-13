@@ -62,10 +62,10 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
         </div>
       ) : (
         <div className="min-h-full w-full flex flex-col items-center justify-center p-4">
-            <h1 className="pixel-font text-4xl text-center mb-6">SELECT TRACK</h1>
+            <h1 className="pixel-font text-3xl text-center text-[#0f10f4] mb-10 w-[300px]">SELECT TRACK</h1>
 
-            <div className="flex items-center justify-center gap-10">
-                <button onClick={() => handleSelectTrack((selectedTrackIndex - 1 + TRACKS_CONFIG.length) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-[#0f10f4]">{'<'}</button>
+            <div className="flex items-center justify-center">
+                <button onClick={() => handleSelectTrack((selectedTrackIndex - 1 + TRACKS_CONFIG.length) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-[#0f10f4] mr-[15px] w-[34px] h-[34px]">{'<'}</button>
                 
                 <div className="relative w-[280px] h-[160px] border-4 border-[#0f10f4] bg-gray-900 flex items-center justify-center pixel-font">
                     {selectedTrack.preview === '?' ? (
@@ -75,10 +75,10 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
                     )}
                 </div>
                 
-                <button onClick={() => handleSelectTrack((selectedTrackIndex + 1) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-[#0f10f4]">{ '>'}</button>
+                <button onClick={() => handleSelectTrack((selectedTrackIndex + 1) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-[#0f10f4] ml-[15px] w-[34px] h-[34px]">{ '>'}</button>
             </div>
 
-            <p className="pixel-font text-lg mt-4">{selectedTrack.name}</p>
+            <p className="pixel-font text-lg text-[#0f10f4] mt-[5px] mb-[20px]">{selectedTrack.name}</p>
 
             <div className="flex flex-col items-center gap-6 mt-8">
                 <button
@@ -89,7 +89,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
                     {selectedTrack.preview === '?' ? 'LOCKED' : 'CONFIRM'}
                 </button>
 
-                <button onClick={() => setCurrentView('main')} className="pixel-font text-sm text-[#0f10f4] mt-12">Back to Menu</button>
+                <button onClick={() => setCurrentView('main')} className="pixel-font text-sm text-[#0f10f4] pixel-border mt-[15px]">Back to Menu</button>
             </div>
         </div>
       )}
