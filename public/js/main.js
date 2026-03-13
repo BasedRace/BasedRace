@@ -70,6 +70,7 @@ class Game {
     if (this.state !== 'waiting') return;
 
     this.state = 'loading';
+    this.fadeOutMusic(1);
     
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -254,7 +255,6 @@ class Game {
     if (this.state === 'racing' || this.state === 'countdown') return;
     
     this.stopAllSounds();
-    this.fadeOutMusic(1);
 
     this.raceTime = 0;
     this.winner = null;
@@ -327,6 +327,22 @@ class Game {
     this.fadeOutMusic(2);
   }
 
+  resetForNewRace() {
+    this.state = 'waiting';
+    document.getElementById('winner-text').style.display = 'none';
+    document.getElementById('back-btn').style.display = 'none';
+
+    if (this.renderer.stopConfetti) {
+        this.renderer.stopConfetti();
+    }
+
+    this.stopAllSounds();
+    this.playMusic('menumusic', true, 0);
+    this.fadeInMusic(1, 0.5);
+
+    window.parent.postMessage({ type: 'backToMenu' }, '*');
+  }
+
   showWinnerUI(winner) {
     this.stopSound('engine_loop');
     this.playSound('victory', false, 0.7);
@@ -340,11 +356,7 @@ class Game {
     setTimeout(() => {
         winnerEl.style.display = 'none';
         document.getElementById('back-btn').style.display = 'block';
-        // On back, we might want to bring menu music back
-        document.getElementById('back-btn').onclick = () => {
-          this.playMusic('menumusic', true, 0);
-          this.fadeInMusic(1, 0.5);
-        };
+        document.getElementById('back-btn').onclick = () => this.resetForNewRace();
     }, 4000);
   }
 
