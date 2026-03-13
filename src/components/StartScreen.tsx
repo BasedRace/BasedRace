@@ -10,6 +10,16 @@ const TRACKS_CONFIG = [
     preview: '/assets/tracks/base-forest/start.png',
     segments: ['start.png', 'env1.png', 'env2.png', 'finish.png'],
     basePath: '/assets/tracks/base-forest/'
+  },
+  {
+    id: 'coming-soon-1',
+    name: 'Locked Track',
+    preview: '?',
+  },
+  {
+    id: 'coming-soon-2',
+    name: 'Locked Track',
+    preview: '?',
   }
 ];
 
@@ -28,9 +38,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
   const [selectedTrackIndex, setSelectedTrackIndex] = useState(0);
 
   const handleSelectTrack = (index: number) => {
-    if (index >= 0 && index < TRACKS_CONFIG.length) {
-      setSelectedTrackIndex(index);
-    }
+    setSelectedTrackIndex(index);
   };
 
   const selectedTrack = TRACKS_CONFIG[selectedTrackIndex];
@@ -53,28 +61,36 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
           </button>
         </div>
       ) : (
-        <div className="min-h-full w-full flex flex-col items-center justify-center gap-4 p-4">
-          <div className="flex items-center justify-center gap-6">
-            <button onClick={() => handleSelectTrack(selectedTrackIndex - 1)} className="pixel-font text-4xl text-[#0f10f4]">{'<'}</button>
-            <div className="relative w-[150px] h-[100px] border-4 border-[#0f10f4] bg-black flex items-center justify-center pixel-font">
-                <span className="text-white text-4xl">?</span>
+        <div className="min-h-full w-full flex flex-col items-center justify-center p-4">
+            <h1 className="pixel-font text-4xl text-center mb-6">SELECT TRACK</h1>
+
+            <div className="flex items-center justify-center gap-10">
+                <button onClick={() => handleSelectTrack((selectedTrackIndex - 1 + TRACKS_CONFIG.length) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-[#0f10f4]">{'<'}</button>
+                
+                <div className="relative w-[280px] h-[160px] border-4 border-[#0f10f4] bg-gray-900 flex items-center justify-center pixel-font">
+                    {selectedTrack.preview === '?' ? (
+                        <span className="text-white text-6xl">?</span>
+                    ) : (
+                        <Image src={selectedTrack.preview} alt={selectedTrack.name} layout='fill' objectFit='cover' />
+                    )}
+                </div>
+                
+                <button onClick={() => handleSelectTrack((selectedTrackIndex + 1) % TRACKS_CONFIG.length)} className="pixel-font text-4xl text-[#0f10f4]">{ '>'}</button>
             </div>
-            <div className="relative w-[250px] h-[150px] border-4 border-[#0f10f4] bg-gray-900">
-                <Image src={selectedTrack.preview} alt={selectedTrack.name} layout='fill' objectFit='cover' />
+
+            <p className="pixel-font text-lg mt-4">{selectedTrack.name}</p>
+
+            <div className="flex flex-col items-center gap-6 mt-8">
+                <button
+                    onClick={() => onSelectRaceBetting(selectedTrack)}
+                    disabled={selectedTrack.preview === '?'}
+                    className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed"
+                >
+                    {selectedTrack.preview === '?' ? 'LOCKED' : 'CONFIRM'}
+                </button>
+
+                <button onClick={() => setCurrentView('main')} className="pixel-font text-sm text-[#0f10f4] mt-12">Back to Menu</button>
             </div>
-            <div className="relative w-[150px] h-[100px] border-4 border-[#0f10f4] bg-black flex items-center justify-center pixel-font">
-                <span className="text-white text-4xl">?</span>
-            </div>
-            <button onClick={() => handleSelectTrack(selectedTrackIndex + 1)} className="pixel-font text-4xl text-[#0f10f4]">{'>'}</button>
-          </div>
-          <p className="pixel-font text-lg mt-4">{selectedTrack.name}</p>
-          <button 
-            onClick={() => onSelectRaceBetting(selectedTrack)} 
-            className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center mt-4"
-          >
-            Confirm
-          </button>
-          <button onClick={() => setCurrentView('main')} className="pixel-font text-sm mt-6 text-[#0f10f4]">Back</button>
         </div>
       )}
     </div>
