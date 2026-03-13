@@ -19,11 +19,22 @@ class Game {
     this.track = null;
     this.assets = {};
     this.uiAssets = {};
+    this.sfx = {};
     this.racers = [];
     this.countdownValue = 3;
     this.isAssetsLoaded = false;
+    this.userInteracted = false;
 
     window.gameInstance = this;
+
+    const onInteraction = () => {
+      this.userInteracted = true;
+      window.removeEventListener('click', onInteraction);
+      window.removeEventListener('keydown', onInteraction);
+    };
+
+    window.addEventListener('click', onInteraction);
+    window.addEventListener('keydown', onInteraction);
 
     window.addEventListener('message', (event) => {
       if (event.data.type === 'startRace') {
@@ -46,6 +57,7 @@ class Game {
     const loadPromises = [
         this.loadTrackAssets(data.track),
         this.loadUIAssets(),
+        this.loadAudioAssets(),
     ];
 
     await Promise.all(loadPromises);
@@ -55,6 +67,41 @@ class Game {
 
     this.isAssetsLoaded = true;
     this.startRace();
+  }
+
+  async loadAudioAssets() {
+    const audioAssetNames = ['beep.mp3', 'start_go.mp3', 'engine_loop.mp3', 'victory.mp3'];
+    const audioPromises = audioAssetNames.map(fileName => {
+        return new Promise((resolve) => {
+            const audio = new Audio(`/assets/sounds/${fileName}`);
+            audio.oncanplaythrough = () => {
+                this.sfx[fileName.split('.')[0]] = audio;
+                resolve();
+            };
+            audio.onerror = () => {
+                console.error(`Failed to load audio: ${fileName}`);
+                resolve(); // Don't block game
+            };
+        });
+    });
+    await Promise.all(audioPromises);
+  }
+
+  playSound(soundName, loop = false, volume = 0.7) {
+    if (this.sfx[soundName] && this.userInteracted) {
+        const sound = this.sfx[soundName];
+        sound.loop = loop;
+        sound.volume = volume;
+        sound.currentTime = 0;
+        sound.play().catch(error => console.error(`Error playing sound ${soundName}:`, error));
+    }
+  }
+
+  stopSound(soundName) {
+    if (this.sfx[soundName]) {
+        this.sfx[soundName].pause();
+        this.sfx[soundName].currentTime = 0;
+    }
   }
 
   async loadUIAssets() {
@@ -134,7 +181,6 @@ class Game {
     this.raceTime = 0;
     this.winner = null;
     this.lastTime = performance.now();
-    this.countdownValue = 3;
     
     const preScrollOffset = this.scrollSpeed * 1.25;
     this.track.generateWithPreScroll(preScrollOffset);
@@ -143,11 +189,19 @@ class Game {
       racer.reset();
     }
 
+    this.countdownValue = 3;
+    this.playSound('beep', false, 0.7); // For "READY"
+
     this.state = 'countdown';
     this.countdownInterval = setInterval(() => {
         this.countdownValue--;
-        if (this.countdownValue < 0) {
+        if (this.countdownValue === 2) { // For "SET"
+            this.playSound('beep', false, 0.7);
+        } else if (this.countdownValue === 1) { // For "GO!"
+            this.playSound('start_go', false, 0.7);
+        } else if (this.countdownValue < 0) {
             this.state = 'racing';
+            this.playSound('engine_loop', true, 0.3);
             clearInterval(this.countdownInterval);
         }
     }, 1500); // Slower 1.5s countdown
@@ -173,6 +227,7 @@ class Game {
       racer.update(movement, deltaTime, this.track);
       if (racer.finished && !this.winner) {
         this.winner = racer;
+        this.stopSound('engine_loop');
         this.showWinnerUI(racer);
         window.parent.postMessage({ type: 'raceResult', winner: racer.name, isUserWinner: racer.isPlayer }, '*');
       }
@@ -186,6 +241,7 @@ class Game {
 
   finishRace() {
     this.state = 'finished';
+    this.stopSound('engine_loop');
   }
 
   showWinnerUI(winner) {
@@ -193,6 +249,7 @@ class Game {
     winnerEl.textContent = `🏆 ${winner.name} WINS! 🏆`;
     winnerEl.style.display = 'block';
     this.renderer.startConfetti();
+    this.playSound('victory', false, 0.7);
     setTimeout(() => {
         winnerEl.style.display = 'none';
         document.getElementById('back-btn').style.display = 'block';
