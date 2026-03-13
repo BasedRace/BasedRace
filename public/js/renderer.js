@@ -55,7 +55,10 @@ export class Renderer {
 
   // Draw all racers (keep displaying even after finish)
   drawRacers(racers) {
-    for (const racer of racers) {
+    // Sort racers by their Y-coordinate to ensure proper layering
+    const sortedRacers = [...racers].sort((a, b) => a.yPosOnScreen - b.yPosOnScreen);
+
+    for (const racer of sortedRacers) {
       if (!racer.asset) continue;
       
       // Use Math.floor for crisp rendering
