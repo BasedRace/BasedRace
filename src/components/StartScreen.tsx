@@ -54,21 +54,27 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting }: {
         </div>
       ) : (
         <div className="min-h-full w-full flex flex-col items-center justify-center gap-4 p-4">
-          <div className="flex items-center justify-center gap-4">
-            <button onClick={() => handleSelectTrack(selectedTrackIndex - 1)} className="pixel-font text-4xl">{'<'}</button>
-            <div className="relative w-[300px] h-[200px] border-4 border-gray-800 bg-gray-900">
-              <Image src={selectedTrack.preview} alt={selectedTrack.name} layout='fill' objectFit='cover' />
+          <div className="flex items-center justify-center gap-6">
+            <button onClick={() => handleSelectTrack(selectedTrackIndex - 1)} className="pixel-font text-4xl text-[#0f10f4]">{'<'}</button>
+            <div className="relative w-[150px] h-[100px] border-4 border-[#0f10f4] bg-black flex items-center justify-center pixel-font">
+                <span className="text-white text-4xl">?</span>
             </div>
-            <button onClick={() => handleSelectTrack(selectedTrackIndex + 1)} className="pixel-font text-4xl">{'>'}</button>
+            <div className="relative w-[250px] h-[150px] border-4 border-[#0f10f4] bg-gray-900">
+                <Image src={selectedTrack.preview} alt={selectedTrack.name} layout='fill' objectFit='cover' />
+            </div>
+            <div className="relative w-[150px] h-[100px] border-4 border-[#0f10f4] bg-black flex items-center justify-center pixel-font">
+                <span className="text-white text-4xl">?</span>
+            </div>
+            <button onClick={() => handleSelectTrack(selectedTrackIndex + 1)} className="pixel-font text-4xl text-[#0f10f4]">{'>'}</button>
           </div>
-          <p className="pixel-font text-lg">{selectedTrack.name}</p>
+          <p className="pixel-font text-lg mt-4">{selectedTrack.name}</p>
           <button 
             onClick={() => onSelectRaceBetting(selectedTrack)} 
-            className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center"
+            className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center mt-4"
           >
             Confirm
           </button>
-          <button onClick={() => setCurrentView('main')} className="pixel-font text-sm mt-4">Back</button>
+          <button onClick={() => setCurrentView('main')} className="pixel-font text-sm mt-6 text-[#0f10f4]">Back</button>
         </div>
       )}
     </div>
