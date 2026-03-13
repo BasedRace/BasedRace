@@ -145,7 +145,7 @@ export class Renderer {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const textX = canvasWidth / 2;
-        const textY = yPos + 650; // Position text below the lights banner
+        const textY = yPos + 800; // Position text below the lights banner
         
         ctx.shadowColor = 'black';
         ctx.shadowBlur = 15;
