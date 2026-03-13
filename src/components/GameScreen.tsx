@@ -2,14 +2,14 @@
 
 import { useEffect, useRef } from 'react';
 
-export const GameScreen = ({ raceData }: { raceData: any }) => {
+export const GameScreen = ({ raceData }: { raceData?: any }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     const iframe = iframeRef.current;
 
     const handleLoad = () => {
-      if (iframe && iframe.contentWindow) {
+      if (iframe && iframe.contentWindow && raceData) {
         iframe.contentWindow.postMessage({ type: 'startRace', data: raceData }, '*');
       }
     };
