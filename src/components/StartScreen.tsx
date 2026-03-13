@@ -32,9 +32,29 @@ const CHARACTERS_CONFIG = [
 
 const BET_OPTIONS = [0.1, 0.3, 0.5];
 
+// Function to shuffle an array
+const shuffle = (array: any[]) => {
+  let currentIndex = array.length, randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex !== 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+};
+
+
 export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted, nftImageUrl }: {
   onSelectTournament: () => void;
-  onSelectRaceBetting: (data: { track: any; character: string | null; isBetOnSelf: boolean; betAmount: number | null; }) => void;
+  onSelectRaceBetting: (data: { track: any; finalRaceGrid: any[] }) => void;
   isMinted?: boolean;
   nftImageUrl?: string | null;
 }) => {
@@ -63,11 +83,27 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
   };
 
   const handleStartRace = () => {
+    let finalRaceGrid;
+    let racers = CHARACTERS_CONFIG.map(c => ({ name: c.name, image: c.path, isPlayer: false }));
+
+    if (isBetOnSelf && nftImageUrl) {
+        // Randomly remove one default character
+        const removalIndex = Math.floor(Math.random() * racers.length);
+        racers.splice(removalIndex, 1);
+        // Add the user's NFT character
+        racers.push({ name: 'USER', image: nftImageUrl, isPlayer: true });
+    } else {
+        const player = racers.find(r => r.name === selectedCharacter);
+        if (player) {
+            player.isPlayer = true;
+        }
+    }
+
+    finalRaceGrid = shuffle(racers);
+
     onSelectRaceBetting({
         track: selectedTrack,
-        character: selectedCharacter,
-        isBetOnSelf: isBetOnSelf,
-        betAmount: betAmount
+        finalRaceGrid
     });
   };
 
@@ -128,7 +164,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
                     <div 
                         key={char.name}
                         onClick={() => handleCharacterSelect(char.name)}
-                        className={`pixel-border bg-[#1a1b23] flex items-center justify-center cursor-pointer w-[70px] h-[70px] ${selectedCharacter === char.name ? 'border-4 border-yellow-400' : 'border-4 border-[#233e63]'}`}
+                        className={`pixel-border bg-[#1a1b23] flex items-center justify-center cursor-pointer w-[70px] h-[70px] ${selectedCharacter === char.name ? 'ring-4 ring-yellow-400' : ''}`}
                     >
                         <Image src={char.path} alt={char.name} width={60} height={60} className="object-contain" />
                     </div>
@@ -138,7 +174,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
             <h2 className="pixel-font text-lg text-white mb-2">BET ON YOURSELF</h2>
             <div 
                 onClick={handleBetOnSelfSelect}
-                className={`pixel-border bg-[#1a1b23] flex items-center justify-center w-36 h-36 mb-4 ${isBetOnSelf ? 'border-4 border-yellow-400' : 'border-4 border-[#233e63]'} ${!isMinted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`pixel-border bg-[#1a1b23] flex items-center justify-center w-36 h-36 mb-4 ${isBetOnSelf ? 'ring-4 ring-yellow-400' : ''} ${!isMinted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             >
                 {isMinted && nftImageUrl ? (
                     <Image src={nftImageUrl} alt="Your NFT" width={120} height={120} className="object-contain" />

@@ -43,6 +43,7 @@ export default function Home() {
   const [isMinted, setIsMinted] = useState<boolean>(false);
   const [nftImageUrl, setNftImageUrl] = useState<string | null>(null); 
   const [isRacing, setIsRacing] = useState<boolean>(false);
+  const [raceData, setRaceData] = useState<any>(null);
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -173,6 +174,11 @@ export default function Home() {
     });
   };
 
+  const handleRaceBetting = (data: any) => {
+    setRaceData(data);
+    setStartSubView('betting');
+  }
+
   if (gameState === 'loading') {
     return <div className="w-screen h-screen bg-black" />;
   }
@@ -200,7 +206,7 @@ export default function Home() {
             return (
               <StartScreen
                 onSelectTournament={() => setStartSubView('tournament')}
-                onSelectRaceBetting={() => setStartSubView('betting')}
+                onSelectRaceBetting={handleRaceBetting}
                 isMinted={isMinted}
                 nftImageUrl={nftImageUrl}
               />
