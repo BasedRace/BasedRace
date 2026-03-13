@@ -144,6 +144,43 @@ export class Renderer {
     }
   }
 
+  drawStartLights(currentImage, text) {
+    const ctx = this.ctx;
+
+    // 1. Dark Vignette/Overlay
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // 2. Draw the light image
+    if (currentImage) {
+        const scale = 0.8; // Scale factor for the image
+        const imgWidth = currentImage.width * scale;
+        const imgHeight = currentImage.height * scale;
+        const x = (this.canvas.width - imgWidth) / 2;
+        const y = this.canvas.height / 2 - imgHeight; // Positioned in the upper-middle part
+
+        ctx.drawImage(currentImage, x, y, imgWidth, imgHeight);
+    }
+
+    // 3. Draw the text
+    if (text) {
+        ctx.font = "bold 48px 'Press Start 2P', monospace"; // Example pixel font
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const textX = this.canvas.width / 2;
+        const textY = this.canvas.height / 2 + 50; // Centered below the lights
+        
+        // Text shadow for better readability
+        ctx.shadowColor = 'black';
+        ctx.shadowBlur = 10;
+        ctx.fillText(text, textX, textY);
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
+    }
+  }
+
   // Merender semua tile track dengan urutan kedalaman (back to front)
   render(track, racers = []) {
     if (!track || !track.tiles) return;
