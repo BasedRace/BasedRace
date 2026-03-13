@@ -140,12 +140,12 @@ export class Renderer {
     }
 
     if (text) {
-        ctx.font = "bold 72px 'Press Start 2P', monospace";
+        ctx.font = "bold 90px 'Press Start 2P', monospace";
         ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const textX = canvasWidth / 2;
-        const textY = yPos + 280; // Position text below the lights banner
+        const textY = yPos + 400; // Position text below the lights banner
         
         ctx.shadowColor = 'black';
         ctx.shadowBlur = 15;
