@@ -9,22 +9,32 @@ interface LandingPageProps {
 }
 
 export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProps) => (
-  <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-28">
+  <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-20">
     <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
       
-      {/* 1. BUTTON: Warna tetap putih (#e7f2eb) dan teks biru (#0f10f4) 
-          Fungsi dan teks berubah secara dinamis berdasarkan status minting.
-      */}
-      <button 
-        onClick={onAction}
-        className="pixel-font w-full max-w-[200px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
-                   text-[10px] py-4 px-2 shadow-[4px_4px_0px_#99b1c5] 
-                   active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[80px]"
-      >
-        <span className="block uppercase tracking-tighter">
-          {isMinted ? "SHARE RACER" : "MINT PERSONAL RACER"}
-        </span>
-      </button>
+      <div className="flex justify-between w-full max-w-[320px]">
+        <button 
+          onClick={onAction}
+          className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
+                     text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
+                     active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px]"
+        >
+          <span className="block uppercase tracking-tighter">
+            {isMinted ? "SHARE RACER" : "MINT PERSONAL RACER"}
+          </span>
+        </button>
+
+        <button 
+          className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
+                     text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
+                     active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px]"
+        >
+          <Image src="/ui/mascot.webp" alt="Mascot" width={24} height={24} className="mr-2" />
+          <span className="block uppercase tracking-tighter">
+            CLAIM $RACE
+          </span>
+        </button>
+      </div>
 
       {/* 2. IMAGE CONTAINER: 
           Menampilkan NFT user jika isMinted true, jika tidak tampilkan dummy.
