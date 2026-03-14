@@ -99,7 +99,7 @@ class Game {
   }
 
   async loadSounds() {
-    const audioAssetNames = ['beep.mp3', 'start_go.mp3', 'engine_loop.mp3', 'victory.mp3', 'ingamemusic.mp3', 'menumusic.mp3'];
+    const audioAssetNames = ['beep.mp3', 'start_go.mp3', 'engine_loop.mp3', 'victory.mp3', 'ingamemusic.mp3'];
     const audioPromises = audioAssetNames.map(fileName => {
         return fetch(`/assets/sounds/${fileName}`)
             .then(response => response.arrayBuffer())
