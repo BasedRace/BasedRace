@@ -9,10 +9,10 @@ interface LandingPageProps {
 }
 
 export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProps) => (
-  <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-20">
+  <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-24">
     <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
       
-      <div className="flex justify-between w-full max-w-[320px]">
+      <div className="flex justify-between w-full max-w-[320px] items-end">
         <button 
           onClick={onAction}
           className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
@@ -24,16 +24,24 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
           </span>
         </button>
 
-        <button 
-          className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
-                     text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
-                     active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px]"
-        >
-          <Image src="/ui/mascot.webp" alt="Mascot" width={24} height={24} className="mr-2" />
-          <span className="block uppercase tracking-tighter">
-            CLAIM $RACE
-          </span>
-        </button>
+        <div className="relative">
+          <Image 
+            src="/ui/mascot.webp" 
+            alt="Mascot" 
+            width={48} 
+            height={48} 
+            className="absolute -top-8 right-0 z-10"
+          />
+          <button 
+            className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
+                       text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
+                       active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px]"
+          >
+            <span className="block uppercase tracking-tighter">
+              CLAIM $RACE
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* 2. IMAGE CONTAINER: 
