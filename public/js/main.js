@@ -45,7 +45,7 @@ class Game {
       if (this.audioContext.state === 'suspended') {
         this.audioContext.resume().then(() => {
           if (!Object.keys(this.musicSources).length) {
-            this.playMusic('menumusic', true, 0.5);
+            // this.playMusic('menumusic', true, 0.5);
           }
         });
       }
@@ -342,8 +342,6 @@ class Game {
     }
 
     this.stopAllSounds();
-    this.playMusic('menumusic', true, 0);
-    this.fadeInMusic(1, 0.5);
 
     window.parent.postMessage({ type: 'backToMenu' }, '*');
   }
