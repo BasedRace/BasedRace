@@ -4,7 +4,7 @@ import { keccak256, parseEther, encodePacked } from 'viem';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase admin client
-const supabaseAdmin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 /**
  * In-memory store for claim cooldowns. 
@@ -82,15 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const nonce = BigInt(Date.now());
 
     const messageHash = keccak256(
-      encodePacked([
-        'address', 
-        'uint256', 
-        'uint256'
-    ], [
-        address as `0x${string}`, 
-        amount, 
-        nonce
-    ]));
+      encodePacked(['address', 'uint256', 'uint256'], [address as `0x${string}`, amount, nonce])
+    );
 
     const signature = await adminAccount.signMessage({ message: { raw: messageHash } });
 
