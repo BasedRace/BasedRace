@@ -44,7 +44,7 @@ class Game {
 
       if (this.audioContext.state === 'suspended') {
         this.audioContext.resume().then(() => {
-          if (!this.musicSources['menumusic']) {
+          if (!Object.values(this.musicSources).length) {
             this.playMusic('menumusic', true, 0.5);
           }
         });
@@ -70,7 +70,7 @@ class Game {
     if (this.state !== 'waiting') return;
 
     this.state = 'loading';
-    this.fadeOutMusic(1);
+    this.stopAllSounds();
     
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -134,21 +134,26 @@ class Game {
   }
 
   playMusic(bufferName, loop = true, volume = 0.5) {
-    if (this.music[bufferName] && this.audioContext && this.audioContext.state === 'running') {
-        if (this.musicSources[bufferName]) {
-            this.musicSources[bufferName].stop();
-        }
-        const source = this.audioContext.createBufferSource();
-        source.buffer = this.music[bufferName];
-        source.loop = loop;
-        
-        this.musicGain.gain.setValueAtTime(volume, this.audioContext.currentTime);
-
-        source.connect(this.musicGain);
-        
-        source.start();
-        this.musicSources[bufferName] = source;
+    if (!this.music[bufferName] || !this.audioContext || this.audioContext.state !== 'running') {
+      return;
     }
+  
+    // Stop any currently playing music sources
+    Object.values(this.musicSources).forEach(source => {
+      try { source.stop(); } catch (e) { /* Fails if source already stopped */ }
+    });
+    this.musicSources = {};
+  
+    // Create and play the new music source
+    const source = this.audioContext.createBufferSource();
+    source.buffer = this.music[bufferName];
+    source.loop = loop;
+    
+    this.musicGain.gain.setValueAtTime(volume, this.audioContext.currentTime);
+    source.connect(this.musicGain);
+    source.start();
+    
+    this.musicSources[bufferName] = source;
   }
 
   stopSound(bufferName) {
@@ -162,12 +167,10 @@ class Game {
     for (const soundName in this.soundSources) {
         this.stopSound(soundName);
     }
-    for (const musicName in this.musicSources) {
-      if (this.musicSources[musicName]) {
-        this.musicSources[musicName].stop();
-        delete this.musicSources[musicName];
-      }
-    }
+    Object.values(this.musicSources).forEach(source => {
+      try { source.stop(); } catch (e) { /* Fails if source already stopped */ }
+    });
+    this.musicSources = {};
   }
 
   fadeOutMusic(duration = 2) {
@@ -253,8 +256,6 @@ class Game {
     document.getElementById('back-btn').style.display = 'none';
 
     if (this.state === 'racing' || this.state === 'countdown') return;
-    
-    this.stopAllSounds();
 
     this.raceTime = 0;
     this.winner = null;
