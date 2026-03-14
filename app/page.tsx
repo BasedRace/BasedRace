@@ -7,6 +7,7 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect 
 import { toast } from 'sonner';
 import BasedRaceNFTABI from '../src/lib/BasedRaceNFTABI.json';
 import { CONTRACT_ADDRESS, MINT_FEE } from '../src/lib/constants';
+import { useAudio } from '../src/components/AudioProvider';
 
 // Component Imports
 import { LoginScreen } from '../src/components/LoginScreen';
@@ -45,6 +46,7 @@ export default function Home() {
   const [nftImageUrl, setNftImageUrl] = useState<string | null>(null);
   const [isRacing, setIsRacing] = useState<boolean>(false);
   const [raceData, setRaceData] = useState<any>(null);
+  const { fadeOutMainMusic, fadeInMainMusic } = useAudio();
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -130,6 +132,14 @@ export default function Home() {
     if (writeError) toast.error(`Transaction failed: ${writeError.message}`);
     if (confirmError) toast.error(`Confirmation failed: ${confirmError.message}`);
   }, [isConfirmed, writeError, confirmError, hash, user]);
+
+  useEffect(() => {
+    if (activeView === 'game') {
+      fadeOutMainMusic();
+    } else {
+      fadeInMainMusic();
+    }
+  }, [activeView, fadeOutMainMusic, fadeInMainMusic]);
 
   const handleConnect = () => connect({ connector: connectors[0] });
 
