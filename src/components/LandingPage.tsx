@@ -31,6 +31,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
             width={100} 
             height={80} 
             className="absolute -top-20 right-0 z-10"
+            style={{ bottom: '60px', left: '10px' }}
           />
           <button 
             className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
