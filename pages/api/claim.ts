@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { privateKeyToAccount } from 'viem/accounts';
-import { keccak256, parseEther, pack } from 'viem';
+import { keccak256, parseEther, encodePacked } from 'viem';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase admin client
@@ -82,7 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const nonce = BigInt(Date.now());
 
     const messageHash = keccak256(
-      pack([
+      encodePacked([
         'address', 
         'uint256', 
         'uint256'
