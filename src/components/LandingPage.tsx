@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useAccount, useWriteContract } from 'wagmi';
-import { useFarcasterIdentity } from '@farcaster/miniapp-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 import DAILY_REWARDS_ABI from '../lib/claim.json';
 
 // Get the contract address from environment variables
@@ -17,7 +17,6 @@ interface LandingPageProps {
 
 export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProps) => {
   const { address, isConnected } = useAccount();
-  const { fid } = useFarcasterIdentity();
   const { writeContract, data: hash, isPending, isSuccess, error } = useWriteContract();
 
   const [claimError, setClaimError] = useState<string | null>(null);
@@ -28,6 +27,8 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
         setClaimError('Daily rewards address is not configured.');
         return;
     }
+
+    const fid = sdk.identity?.fid;
     
     if (!fid || !address) {
       setClaimError('Please ensure your wallet is connected and Farcaster account is synced.');

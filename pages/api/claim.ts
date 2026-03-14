@@ -1,28 +1,33 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { privateKeyToAccount } from 'viem/accounts';
 import { keccak256, parseEther, pack } from 'viem';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase admin client
+const supabaseAdmin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 /**
- * IMPORTANT:
- * In a production environment, this in-memory store is not suitable.
- * It will reset every time the server restarts.
- * Replace this with a persistent database solution like Vercel KV, Redis, or a traditional SQL/NoSQL database.
+ * In-memory store for claim cooldowns. 
+ * IMPORTANT: Not suitable for production. Replace with a persistent database like Redis or Vercel KV.
+ * This map now stores the UTC date of the last claim.
  */
-const userLastClaim = new Map<number, number>();
+const userLastClaimDate = new Map<number, string>(); // Stores fid -> YYYY-MM-DD
 
 // --- CONFIGURATION ---
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
-const CLAIM_AMOUNT_ETH = '100'; // The amount of $RACE tokens to be claimed, in ETH format (e.g., '100').
-const CLAIM_COOLDOWN_HOURS = 24;
+const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY;
+const BASE_CLAIM_AMOUNT = '100'; // Base amount of $RACE tokens
+const OG_MULTIPLIER = 5; // 5x bonus for OG Racers
+const MINIMUM_NEYNAR_SCORE = 0.6;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  if (!ADMIN_PRIVATE_KEY) {
-    console.error('CRITICAL: ADMIN_PRIVATE_KEY is not set in environment variables.');
-    return res.status(500).json({ error: 'Server configuration error. Unable to sign claims.' });
+  if (!ADMIN_PRIVATE_KEY || !NEYNAR_API_KEY) {
+    console.error('CRITICAL: Server environment variables are not fully configured.');
+    return res.status(500).json({ error: 'Server configuration error.' });
   }
 
   const { fid, address } = req.body;
@@ -31,41 +36,67 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Farcaster ID (fid) and wallet address are required.' });
   }
 
-  // --- COOLDOWN CHECK ---
-  const now = Date.now();
-  const lastClaimTime = userLastClaim.get(fid);
-  if (lastClaimTime && (now - lastClaimTime) < CLAIM_COOLDOWN_HOURS * 60 * 60 * 1000) {
-    const hoursRemaining = Math.ceil((lastClaimTime + CLAIM_COOLDOWN_HOURS * 60 * 60 * 1000 - now) / (1000 * 60 * 60));
-    return res.status(429).json({ error: `You have already claimed. Try again in ${hoursRemaining} hours.` });
-  }
-
   try {
-    const adminAccount = privateKeyToAccount(`0x${ADMIN_PRIVATE_KEY}`);
-
-    const amount = parseEther(CLAIM_AMOUNT_ETH);
-    const nonce = BigInt(Date.now()); // Using timestamp as a simple nonce
-
-    // 1. Create the hash that the smart contract will expect.
-    // This hash packs the user's address, claim amount, and a unique nonce.
-    // The smart contract must construct the *exact* same hash to verify the signature.
-    const messageHash = keccak256(
-      pack(
-        ['address', 'uint256', 'uint256'],
-        [address as `0x${string}`, amount, nonce]
-      )
-    );
-
-    // 2. Sign the hash with the admin's private key.
-    // This signature proves that the admin has authorized this specific claim.
-    const signature = await adminAccount.signMessage({
-      message: { raw: messageHash },
+    // --- 1. Neynar Score Check ---
+    const neynarResult = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`, {
+        headers: { api_key: NEYNAR_API_KEY },
     });
+    if (!neynarResult.ok) throw new Error('Failed to fetch user data from Neynar');
+    const neynarData = await neynarResult.json();
+    const user = neynarData.users[0];
 
-    // --- RECORD THE CLAIM (for cooldown check) ---
-    // In a real app, this would be an atomic database transaction.
-    userLastClaim.set(fid, now);
+    // NOTE: This implementation assumes a numeric 'score' field exists on the Neynar user object.
+    const userScore = user.score; 
 
-    // 3. Return the signature and claim details to the frontend.
+    if (!user || userScore === undefined || userScore < MINIMUM_NEYNAR_SCORE) {
+        return res.status(403).json({ error: `Your Neynar score of ${userScore ?? 'N/A'} is below the required minimum of ${MINIMUM_NEYNAR_SCORE}.` });
+    }
+
+    // --- 2. Daily Claim Limit Check (UTC Day) ---
+    const currentUTCDate = new Date().toISOString().split('T')[0]; // Get date in YYYY-MM-DD format
+    const lastClaimDateForUser = userLastClaimDate.get(fid);
+
+    if (lastClaimDateForUser === currentUTCDate) {
+        return res.status(429).json({ error: 'You have already claimed your tokens for today. Please try again tomorrow after 00:00 UTC.' });
+    }
+
+    // --- 3. OG Racer Bonus Check ---
+    const { data: racerData, error: racerError } = await supabaseAdmin
+        .from('racers')
+        .select('is_minted')
+        .eq('fid', fid)
+        .single();
+
+    if (racerError && racerError.code !== 'PGRST116') {
+        throw new Error(`Supabase error: ${racerError.message}`);
+    }
+
+    const isOgRacer = racerData?.is_minted ?? false;
+    const claimAmountString = isOgRacer 
+        ? (BigInt(BASE_CLAIM_AMOUNT) * BigInt(OG_MULTIPLIER)).toString()
+        : BASE_CLAIM_AMOUNT;
+    
+    // --- 4. Signature Generation ---
+    const adminAccount = privateKeyToAccount(`0x${ADMIN_PRIVATE_KEY}`);
+    const amount = parseEther(claimAmountString);
+    const nonce = BigInt(Date.now());
+
+    const messageHash = keccak256(
+      pack([
+        'address', 
+        'uint256', 
+        'uint256'
+    ], [
+        address as `0x${string}`, 
+        amount, 
+        nonce
+    ]));
+
+    const signature = await adminAccount.signMessage({ message: { raw: messageHash } });
+
+    // --- 5. Record the Claim ---
+    userLastClaimDate.set(fid, currentUTCDate);
+
     return res.status(200).json({
       signature,
       amount: amount.toString(),
@@ -73,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error: any) {
-    console.error('Error generating claim signature:', error);
-    return res.status(500).json({ error: 'An error occurred while generating the claim signature.', details: error.message });
+    console.error('Error in claim API:', error);
+    return res.status(500).json({ error: 'An error occurred during the claim process.', details: error.message });
   }
 }
