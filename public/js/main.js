@@ -44,7 +44,7 @@ class Game {
 
       if (this.audioContext.state === 'suspended') {
         this.audioContext.resume().then(() => {
-          if (!Object.values(this.musicSources).length) {
+          if (!Object.keys(this.musicSources).length) {
             this.playMusic('menumusic', true, 0.5);
           }
         });
@@ -137,14 +137,14 @@ class Game {
     if (!this.music[bufferName] || !this.audioContext || this.audioContext.state !== 'running') {
       return;
     }
-  
-    // Stop any currently playing music sources
-    Object.values(this.musicSources).forEach(source => {
-      try { source.stop(); } catch (e) { /* Fails if source already stopped */ }
-    });
+
+    for (const name in this.musicSources) {
+      if (this.musicSources.hasOwnProperty(name)) {
+        try { this.musicSources[name].stop(); } catch(e) { /* ignore */ }
+      }
+    }
     this.musicSources = {};
-  
-    // Create and play the new music source
+
     const source = this.audioContext.createBufferSource();
     source.buffer = this.music[bufferName];
     source.loop = loop;
@@ -158,18 +158,22 @@ class Game {
 
   stopSound(bufferName) {
     if (this.soundSources[bufferName]) {
-        this.soundSources[bufferName].stop();
-        delete this.soundSources[bufferName];
+      try { this.soundSources[bufferName].stop(); } catch(e) { /* ignore */ }
+      delete this.soundSources[bufferName];
     }
   }
 
   stopAllSounds() {
     for (const soundName in this.soundSources) {
+      if (this.soundSources.hasOwnProperty(soundName)) {
         this.stopSound(soundName);
+      }
     }
-    Object.values(this.musicSources).forEach(source => {
-      try { source.stop(); } catch (e) { /* Fails if source already stopped */ }
-    });
+    for (const musicName in this.musicSources) {
+      if (this.musicSources.hasOwnProperty(musicName)) {
+        try { this.musicSources[musicName].stop(); } catch(e) { /* ignore */ }
+      }
+    }
     this.musicSources = {};
   }
 
