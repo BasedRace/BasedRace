@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: 'GET',
       headers: {
         'accept': 'application/json',
-        'x-api_key': NEYNAR_API_KEY!,
+        'x-api_key': 'NEYNAR_API_DOCS',
         'x-neynar-experimental': 'true'
       }
     };
