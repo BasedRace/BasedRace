@@ -183,7 +183,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
                          disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="block uppercase tracking-tighter">
-                {isPending ? 'SIGNING...' : isConfirming ? 'MINING...' : isVerifying ? 'SYNCING...' : 'CLAIM $RACE'}
+                {isPending ? 'SIGNING...' : isConfirming ? 'CONFIRMING...' : isVerifying ? 'SYNCING...' : 'CLAIM $RACE'}
               </span>
             </button>
           </div>
