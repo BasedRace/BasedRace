@@ -25,13 +25,18 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   const [claimedAmount, setClaimedAmount] = useState<string | null>(null);
   const [showAlreadyClaimedModal, setShowAlreadyClaimedModal] = useState(false);
 
+  // New states to track data for the verify-claim API
+  const [lastNonce, setLastNonce] = useState<string | null>(null);
+  const [rawAmount, setRawAmount] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+
   const handleShare = (amount: string) => {
     const text = `I just claimed ${amount} $RACE on Based Racer! 🏎️💨`;
     const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
 
     (sdk.actions as any).composeCast({
       text: `${text}\n\nCome and race with me in the Based Race!`,
-      embeds: [ { url: appUrl } ],
+      embeds: [{ url: appUrl }],
     });
   };
 
@@ -70,6 +75,11 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
       const data = await apiResponse.json();
       const { signature, amount, nonce } = data;
+      
+      // Store raw data for the second step (verify-claim)
+      setLastNonce(nonce);
+      setRawAmount(amount);
+      
       const formattedAmount = formatUnits(BigInt(amount), 18);
       setClaimedAmount(formattedAmount);
 
@@ -87,15 +97,48 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   };
 
   useEffect(() => {
-    if (isConfirmed && claimedAmount) {
-      setClaimSuccess('Claim successful!');
-      handleShare(claimedAmount);
-    }
+    const verifyAndSync = async () => {
+      // Triggered when blockchain transaction is successful
+      if (isConfirmed && claimedAmount && lastNonce && rawAmount && !isVerifying) {
+        setIsVerifying(true);
+        try {
+          const context = await sdk.context;
+          const fid = context?.user?.fid;
+
+          const verifyResponse = await fetch('/api/verify-claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fid,
+              address,
+              nonce: lastNonce,
+              amount: rawAmount
+            }),
+          });
+
+          if (verifyResponse.ok) {
+            setClaimSuccess('Tokens claimed and verified! 🏎️');
+            handleShare(claimedAmount);
+          } else {
+            const errorData = await verifyResponse.json();
+            setClaimError(`Sync Error: ${errorData.error || 'Please contact support.'}`);
+          }
+        } catch (err) {
+          console.error('Final Verification Error:', err);
+          setClaimError('Transaction success, but database sync failed.');
+        } finally {
+          setIsVerifying(false);
+        }
+      }
+    };
+
+    verifyAndSync();
+
     if (writeContractError) {
       const shortMessage = (writeContractError as any).shortMessage || writeContractError.message;
       setClaimError(`Claim failed: ${shortMessage}`);
     }
-  }, [isConfirmed, writeContractError, hash, claimedAmount]);
+  }, [isConfirmed, writeContractError, claimedAmount, lastNonce, rawAmount, address]);
 
   return (
     <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-24">
@@ -133,14 +176,14 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
             />
             <button 
               onClick={handleClaim}
-              disabled={isPending || isConfirming || !isConnected}
+              disabled={isPending || isConfirming || isVerifying || !isConnected}
               className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
                          text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
                          active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px] 
                          disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="block uppercase tracking-tighter">
-                {isPending ? 'CLAIMING...' : isConfirming ? 'VERIFYING' : 'CLAIM $RACE'}
+                {isPending ? 'SIGNING...' : isConfirming ? 'MINING...' : isVerifying ? 'SYNCING...' : 'CLAIM $RACE'}
               </span>
             </button>
           </div>
@@ -165,6 +208,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
         <div className="h-6 text-center pixel-font text-xs">
           {!isConnected && <p className='text-yellow-400'>Connect wallet to claim</p>}
+          {isVerifying && <p className="text-blue-400 italic animate-pulse">Confirming with database...</p>}
           {claimError && <p className="text-red-500">{claimError}</p>}
           {claimSuccess && <p className="text-green-500">{claimSuccess}</p>}
         </div>
