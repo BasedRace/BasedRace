@@ -41,7 +41,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
     (sdk.actions as any).composeCast({
       text: `${text}\n\nCome and race with me in the Based Race!`,
-      embeds: [appUrl], 
+      embeds: [appUrl],
     });
   };
 
@@ -50,12 +50,15 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
       setClaimError('Daily rewards address is not configured.');
       return;
     }
+
     const context = await sdk.context;
     const fid = context?.user?.fid;
+
     if (!fid || !address) {
       setClaimError('Please ensure your wallet is connected and Farcaster account is synced.');
       return;
     }
+
     setClaimError(null);
     setClaimSuccess(null);
 
@@ -65,27 +68,34 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fid, address }),
       });
+
       if (!apiResponse.ok) {
         if (apiResponse.status === 429) {
           setShowAlreadyClaimedModal(true);
           return;
         }
         const data = await apiResponse.json();
-        throw new Error(data.error || 'Failed to get claim signature.');
+        throw new Error(data.error || 'Failed to get claim signature from the server.');
       }
+
       const data = await apiResponse.json();
       const { signature, amount, nonce } = data;
+      
       setLastNonce(nonce);
       setRawAmount(amount);
+      
       const formattedAmount = formatUnits(BigInt(amount), 18);
       setClaimedAmount(formattedAmount);
+
       writeContract({
         address: DAILY_REWARDS_ADDRESS as `0x${string}`,
         abi: DAILY_REWARDS_ABI,
         functionName: 'claim',
         args: [BigInt(amount), BigInt(nonce), signature],
       });
+
     } catch (apiError: any) {
+      console.error('API Error:', apiError);
       setClaimError(apiError.message);
     }
   };
@@ -97,26 +107,36 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
         try {
           const context = await sdk.context;
           const fid = context?.user?.fid;
+
           const verifyResponse = await fetch('/api/verify-claim', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fid, address, nonce: lastNonce, amount: rawAmount }),
+            body: JSON.stringify({
+              fid,
+              address,
+              nonce: lastNonce,
+              amount: rawAmount
+            }),
           });
+
           if (verifyResponse.ok) {
             setClaimSuccess('Tokens claimed and verified! 🏎️');
             handleShare(claimedAmount);
           } else {
             const errorData = await verifyResponse.json();
-            setClaimError(`Sync Error: ${errorData.error || 'Database sync failed.'}`);
+            setClaimError(`Sync Error: ${errorData.error || 'Please contact support.'}`);
           }
         } catch (err) {
+          console.error('Final Verification Error:', err);
           setClaimError('Transaction success, but database sync failed.');
         } finally {
           setIsVerifying(false);
         }
       }
     };
+
     verifyAndSync();
+
     if (writeContractError) {
       const shortMessage = (writeContractError as any).shortMessage || writeContractError.message;
       setClaimError(`Claim failed: ${shortMessage}`);
@@ -124,32 +144,112 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   }, [isConfirmed, writeContractError, claimedAmount, lastNonce, rawAmount, address]);
 
   return (
-    // Kembali ke posisi asli: justify-end p-6 pb-24
-    <div className="w-full h-full min-h-[100dvh] relative flex flex-col items-center justify-end p-6 pb-24 overflow-hidden">
+    <div className="w-full h-[100dvh] relative overflow-hidden bg-transparent">
       
-      {/* --- MODAL NOTIFIKASI (FIXED TERPISAH) --- */}
+      {/* --- KONTEN UTAMA GAME --- */}
+      {/* Container ini tetap menggunakan justify-end agar elemen nempel di bawah seperti sedia kala */}
+      <div className="w-full h-full flex flex-col items-center justify-end p-6 pb-24 z-10 relative">
+        <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
+          <div className="flex justify-between w-full max-w-[320px] items-end">
+            <button 
+              onClick={onAction}
+              className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
+                         text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
+                         active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px]"
+            >
+              <span className="block uppercase tracking-tighter">
+                {isMinted ? "SHARE RACER" : "MINT PERSONAL RACER"}
+              </span>
+            </button>
+
+            <div className="relative">
+              <Image 
+                src="/ui/mascot.webp" 
+                alt="Mascot" 
+                width={100} 
+                height={80} 
+                className="absolute -top-20 right-0 z-10"
+                style={{ bottom: '60px', left: '10px' }}
+              />
+              <button 
+                onClick={handleClaim}
+                disabled={isPending || isConfirming || isVerifying || !isConnected}
+                className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
+                           text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
+                           active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px] 
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="block uppercase tracking-tighter">
+                  {isPending ? 'SIGNING...' : isConfirming ? 'CONFIRMING...' : isVerifying ? 'SYNCING...' : 'CLAIM $RACE'}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="w-150 h-150 relative overflow-hidden flex items-center justify-center">
+            {isMinted && nftImageUrl ? (
+              <img 
+                src={nftImageUrl} 
+                alt="Your Unique Based Racer NFT" 
+                className="w-full h-full object-contain p-2"
+                onError={(e) => { e.currentTarget.src = "/ui/dummy.png"; }}
+              />
+            ) : (
+              <img 
+                src="/ui/dummy.png" 
+                alt="Personal Racer NFT Placeholder" 
+                className="w-full h-full object-contain p-2"
+              />
+            )}
+          </div>
+
+          <div className="h-6 text-center pixel-font text-[10px]">
+            {!isConnected && <p className='text-yellow-400'>Connect wallet to claim</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* --- UNIVERSAL NOTIFICATION MODAL (FIXED & CENTERED) --- */}
+      {/* z-[100] memastikan modal di atas segalanya. flex items-center justify-center memaksanya di tengah layar */}
       {(showAlreadyClaimedModal || claimError || claimSuccess || isVerifying) && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={!isVerifying ? closeNotification : undefined} />
-          <div className="relative z-[1000] bg-[#e7f2eb] border-4 border-[#99b1c5] p-6 shadow-[8px_8px_0px_#000] w-full max-w-[300px] text-center pixel-font">
-            <h2 className="text-[#0f10f4] text-lg mb-4 uppercase font-bold tracking-tighter">
-              {isVerifying ? "PROCESSING" : "NOTIFICATION"}
+        <div className="fixed inset-0 flex items-center justify-center z-[100] p-6 pointer-events-auto">
+          {/* Overlay Background */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
+            onClick={!isVerifying ? closeNotification : undefined}
+          />
+          
+          {/* Box Notifikasi */}
+          <div className="relative z-[110] bg-[#e7f2eb] border-4 border-[#99b1c5] p-6 shadow-[8px_8px_0px_#000] w-full max-w-[300px] text-center pixel-font">
+            <h2 className="text-[#0f10f4] text-lg mb-4 uppercase tracking-tighter font-bold">
+              {isVerifying ? "Processing..." : "Notification"}
             </h2>
+
             <div className="text-[12px] leading-tight mb-6 text-black uppercase">
               {isVerifying && (
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-6 h-6 border-4 border-[#0f10f4] border-t-transparent animate-spin rounded-full" />
-                  <p>SYNCING WITH DATABASE... <br/> PLEASE WAIT</p>
+                   <div className="w-6 h-6 border-4 border-[#0f10f4] border-t-transparent animate-spin rounded-full"></div>
+                   <p className="animate-pulse">Syncing with database... <br/> please do not close the app.</p>
                 </div>
               )}
-              {showAlreadyClaimedModal && <p>YOU ALREADY CLAIMED <br/> $RACE TODAY! 🏁</p>}
-              {claimError && <p className="text-red-600">{claimError}</p>}
-              {claimSuccess && <p className="text-green-600 font-bold">{claimSuccess}</p>}
+              
+              {showAlreadyClaimedModal && (
+                <p>YOU ALREADY CLAIMED <br/> $RACE TODAY! 🏁</p>
+              )}
+
+              {claimError && (
+                <p className="text-red-600">{claimError}</p>
+              )}
+
+              {claimSuccess && (
+                <p className="text-green-600 font-bold">{claimSuccess}</p>
+              )}
             </div>
+
             {!isVerifying && (
               <button 
                 onClick={closeNotification}
-                className="pixel-btn bg-[#0f10f4] text-white py-2 px-8 text-[11px] shadow-[4px_4px_0px_#99b1c5] active:translate-y-1 w-full"
+                className="pixel-btn bg-[#0f10f4] text-white py-2 px-6 text-[10px] shadow-[4px_4px_0px_#99b1c5] active:translate-y-1 active:shadow-none transition-all w-full"
               >
                 CLOSE
               </button>
@@ -157,70 +257,6 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
           </div>
         </div>
       )}
-
-      {/* --- KONTEN UTAMA (STRUKTUR ASLI) --- */}
-      <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
-        
-        {/* Tombol & Maskot */}
-        <div className="flex justify-between w-full max-w-[320px] items-end">
-          <button 
-            onClick={onAction}
-            className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
-                       text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
-                       active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px]"
-          >
-            <span className="block uppercase tracking-tighter text-center leading-none">
-              {isMinted ? "SHARE RACER" : "MINT PERSONAL RACER"}
-            </span>
-          </button>
-
-          <div className="relative">
-            <Image 
-              src="/ui/mascot.webp" 
-              alt="Mascot" 
-              width={100} 
-              height={80} 
-              className="absolute -top-20 right-0 z-10"
-              style={{ bottom: '60px', left: '10px' }}
-            />
-            <button 
-              onClick={handleClaim}
-              disabled={isPending || isConfirming || isVerifying || !isConnected}
-              className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
-                         text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
-                         active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px] 
-                         disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="block uppercase tracking-tighter">
-                {isPending ? 'SIGNING...' : isConfirming ? 'CONFIRMING...' : isVerifying ? 'SYNCING...' : 'CLAIM $RACE'}
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Gambar NFT */}
-        <div className="w-[150px] h-[150px] relative overflow-hidden flex items-center justify-center">
-          {isMinted && nftImageUrl ? (
-            <img 
-              src={nftImageUrl} 
-              alt="Racer NFT" 
-              className="w-full h-full object-contain p-2"
-              onError={(e) => { e.currentTarget.src = "/ui/dummy.png"; }}
-            />
-          ) : (
-            <img 
-              src="/ui/dummy.png" 
-              alt="Placeholder" 
-              className="w-full h-full object-contain p-2"
-            />
-          )}
-        </div>
-
-        {/* Wallet Info Footer */}
-        <div className="h-6 text-center pixel-font text-[10px]">
-          {!isConnected && <p className='text-yellow-400 uppercase'>Connect wallet to claim</p>}
-        </div>
-      </div>
     </div>
   );
 };
