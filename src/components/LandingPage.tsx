@@ -201,7 +201,9 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
           />
           
           {/* Kotak Modal */}
-          <div className="relative z-[10000] bg-[#e7f2eb] border-4 border-[#99b1c5] p-6 shadow-[8px_8px_0px_#000] w-full max-w-[300px] text-center pixel-font">
+          <div className="relative z-[10000] bg-[#e7f2eb] border-4 border-[#99b1c5] p-6 shadow-[8px_8px_0px_#000] w-full max-w-[300px] text-center pixel-font"
+            style={{ bottom: '250px' }}
+            >
             <h2 className="text-[#0f10f4] text-lg mb-4 uppercase tracking-tighter font-bold">
               {isVerifying ? "Processing..." : "Notification"}
             </h2>
