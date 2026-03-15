@@ -1,98 +1,107 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { privateKeyToAccount } from 'viem/accounts';
-import { keccak256, parseEther, encodePacked } from 'viem';
+import { parseUnits } from 'viem';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase admin client
-const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-
-/**
- * In-memory store for claim cooldowns. 
- * IMPORTANT: Not suitable for production. Replace with a persistent database like Redis or Vercel KV.
- * This map now stores the UTC date of the last claim.
- */
-const userLastClaimDate = new Map<number, string>(); // Stores fid -> YYYY-MM-DD
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!, 
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // --- CONFIGURATION ---
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
 const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY;
-const BASE_CLAIM_AMOUNT = '100'; // Base amount of $RACE tokens
-const OG_MULTIPLIER = 5; // 5x bonus for OG Racers
+const REWARD_STANDARD = 50000; 
+const REWARD_OG = 250000;      
 const MINIMUM_NEYNAR_SCORE = 0.6;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
-  if (!ADMIN_PRIVATE_KEY || !NEYNAR_API_KEY) {
-    console.error('CRITICAL: Server environment variables are not fully configured.');
-    return res.status(500).json({ error: 'Server configuration error.' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   const { fid, address } = req.body;
 
-  if (!fid || !address) {
-    return res.status(400).json({ error: 'Farcaster ID (fid) and wallet address are required.' });
+  if (!fid || !address || !ADMIN_PRIVATE_KEY) {
+    return res.status(400).json({ error: 'Missing required configuration or parameters.' });
   }
 
   try {
-    // --- 1. Neynar Score Check ---
+    // 1. Neynar Score Check
     const neynarResult = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`, {
-        headers: { api_key: NEYNAR_API_KEY },
+      headers: { api_key: NEYNAR_API_KEY! },
     });
-    if (!neynarResult.ok) throw new Error('Failed to fetch user data from Neynar');
     const neynarData = await neynarResult.json();
-    const user = neynarData.users[0];
+    const user = neynarData.users?.[0];
+    const userScore = user?.user_score || 0; 
 
-    // NOTE: This implementation assumes a numeric 'score' field exists on the Neynar user object.
-    const userScore = user.score; 
-
-    if (!user || userScore === undefined || userScore < MINIMUM_NEYNAR_SCORE) {
-        return res.status(403).json({ error: `Your Neynar score of ${userScore ?? 'N/A'} is below the required minimum of ${MINIMUM_NEYNAR_SCORE}.` });
+    if (userScore < MINIMUM_NEYNAR_SCORE) {
+      return res.status(403).json({ error: `Neynar score ${userScore.toFixed(2)} too low.` });
     }
 
-    // --- 2. Daily Claim Limit Check (UTC Day) ---
-    const currentUTCDate = new Date().toISOString().split('T')[0]; // Get date in YYYY-MM-DD format
-    const lastClaimDateForUser = userLastClaimDate.get(fid);
+    // 2. Daily Claim Check (Supabase Persistence)
+    const { data: lastClaim } = await supabaseAdmin
+      .from('claims')
+      .select('claimed_at')
+      .eq('fid', fid)
+      .order('claimed_at', { ascending: false })
+      .limit(1)
+      .single();
 
-    if (lastClaimDateForUser === currentUTCDate) {
-        return res.status(429).json({ error: 'You have already claimed your tokens for today. Please try again tomorrow after 00:00 UTC.' });
+    if (lastClaim) {
+      const lastDate = new Date(lastClaim.claimed_at).getTime();
+      const now = Date.now();
+      if (now - lastDate < 24 * 60 * 60 * 1000) {
+        return res.status(429).json({ error: 'You can only claim once every 24 hours.' });
+      }
     }
 
-    // --- 3. OG Racer Bonus Check ---
-    const { data: racerData, error: racerError } = await supabaseAdmin
-        .from('racers')
-        .select('is_minted')
-        .eq('fid', fid)
-        .single();
-
-    if (racerError && racerError.code !== 'PGRST116') {
-        throw new Error(`Supabase error: ${racerError.message}`);
-    }
+    // 3. OG Racer Bonus Check
+    const { data: racerData } = await supabaseAdmin
+      .from('racers')
+      .select('is_minted')
+      .eq('fid', fid)
+      .single();
 
     const isOgRacer = racerData?.is_minted ?? false;
-    const claimAmountString = isOgRacer 
-        ? (BigInt(BASE_CLAIM_AMOUNT) * BigInt(OG_MULTIPLIER)).toString()
-        : BASE_CLAIM_AMOUNT;
+    const claimAmount = isOgRacer ? REWARD_OG : REWARD_STANDARD;
     
-    // --- 4. Signature Generation ---
-    const privateKey = ADMIN_PRIVATE_KEY.startsWith('0x') 
-        ? ADMIN_PRIVATE_KEY 
-        : (`0x${ADMIN_PRIVATE_KEY}`)
-
+    // 4. Signature Generation (EIP-712)
+    const privateKey = ADMIN_PRIVATE_KEY.startsWith('0x') ? ADMIN_PRIVATE_KEY : `0x${ADMIN_PRIVATE_KEY}`;
     const adminAccount = privateKeyToAccount(privateKey as `0x${string}`);
-    const amount = parseEther(claimAmountString);
+    
+    const amount = parseUnits(claimAmount.toString(), 18);
     const nonce = BigInt(Date.now());
 
-    const messageHash = keccak256(
-      encodePacked(['address', 'uint256', 'uint256'], [address as `0x${string}`, amount, nonce])
-    );
+    const signature = await adminAccount.signTypedData({
+      domain: {
+        name: 'BasedRaceRewards',
+        version: '1',
+        chainId: 8453, 
+        verifyingContract: process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS as `0x${string}`,
+      },
+      types: {
+        ClaimRequest: [
+          { name: 'user', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+          { name: 'nonce', type: 'uint256' },
+        ],
+      },
+      primaryType: 'ClaimRequest',
+      message: {
+        user: address as `0x${string}`,
+        amount: amount,
+        nonce: nonce,
+      },
+    });
 
-    const signature = await adminAccount.signMessage({ message: { raw: messageHash } });
-
-    // --- 5. Record the Claim ---
-    userLastClaimDate.set(fid, currentUTCDate);
+    // 5. Record the Claim in Database
+    await supabaseAdmin.from('claims').insert({
+      fid,
+      address,
+      amount: claimAmount,
+      nonce: nonce.toString(),
+      claimed_at: new Date().toISOString(),
+    });
 
     return res.status(200).json({
       signature,
@@ -101,7 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error: any) {
-    console.error('Error in claim API:', error);
-    return res.status(500).json({ error: 'An error occurred during the claim process.', details: error.message });
+    console.error('Claim API Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 }
