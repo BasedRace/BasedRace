@@ -5,19 +5,21 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase admin client
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!, 
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 // --- CONFIGURATION ---
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
 const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY;
-const REWARD_STANDARD = 50000; 
-const REWARD_OG = 250000;      
+const REWARD_STANDARD = 50000;
+const REWARD_OG = 250000;
 const MINIMUM_NEYNAR_SCORE = 0.6;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
 
   const { fid, address } = req.body;
 
@@ -26,37 +28,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 1. Neynar Score Check (Updated to match your JSON structure)
-    const options = {
-      method: 'GET',
-      headers: {
-        'accept': 'application/json',
-        'api_key': NEYNAR_API_KEY!,
-        'x-neynar-experimental': 'true'
-      }
-    };
-
-    const neynarResult = await fetch(
-      `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}&viewer_fid=1`, 
-      options
-    );
-    
+    // 1. Neynar Score Check
+    const neynarResult = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`, {
+      headers: { api_key: NEYNAR_API_KEY! },
+    });
     const neynarData = await neynarResult.json();
     const user = neynarData.users?.[0];
-    
-    // Logic: Try 'score' first, then 'neynar_user_score' inside experimental, default to 0
-    const userScore = user?.score ?? user?.experimental?.neynar_user_score ?? 0; 
-
-    console.log(`Debug: FID ${fid} identified with score ${userScore}`);
+    const userScore = user?.user_score || 0;
 
     if (userScore < MINIMUM_NEYNAR_SCORE) {
-      return res.status(403).json({ 
-        error: `Neynar score ${userScore.toFixed(2)} is too low. Minimum ${MINIMUM_NEYNAR_SCORE} required.` 
-      });
+      return res.status(403).json({ error: `Neynar score ${userScore.toFixed(2)} too low.` });
     }
 
     // 2. Daily Claim Check (Supabase Persistence)
-    const { data: lastClaim, error: claimError } = await supabaseAdmin
+    const { data: lastClaim } = await supabaseAdmin
       .from('claims')
       .select('claimed_at')
       .eq('fid', fid)
@@ -64,16 +49,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .limit(1)
       .single();
 
-    // PGRST116 means no previous claim found (which is fine)
-    if (claimError && claimError.code !== 'PGRST116') {
-      throw new Error(claimError.message);
-    }
-
     if (lastClaim) {
       const lastDate = new Date(lastClaim.claimed_at).getTime();
       const now = Date.now();
       if (now - lastDate < 24 * 60 * 60 * 1000) {
-        return res.status(429).json({ error: 'You have already claimed today. Try again in 24 hours.' });
+        return res.status(429).json({ error: 'You can only claim once every 24 hours.' });
       }
     }
 
@@ -98,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       domain: {
         name: 'BasedRaceRewards',
         version: '1',
-        chainId: 8453, // Base Mainnet
+        chainId: 8453,
         verifyingContract: process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS as `0x${string}`,
       },
       types: {
@@ -116,15 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    // 5. Record the Claim in Database
-    await supabaseAdmin.from('claims').insert({
-      fid,
-      address,
-      amount: claimAmount,
-      nonce: nonce.toString(),
-      claimed_at: new Date().toISOString(),
-    });
-
+    // 5. Return signature, amount, and nonce
     return res.status(200).json({
       signature,
       amount: amount.toString(),
@@ -133,9 +105,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error: any) {
     console.error('Claim API Error:', error);
-    return res.status(500).json({ 
-      error: 'Internal Server Error', 
-      details: error.message 
-    });
+    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 }
