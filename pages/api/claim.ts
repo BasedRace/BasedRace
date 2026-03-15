@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
     const neynarData = await neynarResult.json();
     const user = neynarData.users?.[0];
-    const userScore = user?.user_score || 0;
+    const userScore = user?.neynar_user_score || 0;
 
     if (userScore < MINIMUM_NEYNAR_SCORE) {
       return res.status(403).json({ error: `Neynar score ${userScore.toFixed(2)} too low.` });
