@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { sdk } from '@farcaster/miniapp-sdk';
 import DAILY_REWARDS_ABI from '../lib/claim.json';
+import { parseUnits, formatUnits } from 'viem';
 
-// Get the contract address from environment variables
 const DAILY_REWARDS_ADDRESS = process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS;
 
 interface LandingPageProps {
@@ -17,20 +17,33 @@ interface LandingPageProps {
 
 export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProps) => {
   const { address, isConnected } = useAccount();
-  const { writeContract, data: hash, isPending, isSuccess, error } = useWriteContract();
+  const { data: hash, writeContract, isPending, error: writeContractError } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimSuccess, setClaimSuccess] = useState<string | null>(null);
+  const [claimedAmount, setClaimedAmount] = useState<string | null>(null);
+  const [showClaimModal, setShowClaimModal] = useState(false);
+
+  const handleShare = (amount: string | null) => {
+    const text = amount
+      ? `I just claimed ${amount} $RACE on Based Racer! 🏎️💨`
+      : 'I'm racing on Based Racer! 🏎️💨';
+
+    sdk.composePost({
+      text: `${text}\n\nCome and race with me in the Based Race Miniapp on Farcaster!\n\nhttps://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race`,
+    });
+  };
 
   const handleClaim = async () => {
     if (!DAILY_REWARDS_ADDRESS) {
-        setClaimError('Daily rewards address is not configured.');
-        return;
+      setClaimError('Daily rewards address is not configured.');
+      return;
     }
 
     const context = await sdk.context;
     const fid = context?.user?.fid;
-    
+
     if (!fid || !address) {
       setClaimError('Please ensure your wallet is connected and Farcaster account is synced.');
       return;
@@ -49,10 +62,16 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
       const data = await apiResponse.json();
 
       if (!apiResponse.ok) {
+        // If user already claimed, redirect to compose a post
+        if (apiResponse.status === 429) {
+          handleShare(null); 
+        }
         throw new Error(data.error || 'Failed to get claim signature from the server.');
       }
 
       const { signature, amount, nonce } = data;
+      const formattedAmount = formatUnits(BigInt(amount), 18);
+      setClaimedAmount(formattedAmount);
 
       writeContract({
         address: DAILY_REWARDS_ADDRESS as `0x${string}`,
@@ -68,20 +87,33 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   };
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isConfirmed) {
       setClaimSuccess(`Claim successful! Tx: ${hash?.slice(0, 10)}...`);
+      setShowClaimModal(true);
     }
-    if (error) {
-      // The wagmi error object has a shortMessage property
-      const shortMessage = (error as any).shortMessage || error.message;
+    if (writeContractError) {
+      const shortMessage = (writeContractError as any).shortMessage || writeContractError.message;
       setClaimError(`Claim failed: ${shortMessage}`);
     }
-  }, [isSuccess, error, hash]);
+  }, [isConfirmed, writeContractError, hash]);
 
   return (
     <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-24">
+      {/* Claim Success Modal */}
+      {showClaimModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center pixel-font">
+            <h2 className="text-2xl mb-4">Claim Successful!</h2>
+            <p className="mb-6">You claimed {claimedAmount} $RACE.</p>
+            <div className="flex justify-center gap-4">
+              <button onClick={() => handleShare(claimedAmount)} className="pixel-btn bg-[#e7f2eb] text-[#0f10f4] py-2 px-4">Share</button>
+              <button onClick={() => setShowClaimModal(false)} className="pixel-btn bg-gray-300 text-black py-2 px-4">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
-        
         <div className="flex justify-between w-full max-w-[320px] items-end">
           <button 
             onClick={onAction}
@@ -105,14 +137,14 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
             />
             <button 
               onClick={handleClaim}
-              disabled={isPending || !isConnected}
+              disabled={isPending || isConfirming || !isConnected}
               className="pixel-font w-full max-w-[150px] text-center pixel-btn transition-all duration-150 bg-[#e7f2eb] text-[#0f10f4] 
                          text-[10px] py-3 px-2 shadow-[4px_4px_0px_#99b1c5] 
                          active:scale-95 active:translate-y-1 flex items-center justify-center min-h-[60px] 
                          disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="block uppercase tracking-tighter">
-                {isPending ? 'CLAIMING...' : 'CLAIM $RACE'}
+                {isPending ? 'CLAIMING...' : isConfirming ? 'VERIFYING' : 'CLAIM $RACE'}
               </span>
             </button>
           </div>
@@ -135,11 +167,10 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
           )}
         </div>
 
-        {/* UI Feedback Messages */}
         <div className="h-6 text-center pixel-font text-xs">
           {!isConnected && <p className='text-yellow-400'>Connect wallet to claim</p>}
           {claimError && <p className="text-red-500">{claimError}</p>}
-          {claimSuccess && <p className="text-green-500">{claimSuccess}</p>}
+          {claimSuccess && !showClaimModal && <p className="text-green-500">{claimSuccess}</p>}
         </div>
       </div>
     </div>
