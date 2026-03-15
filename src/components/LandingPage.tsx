@@ -28,7 +28,8 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
         return;
     }
 
-    const fid = sdk.context?.user?.fid;
+    const context = await sdk.context;
+    const fid = context?.user?.fid;
     
     if (!fid || !address) {
       setClaimError('Please ensure your wallet is connected and Farcaster account is synced.');
