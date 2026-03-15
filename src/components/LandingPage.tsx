@@ -23,14 +23,15 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimSuccess, setClaimSuccess] = useState<string | null>(null);
   const [claimedAmount, setClaimedAmount] = useState<string | null>(null);
+  const [showAlreadyClaimedModal, setShowAlreadyClaimedModal] = useState(false);
 
-  const handleShare = (amount: string | null) => {
-    const text = amount
-      ? `I just claimed ${amount} $RACE on Based Racer! 🏎️💨`
-      : 'I\'m racing on Based Racer! 🏎️💨';
+  const handleShare = (amount: string) => {
+    const text = `I just claimed ${amount} $RACE on Based Racer! 🏎️💨`;
+    const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
 
-    sdk.composePost({
-      text: `${text}\n\nCome and race with me in the Based Race Miniapp on Farcaster!\n\nhttps://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race`,
+    (sdk.actions as any).composeCast({
+      text: `${text}\n\nCome and race with me in the Based Race!`,
+      embeds: [ { url: appUrl } ],
     });
   };
 
@@ -58,15 +59,16 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
         body: JSON.stringify({ fid, address }),
       });
 
-      const data = await apiResponse.json();
-
       if (!apiResponse.ok) {
         if (apiResponse.status === 429) {
-          handleShare(null);
+          setShowAlreadyClaimedModal(true);
+          return;
         }
+        const data = await apiResponse.json();
         throw new Error(data.error || 'Failed to get claim signature from the server.');
       }
 
+      const data = await apiResponse.json();
       const { signature, amount, nonce } = data;
       const formattedAmount = formatUnits(BigInt(amount), 18);
       setClaimedAmount(formattedAmount);
@@ -86,7 +88,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
   useEffect(() => {
     if (isConfirmed && claimedAmount) {
-      setClaimSuccess(`Claim successful! Sharing...`);
+      setClaimSuccess('Claim successful!');
       handleShare(claimedAmount);
     }
     if (writeContractError) {
@@ -97,6 +99,16 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
   return (
     <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-24">
+      {/* Already Claimed Modal */}
+      {showAlreadyClaimedModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center pixel-font">
+            <p className="mb-6 text-xl">YOU ALREADY CLAIMED $RACE TODAY</p>
+            <button onClick={() => setShowAlreadyClaimedModal(false)} className="pixel-btn bg-gray-300 text-black py-2 px-4">Close</button>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
         <div className="flex justify-between w-full max-w-[320px] items-end">
           <button 
