@@ -25,10 +25,16 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   const [claimedAmount, setClaimedAmount] = useState<string | null>(null);
   const [showAlreadyClaimedModal, setShowAlreadyClaimedModal] = useState(false);
 
-  // New states to track data for the verify-claim API
   const [lastNonce, setLastNonce] = useState<string | null>(null);
   const [rawAmount, setRawAmount] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // Helper to clear all notification states
+  const closeNotification = () => {
+    setClaimError(null);
+    setClaimSuccess(null);
+    setShowAlreadyClaimedModal(false);
+  };
 
   const handleShare = (amount: string) => {
     const text = `I just claimed ${amount} $RACE on Based Racer! 🏎️💨`;
@@ -36,7 +42,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
     (sdk.actions as any).composeCast({
       text: `${text}\n\nCome and race with me in the Based Race!`,
-      embeds: [{ url: appUrl }],
+      embeds: [appUrl], // Fixed: Pass URL string directly for proper attachment
     });
   };
 
@@ -76,7 +82,6 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
       const data = await apiResponse.json();
       const { signature, amount, nonce } = data;
       
-      // Store raw data for the second step (verify-claim)
       setLastNonce(nonce);
       setRawAmount(amount);
       
@@ -98,7 +103,6 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
   useEffect(() => {
     const verifyAndSync = async () => {
-      // Triggered when blockchain transaction is successful
       if (isConfirmed && claimedAmount && lastNonce && rawAmount && !isVerifying) {
         setIsVerifying(true);
         try {
@@ -142,16 +146,48 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
   return (
     <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-24">
-      {/* Already Claimed Modal */}
-      {showAlreadyClaimedModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center pixel-font">
-            <p className="mb-6 text-xl">YOU ALREADY CLAIMED $RACE TODAY</p>
-            <button onClick={() => setShowAlreadyClaimedModal(false)} className="pixel-btn bg-gray-300 text-black py-2 px-4">Close</button>
+      
+      {/* --- UNIVERSAL CENTRAL NOTIFICATION MODAL --- */}
+      {(showAlreadyClaimedModal || claimError || claimSuccess || isVerifying) && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+          <div className="bg-[#e7f2eb] border-4 border-[#99b1c5] p-6 shadow-[8px_8px_0px_#000] w-full max-w-[300px] text-center pixel-font relative">
+            
+            <h2 className="text-[#0f10f4] text-lg mb-4 uppercase tracking-tighter">
+              {isVerifying ? "Processing..." : "Notification"}
+            </h2>
+
+            <div className="text-[12px] leading-tight mb-6 text-black uppercase">
+              {isVerifying && (
+                <p className="animate-pulse">Syncing with database... <br/> please do not close the app.</p>
+              )}
+              
+              {showAlreadyClaimedModal && (
+                <p>YOU ALREADY CLAIMED <br/> $RACE TODAY! 🏁</p>
+              )}
+
+              {claimError && (
+                <p className="text-red-600">{claimError}</p>
+              )}
+
+              {claimSuccess && (
+                <p className="text-green-600 font-bold">{claimSuccess}</p>
+              )}
+            </div>
+
+            {/* Close button only shown when not in a critical syncing state */}
+            {!isVerifying && (
+              <button 
+                onClick={closeNotification}
+                className="pixel-btn bg-[#0f10f4] text-white py-2 px-6 text-[10px] shadow-[4px_4px_0px_#99b1c5] active:translate-y-1 active:shadow-none transition-all"
+              >
+                CLOSE
+              </button>
+            )}
           </div>
         </div>
       )}
 
+      {/* --- MAIN UI CONTENT --- */}
       <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
         <div className="flex justify-between w-full max-w-[320px] items-end">
           <button 
@@ -206,11 +242,9 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
           )}
         </div>
 
-        <div className="h-6 text-center pixel-font text-xs">
+        {/* Footer info (Static) */}
+        <div className="h-6 text-center pixel-font text-[10px]">
           {!isConnected && <p className='text-yellow-400'>Connect wallet to claim</p>}
-          {isVerifying && <p className="text-blue-400 italic animate-pulse">Confirming with database...</p>}
-          {claimError && <p className="text-red-500">{claimError}</p>}
-          {claimSuccess && <p className="text-green-500">{claimSuccess}</p>}
         </div>
       </div>
     </div>
