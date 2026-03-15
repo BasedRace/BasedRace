@@ -36,7 +36,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   };
 
   const handleShare = (amount: string) => {
-    const text = `I just claimed ${amount} $RACE on Based Racer! 🏎️💨`;
+    const text = `I just claimed ${amount} $RACE on Based Race! 🏎️💨`;
     const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
 
     (sdk.actions as any).composeCast({
