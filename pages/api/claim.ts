@@ -29,17 +29,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // 1. Neynar Score Check
-    const neynarResult = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`, {
-      headers: { api_key: NEYNAR_API_KEY! },
-    });
+   const options = {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'api_key': NEYNAR_API_KEY!,
+        'x-neynar-experimental': 'true'
+      }
+    };
+
+    const neynarResult = await fetch(
+      `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}&viewer_fid=1`, 
+      options
+    );
+    
     const neynarData = await neynarResult.json();
     const user = neynarData.users?.[0];
-    const userScore = user?.neynar_user_score || 0;
+    
+    // Logic: Try 'score' first, then 'neynar_user_score' inside experimental, default to 0
+    const userScore = user?.score ?? user?.experimental?.neynar_user_score ?? 0; 
+
+    console.log(`Debug: FID ${fid} identified with score ${userScore}`);
 
     if (userScore < MINIMUM_NEYNAR_SCORE) {
-      return res.status(403).json({ error: `Neynar score ${userScore.toFixed(2)} too low.` });
+      return res.status(403).json({ 
+        error: `Neynar score ${userScore.toFixed(2)} is too low. Minimum ${MINIMUM_NEYNAR_SCORE} required.` 
+      });
     }
-
     // 2. Daily Claim Check (Supabase Persistence)
     const { data: lastClaim } = await supabaseAdmin
       .from('claims')
