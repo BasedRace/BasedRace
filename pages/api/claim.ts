@@ -5,15 +5,15 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase admin client
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL!, 
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 // --- CONFIGURATION ---
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
 const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY;
-const REWARD_STANDARD = 50000;
-const REWARD_OG = 250000;
+const REWARD_STANDARD = 50000; 
+const REWARD_OG = 250000;      
 const MINIMUM_NEYNAR_SCORE = 0.6;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // 1. Neynar Score Check
-   const options = {
+    const options = {
       method: 'GET',
       headers: {
         'accept': 'application/json',
@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const neynarData = await neynarResult.json();
     const user = neynarData.users?.[0];
     
-    // Logic: Try 'score' first, then 'neynar_user_score' inside experimental, default to 0
+    // Logic: Try 'score' first (new standard), then experimental, default to 0
     const userScore = user?.score ?? user?.experimental?.neynar_user_score ?? 0; 
 
     console.log(`Debug: FID ${fid} identified with score ${userScore}`);
@@ -56,14 +56,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         error: `Neynar score ${userScore.toFixed(2)} is too low. Minimum ${MINIMUM_NEYNAR_SCORE} required.` 
       });
     }
-    // 2. Daily Claim Check (Supabase Persistence)
-    const { data: lastClaim } = await supabaseAdmin
+
+    // 2. Daily Claim Check (Cooldwon Check)
+    // We check the DB to ensure they haven't synced a successful claim in the last 24h
+    const { data: lastClaim, error: claimError } = await supabaseAdmin
       .from('claims')
       .select('claimed_at')
       .eq('fid', fid)
       .order('claimed_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle(); // maybeSingle handles "no rows" gracefully
 
     if (lastClaim) {
       const lastDate = new Date(lastClaim.claimed_at).getTime();
@@ -78,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('racers')
       .select('is_minted')
       .eq('fid', fid)
-      .single();
+      .maybeSingle();
 
     const isOgRacer = racerData?.is_minted ?? false;
     const claimAmount = isOgRacer ? REWARD_OG : REWARD_STANDARD;
@@ -88,13 +90,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const adminAccount = privateKeyToAccount(privateKey as `0x${string}`);
     
     const amount = parseUnits(claimAmount.toString(), 18);
-    const nonce = BigInt(Date.now());
+    const nonce = BigInt(Date.now()); // Unique nonce for this specific request
 
     const signature = await adminAccount.signTypedData({
       domain: {
         name: 'BasedRaceRewards',
         version: '1',
-        chainId: 8453,
+        chainId: 8453, // Base Mainnet
         verifyingContract: process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS as `0x${string}`,
       },
       types: {
@@ -112,7 +114,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    // 5. Return signature, amount, and nonce
+    // 5. Final Response
+    // IMPORTANT: We no longer insert into Supabase here. 
+    // This only happens after the transaction is confirmed in the verify-claim API.
     return res.status(200).json({
       signature,
       amount: amount.toString(),
