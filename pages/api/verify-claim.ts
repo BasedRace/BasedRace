@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 3. Simpan ke Database
-    const numericAmount = Number(amount) / 1e18;
+    const numericAmount = Math.round(Number(amount) / 1e18);
     const { error: dbError } = await supabaseAdmin.from('claims').insert({
       fid: Number(fid),
       address: address.toLowerCase(),
