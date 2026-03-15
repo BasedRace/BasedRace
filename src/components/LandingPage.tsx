@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { sdk } from '@farcaster/miniapp-sdk';
 import DAILY_REWARDS_ABI from '../lib/claim.json';
-import { parseUnits, formatUnits } from 'viem';
+import { formatUnits } from 'viem';
 
 const DAILY_REWARDS_ADDRESS = process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS;
 
@@ -62,7 +62,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
       if (!apiResponse.ok) {
         if (apiResponse.status === 429) {
-          handleShare(null); 
+          handleShare(null);
         }
         throw new Error(data.error || 'Failed to get claim signature from the server.');
       }
@@ -86,7 +86,7 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
 
   useEffect(() => {
     if (isConfirmed && claimedAmount) {
-      setClaimSuccess(`Claim successful! Tx: ${hash?.slice(0, 10)}...`);
+      setClaimSuccess(`Claim successful! Sharing...`);
       handleShare(claimedAmount);
     }
     if (writeContractError) {
@@ -98,7 +98,6 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
   return (
     <div className="w-full h-full relative flex flex-col items-center justify-end p-6 pb-24">
       <div className="flex flex-col items-center gap-8 w-full max-w-[400px] relative z-30">
-        
         <div className="flex justify-between w-full max-w-[320px] items-end">
           <button 
             onClick={onAction}
@@ -152,7 +151,6 @@ export const LandingPage = ({ onAction, isMinted, nftImageUrl }: LandingPageProp
           )}
         </div>
 
-        {/* UI Feedback Messages */}
         <div className="h-6 text-center pixel-font text-xs">
           {!isConnected && <p className='text-yellow-400'>Connect wallet to claim</p>}
           {claimError && <p className="text-red-500">{claimError}</p>}
