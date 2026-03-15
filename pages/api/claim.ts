@@ -77,7 +77,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         : BASE_CLAIM_AMOUNT;
     
     // --- 4. Signature Generation ---
-    const adminAccount = privateKeyToAccount(`0x${ADMIN_PRIVATE_KEY}`);
+    const privateKey = ADMIN_PRIVATE_KEY.startsWith('0x') 
+        ? ADMIN_PRIVATE_KEY 
+        : (`0x${ADMIN_PRIVATE_KEY}`)
+
+    const adminAccount = privateKeyToAccount(privateKey as `0x${string}`);
     const amount = parseEther(claimAmountString);
     const nonce = BigInt(Date.now());
 
