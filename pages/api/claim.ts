@@ -26,12 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 1. Neynar Score Check (Using Experimental Headers for accurate scoring)
+    // 1. Neynar Score Check (Updated to match your JSON structure)
     const options = {
       method: 'GET',
       headers: {
         'accept': 'application/json',
-        'x-api_key': 'NEYNAR_API_DOCS',
+        'api_key': NEYNAR_API_KEY!,
         'x-neynar-experimental': 'true'
       }
     };
@@ -44,12 +44,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const neynarData = await neynarResult.json();
     const user = neynarData.users?.[0];
     
-    // Using user_score as the standard for Farcaster reputation
-    const userScore = user?.user_score ?? 0; 
+    // Logic: Try 'score' first, then 'neynar_user_score' inside experimental, default to 0
+    const userScore = user?.score ?? user?.experimental?.neynar_user_score ?? 0; 
+
+    console.log(`Debug: FID ${fid} identified with score ${userScore}`);
 
     if (userScore < MINIMUM_NEYNAR_SCORE) {
       return res.status(403).json({ 
-        error: `Neynar score ${userScore.toFixed(2)} too low. Minimum ${MINIMUM_NEYNAR_SCORE} required.` 
+        error: `Neynar score ${userScore.toFixed(2)} is too low. Minimum ${MINIMUM_NEYNAR_SCORE} required.` 
       });
     }
 
@@ -62,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .limit(1)
       .single();
 
-    // Ignore "no rows found" error (PGRST116), but throw others
+    // PGRST116 means no previous claim found (which is fine)
     if (claimError && claimError.code !== 'PGRST116') {
       throw new Error(claimError.message);
     }
@@ -71,7 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const lastDate = new Date(lastClaim.claimed_at).getTime();
       const now = Date.now();
       if (now - lastDate < 24 * 60 * 60 * 1000) {
-        return res.status(429).json({ error: 'You can only claim once every 24 hours.' });
+        return res.status(429).json({ error: 'You have already claimed today. Try again in 24 hours.' });
       }
     }
 
