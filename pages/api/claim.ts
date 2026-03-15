@@ -26,26 +26,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 1. Neynar Score Check
-    const neynarResult = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`, {
-      headers: { api_key: NEYNAR_API_KEY! },
-    });
+    // 1. Neynar Score Check (Using Experimental Headers for accurate scoring)
+    const options = {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'api_key': NEYNAR_API_KEY!,
+        'x-neynar-experimental': 'true'
+      }
+    };
+
+    const neynarResult = await fetch(
+      `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}&viewer_fid=1`, 
+      options
+    );
+    
     const neynarData = await neynarResult.json();
     const user = neynarData.users?.[0];
-    const userScore = user?.user_score || 0; 
+    
+    // Using user_score as the standard for Farcaster reputation
+    const userScore = user?.user_score ?? 0; 
 
     if (userScore < MINIMUM_NEYNAR_SCORE) {
-      return res.status(403).json({ error: `Neynar score ${userScore.toFixed(2)} too low.` });
+      return res.status(403).json({ 
+        error: `Neynar score ${userScore.toFixed(2)} too low. Minimum ${MINIMUM_NEYNAR_SCORE} required.` 
+      });
     }
 
     // 2. Daily Claim Check (Supabase Persistence)
-    const { data: lastClaim } = await supabaseAdmin
+    const { data: lastClaim, error: claimError } = await supabaseAdmin
       .from('claims')
       .select('claimed_at')
       .eq('fid', fid)
       .order('claimed_at', { ascending: false })
       .limit(1)
       .single();
+
+    // Ignore "no rows found" error (PGRST116), but throw others
+    if (claimError && claimError.code !== 'PGRST116') {
+      throw new Error(claimError.message);
+    }
 
     if (lastClaim) {
       const lastDate = new Date(lastClaim.claimed_at).getTime();
@@ -76,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       domain: {
         name: 'BasedRaceRewards',
         version: '1',
-        chainId: 8453, 
+        chainId: 8453, // Base Mainnet
         verifyingContract: process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS as `0x${string}`,
       },
       types: {
@@ -111,6 +131,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error: any) {
     console.error('Claim API Error:', error);
-    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    return res.status(500).json({ 
+      error: 'Internal Server Error', 
+      details: error.message 
+    });
   }
 }
