@@ -9,10 +9,9 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Gunakan RPC publik yang berbeda sebagai cadangan jika RPC standar lag
 const publicClient = createPublicClient({
   chain: base,
-  transport: http("https://mainnet.base.org"), // RPC Resmi Base
+  transport: http("https://mainnet.base.org"),
 });
 
 const DAILY_REWARDS_ADDRESS = process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS;
@@ -20,27 +19,17 @@ const DAILY_REWARDS_ADDRESS = process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS;
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
-  const { fid, address, nonce, amount } = req.body;
+  const { nonce } = req.body;
 
-  // LOG UNTUK DEBUGGING
-  console.log("--- VERIFY CLAIM START ---");
+  if (!nonce) {
+    return res.status(400).json({ error: 'Nonce is required.' });
+  }
+
+  console.log("--- VERIFY AND CONFIRM CLAIM START ---");
   console.log("Target Contract:", DAILY_REWARDS_ADDRESS);
   console.log("Checking Nonce:", nonce);
 
   try {
-    // 1. Cek duplikasi di DB
-    const { data: existingClaim } = await supabaseAdmin
-      .from('claims')
-      .select('id')
-      .eq('nonce', nonce.toString())
-      .maybeSingle();
-
-    if (existingClaim) {
-      console.log("Result: Claim already in DB");
-      return res.status(400).json({ error: 'Claim already recorded.' });
-    }
-
-    // 2. Cek Blockchain dengan Retry yang lebih agresif
     let isNonceUsed = false;
     for (let i = 0; i < 5; i++) {
       console.log(`Checking Blockchain Attempt ${i + 1}...`);
@@ -54,35 +43,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (isNonceUsed) break;
       
-      // Tunggu 2 detik sebelum coba lagi
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
-    console.log("Final Blockchain Result:", isNonceUsed);
+    console.log("Final Blockchain Result for Nonce:", isNonceUsed);
 
     if (!isNonceUsed) {
       return res.status(400).json({ 
-        error: "Blockchain data not synced yet. Try again in a few seconds." 
+        error: "Blockchain transaction not found or not confirmed yet." 
       });
     }
 
-    // 3. Simpan ke Database
-    const numericAmount = Math.round(Number(amount) / 1e18);
-    const { error: dbError } = await supabaseAdmin.from('claims').insert({
-      fid: Number(fid),
-      address: address.toLowerCase(),
-      amount: numericAmount, 
-      nonce: nonce.toString(),
-      claimed_at: new Date().toISOString(),
-    });
+    const { error: dbError } = await supabaseAdmin
+      .from('claims')
+      .update({
+        status: 'confirmed',
+        claimed_at: new Date().toISOString(),
+      })
+      .eq('nonce', nonce.toString());
 
     if (dbError) {
-      console.error("Supabase Insert Error:", dbError);
+      console.error("Supabase Update Error:", dbError);
       throw dbError;
     }
 
-    console.log("--- VERIFY CLAIM SUCCESS ---");
-    return res.status(200).json({ success: true, message: 'Verified!' });
+    console.log(`--- VERIFY AND CONFIRM SUCCESS for Nonce: ${nonce} ---`);
+    return res.status(200).json({ success: true, message: 'Claim successfully confirmed.' });
 
   } catch (error: any) {
     console.error('Verify API Error:', error);
