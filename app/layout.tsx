@@ -24,6 +24,7 @@ export const metadata: Metadata = {
       },
       noindex: false,
     }),
+    'talentapp:project_verification': '2844d96db4ce5eb0c4c72102fdc7d40bc2881265600c39e4ebb60186ede8897762f0f73514bb5517c2d22cc402202b181cd93ef3452d9c92aa2fa8c7a082b81d'
   },
 };
 
