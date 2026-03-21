@@ -21,9 +21,9 @@ const publicClient = createPublicClient({
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
 const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY;
 const DAILY_REWARDS_ADDRESS = process.env.NEXT_PUBLIC_DAILY_REWARDS_ADDRESS;
-const REWARD_STANDARD = 50000;
+const REWARD_STANDARD = 2500;
 const REWARD_OG = 250000;
-const MINIMUM_NEYNAR_SCORE = 0.6;
+const MINIMUM_NEYNAR_SCORE = 0.8;
 
 // --- "HEALER" FUNCTION ---
 // Checks for pending claims and updates their status from the blockchain.
