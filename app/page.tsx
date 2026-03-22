@@ -113,7 +113,12 @@ export default function Home() {
              const res = await fetch('/api/racer/resolve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fid: user.fid, isWin })
+                body: JSON.stringify({ 
+                    fid: user.fid, 
+                    isWin,
+                    raceId: raceData?.raceId,
+                    winnerName: raceData?.winnerName
+                })
              });
              
              if (res.ok) {

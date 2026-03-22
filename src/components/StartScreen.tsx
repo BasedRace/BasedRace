@@ -61,7 +61,7 @@ const shuffle = (array: any[]) => {
 
 export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted, nftImageUrl }: {
   onSelectTournament: () => void;
-  onSelectRaceBetting: (data: { track: any; finalRaceGrid: any[], betAmount: number | null, winnerName?: string }) => void;
+  onSelectRaceBetting: (data: { track: any; finalRaceGrid: any[], betAmount: number | null, winnerName?: string, raceId?: string }) => void;
   isMinted?: boolean;
   nftImageUrl?: string | null;
 }) => {
@@ -155,7 +155,8 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
             track: selectedTrack,
             finalRaceGrid,
             betAmount,
-            winnerName
+            winnerName,
+            raceId: raceId.toString()
         });
 
     } catch (err: any) {

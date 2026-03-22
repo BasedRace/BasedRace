@@ -1,5 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { createWalletClient, http, publicActions } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { base } from 'viem/chains';
+import { BETTING_CONTRACT_ADDRESS, BETTING_ABI } from '../../../../src/lib/constants';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,7 +12,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { fid, isWin } = await req.json();
+    const { fid, isWin, raceId, winnerName } = await req.json();
 
     if (!fid) {
       return NextResponse.json({ error: 'Missing FID' }, { status: 400 });
@@ -43,14 +47,44 @@ export async function POST(req: NextRequest) {
       throw new Error(`Failed to save EXP: ${updateError.message}`);
     }
 
-    // [TODO] This is the Oracle location to call Smart Contract resolveRace()
-    // Due to Private Key security requirements, the server prioritizes the database first for now.
+    let txHash = null;
+
+    // 4. Connect Backend Oracle to Smart Contract (Only if Legitimate Win)
+    if (isWin && raceId && winnerName) {
+        try {
+            const privateKey = process.env.ADMIN_PRIVATE_KEY as `0x${string}`;
+            if (!privateKey) {
+                console.warn("ADMIN_PRIVATE_KEY is not set in .env. Smart Contract Payout skipped.");
+            } else {
+                const account = privateKeyToAccount(privateKey);
+                const client = createWalletClient({
+                    account,
+                    chain: base, // Use baseSepolia if testing on Testnet
+                    transport: http(process.env.NEXT_PUBLIC_RPC_URL || "https://mainnet.base.org")
+                }).extend(publicActions);
+
+                // Pull the trigger on resolveRace() with Server Admin authority
+                const hash = await client.writeContract({
+                    address: BETTING_CONTRACT_ADDRESS,
+                    abi: BETTING_ABI,
+                    functionName: 'resolveRace',
+                    args: [BigInt(raceId), winnerName]
+                });
+                txHash = hash;
+                console.log(`[ORACLE] Web3 Payout Transaction Sent! Hash: ${hash}`);
+            }
+        } catch(oracleError: any) {
+             console.error(`[ORACLE ERROR] Web3 Payout failed:`, oracleError.message || oracleError);
+             // We continue without failing the whole request so EXP is still returned
+        }
+    }
 
     return NextResponse.json({ 
         success: true, 
         exp: newExp, 
         wins: newWins, 
-        expGained: expGain 
+        expGained: expGain,
+        payoutTx: txHash
     });
 
   } catch (error: any) {

@@ -5,7 +5,7 @@ export const MINT_FEE = parseEther('0.001');
 
 // RACE Betting Addresses
 export const RACE_TOKEN_ADDRESS: `0x${string}` = '0x74e65556222A0C2c0adFc5C2dceFD15c98D67B07';
-export const BETTING_CONTRACT_ADDRESS: `0x${string}` = '0x4c7bB4Ad690703FA9B51ae524C19066394a8fA52';
+export const BETTING_CONTRACT_ADDRESS: `0x${string}` = '0x506cF5d0AA8da0bd515f5E12Ad39bdFE955C84D1';
 
 // Minimal ABIs
 export const ERC20_ABI = [
@@ -14,5 +14,6 @@ export const ERC20_ABI = [
 ] as const;
 
 export const BETTING_ABI = [
-  {"inputs": [{"internalType": "uint256","name": "_raceId","type": "uint256"},{"internalType": "string","name": "_racerName","type": "string"},{"internalType": "uint256","name": "_amount","type": "uint256"}],"name": "placeBet","outputs": [],"stateMutability": "nonpayable","type": "function"}
+  {"inputs": [{"internalType": "uint256","name": "_raceId","type": "uint256"},{"internalType": "string","name": "_racerName","type": "string"},{"internalType": "uint256","name": "_amount","type": "uint256"}],"name": "placeBet","outputs": [],"stateMutability": "nonpayable","type": "function"},
+  {"inputs": [{"internalType": "uint256","name": "_raceId","type": "uint256"},{"internalType": "string","name": "_winningRacerName","type": "string"}],"name": "resolveRace","outputs": [],"stateMutability": "nonpayable","type": "function"}
 ] as const;
