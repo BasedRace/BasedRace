@@ -18,13 +18,12 @@ import { GarageScreen } from '../src/components/GarageScreen';
 import { RankScreen } from '../src/components/RankScreen';
 import { NavBar, NavView as OriginalNavView } from '../src/components/NavBar';
 import { StartScreen } from '../src/components/StartScreen';
-import { RaceBettingScreen } from '../src/components/RaceBettingScreen';
 import { LandingPage } from '../src/components/LandingPage';
 
 // Type Definitions
 type GameState = 'loading' | 'login'; // 'game' state is now handled by activeView
 type NavView = OriginalNavView | 'game'; // Add 'game' to NavView
-type StartSubView = 'menu' | 'tournament' | 'betting';
+type StartSubView = 'menu' | 'tournament';
 type UserProfile = {
   fid: number;
   username: string;
@@ -213,7 +212,6 @@ export default function Home() {
       case 'start':
         switch (startSubView) {
           case 'tournament': return <GameScreen />;
-          case 'betting': return <RaceBettingScreen />;
           case 'menu':
           default:
             return (

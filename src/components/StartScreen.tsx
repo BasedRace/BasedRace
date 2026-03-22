@@ -58,7 +58,7 @@ const shuffle = (array: any[]) => {
 
 export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted, nftImageUrl }: {
   onSelectTournament: () => void;
-  onSelectRaceBetting: (data: { track: any; finalRaceGrid: any[], betAmount: number | null }) => void;
+  onSelectRaceBetting: (data: { track: any; finalRaceGrid: any[], betAmount: number | null, winnerName?: string }) => void;
   isMinted?: boolean;
   nftImageUrl?: string | null;
 }) => {
@@ -109,10 +109,14 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
 
     finalRaceGrid = shuffle(racers);
 
+    // Dummy winner determination: randomly select a winner for the simulation
+    const winnerName = finalRaceGrid[Math.floor(Math.random() * finalRaceGrid.length)].name;
+
     onSelectRaceBetting({
         track: selectedTrack,
         finalRaceGrid,
-        betAmount
+        betAmount,
+        winnerName
     });
   };
 

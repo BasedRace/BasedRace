@@ -6,13 +6,14 @@ const FINISH_DISTANCE = 15500;
 
 // Racer class for autonomous 4-racer system
 export class Racer {
-  constructor(id, name, asset, laneIndex, track, isPlayer) {
+  constructor(id, name, asset, laneIndex, track, isPlayer, isWinner = false) {
     this.id = id;
     this.name = name;
     this.asset = asset;
     this.laneIndex = laneIndex;
     this.track = track;
     this.isPlayer = isPlayer;
+    this.isWinner = isWinner;
     this.w = 600;
     this.h = 600;
     
@@ -37,7 +38,11 @@ export class Racer {
     this.progress = 0;
     
     // Dynamic AI - competitive organic movement
-    this.baseSpeed = 0.3 + Math.random() * 0.7;
+    if (this.isWinner) {
+      this.baseSpeed = 0.85 + Math.random() * 0.2; // 0.85 to 1.05
+    } else {
+      this.baseSpeed = 0.3 + Math.random() * 0.3; // 0.3 to 0.6
+    }
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.lastSpeedChange = 0;
@@ -98,7 +103,11 @@ export class Racer {
     this.progress = 0;
     
     // Reset dynamic AI
-    this.baseSpeed = 0.3 + Math.random() * 0.7;
+    if (this.isWinner) {
+      this.baseSpeed = 0.85 + Math.random() * 0.2;
+    } else {
+      this.baseSpeed = 0.3 + Math.random() * 0.3;
+    }
     this.targetSpeed = this.baseSpeed;
     this.currentSpeed = this.baseSpeed;
     this.sinOffset = Math.random() * Math.PI * 2;

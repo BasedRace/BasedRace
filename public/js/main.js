@@ -92,7 +92,7 @@ class Game {
     await Promise.all(loadPromises);
     
     // Racer assets need the track to be loaded first
-    await this.loadRacerAssets(data.finalRaceGrid);
+    await this.loadRacerAssets(data);
 
     this.isAssetsLoaded = true;
     this.startRace();
@@ -227,21 +227,25 @@ class Game {
     this.track.generate(); // Generate a default track view
   }
   
-  async loadRacerAssets(finalRaceGrid) {
+  async loadRacerAssets(data) {
+    const finalRaceGrid = data.finalRaceGrid;
+    const winnerName = data.winnerName;
+
     this.racers = [];
     const racerPromises = finalRaceGrid.map((racerData, index) => {
       return new Promise((resolve) => {
+        const isWinner = (racerData.name === winnerName);
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.src = racerData.image;
         img.onload = () => {
-          const racer = new Racer(index, racerData.name, img, index, this.track, racerData.isPlayer);
+          const racer = new Racer(index, racerData.name, img, index, this.track, racerData.isPlayer, isWinner);
           this.racers.push(racer);
           resolve();
         };
         img.onerror = () => {
           console.error(`Failed to load image for racer: ${racerData.name}`);
-          const racer = new Racer(index, racerData.name, null, index, this.track, racerData.isPlayer);
+          const racer = new Racer(index, racerData.name, null, index, this.track, racerData.isPlayer, isWinner);
           this.racers.push(racer);
           resolve(); // Resolve even on error to not block the game
         };
