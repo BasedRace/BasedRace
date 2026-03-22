@@ -30,7 +30,11 @@ const CHARACTERS_CONFIG = [
   { name: 'Jesse', path: '/assets/character/jesse.png' },
 ];
 
-const BET_OPTIONS = [0.1, 0.3, 0.5];
+const BET_OPTIONS = [
+  { value: 500000, label: '500K $RACE' },
+  { value: 1000000, label: '1M $RACE' },
+  { value: 5000000, label: '5M $RACE' }
+];
 
 // Function to shuffle an array
 const shuffle = (array: any[]) => {
@@ -190,13 +194,13 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
 
             <h2 className="pixel-font border-4 border-[#233e63] text-lg text-black bg-[#233e63] px-2 mb-2">PLACE A BET</h2>
             <div className="flex flex-row gap-4 mb-6">
-                {BET_OPTIONS.map(amount => (
+                {BET_OPTIONS.map(option => (
                     <div 
-                        key={amount}
-                        onClick={() => setBetAmount(amount)}
-                        className={`pixel-border w-24 h-16 bg-[#e7f2eb] text-black flex items-center justify-center cursor-pointer text-lg pixel-font relative ${betAmount === amount ? 'ring-4 ring-yellow-400' : ''}`}>
-                        {betAmount === amount && <span className="absolute top-0 right-0 text-2xl">✅</span>}
-                        🪙 {amount}
+                        key={option.value}
+                        onClick={() => setBetAmount(option.value)}
+                        className={`pixel-border w-36 h-16 bg-[#e7f2eb] text-black flex items-center justify-center cursor-pointer text-base pixel-font relative ${betAmount === option.value ? 'ring-4 ring-yellow-400' : ''}`}>
+                        {betAmount === option.value && <span className="absolute top-0 right-0 text-2xl">✅</span>}
+                        🪙 {option.label}
                     </div>
                 ))}
             </div>
