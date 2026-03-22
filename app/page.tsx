@@ -94,7 +94,7 @@ export default function Home() {
 
   // Handle Game Iframe Messages
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = async (event: MessageEvent) => {
       if (event.data.type === 'raceState') {
         if (event.data.state === 'started') {
           setIsRacing(true);
@@ -103,11 +103,36 @@ export default function Home() {
           setActiveView('start');
           setStartSubView('menu');
         }
+      } else if (event.data.type === 'raceResult') {
+        // Trigger API when race finished to handle EXP & Oracle
+        if (user) {
+          const isWin = event.data.isUserWinner;
+          toast.info(isWin ? "🎉 You Won! Calculating EXP..." : "🏁 Race Finished! Calculating EXP...");
+          
+          try {
+             const res = await fetch('/api/racer/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fid: user.fid, isWin })
+             });
+             
+             if (res.ok) {
+                const data = await res.json();
+                
+                // Refresh memory status so ProfileScreen updates automatically
+                setUser(prev => prev ? { ...prev, exp: data.exp, wins: data.wins } : prev);
+                toast.success(`Successfully recorded +${data.expGained} EXP!`);
+             }
+          } catch(e) {
+             console.error("Failed to resolve race:", e);
+             toast.error("Failed to save race results to server.");
+          }
+        }
       }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [user]); // Attached 'user' so the function knows the latest FID
 
   // Handle Transaction Results
   useEffect(() => {
@@ -162,7 +187,7 @@ export default function Home() {
             embeds: [appUrl, finalNftUrl],
           });
         } catch (error) {
-          console.error("Gagal membuka composer:", error);
+          console.error("Failed to open composer:", error);
           toast.error("Failed to open share composer.");
         }
       }

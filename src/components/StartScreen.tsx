@@ -2,6 +2,9 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import { useWriteContract } from 'wagmi';
+import { toast } from 'sonner';
+import { RACE_TOKEN_ADDRESS, BETTING_CONTRACT_ADDRESS, ERC20_ABI, BETTING_ABI } from '../lib/constants';
 
 const TRACKS_CONFIG = [
   {
@@ -67,6 +70,10 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [isBetOnSelf, setIsBetOnSelf] = useState(false);
   const [betAmount, setBetAmount] = useState<number | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const { writeContractAsync: writeApprove } = useWriteContract();
+  const { writeContractAsync: writeBet } = useWriteContract();
 
   const handleSelectTrack = (index: number) => {
     setSelectedTrackIndex(index);
@@ -86,7 +93,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
     }
   };
 
-  const handleFinalStart = () => {
+  const handleFinalStart = async () => {
     if ((!selectedCharacter && !isBetOnSelf) || !betAmount) {
         alert('Please select a character and a bet amount.');
         return;
@@ -113,12 +120,50 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
     const winnerName = finalRaceGrid[Math.floor(Math.random() * finalRaceGrid.length)].name;
     console.log("🎯 [Next.js] Selected Winner (Backend Simulation):", winnerName);
 
-    onSelectRaceBetting({
-        track: selectedTrack,
-        finalRaceGrid,
-        betAmount,
-        winnerName
-    });
+    try {
+        setIsProcessing(true);
+        const amountWei = BigInt(betAmount) * BigInt("1000000000000000000");
+
+        // 1. APPROVE TRANSACTION
+        toast.loading("Step 1/2: Requesting $RACE approval in your wallet...", { id: 'betTx' });
+        await writeApprove({
+            address: RACE_TOKEN_ADDRESS,
+            abi: ERC20_ABI,
+            functionName: 'approve',
+            args: [BETTING_CONTRACT_ADDRESS, amountWei]
+        });
+
+        toast.loading("Waiting for Approval confirmation on Base network...", { id: 'betTx' });
+        // Give ~4 seconds for the blockchain to register the Approve before calling placeBet
+        await new Promise(r => setTimeout(r, 4000)); 
+
+        // 2. PLACE BET TRANSACTION
+        toast.loading("Step 2/2: Please confirm your Bet...", { id: 'betTx' });
+        const raceId = BigInt(Math.floor(Date.now() / 1000)); // Generate Fake Race ID
+        
+        await writeBet({
+            address: BETTING_CONTRACT_ADDRESS,
+            abi: BETTING_ABI,
+            functionName: 'placeBet',
+            args: [raceId, winnerName, amountWei]
+        });
+
+        toast.success("Success! Bet locked, preparing to start race!", { id: 'betTx' });
+
+        // TRIGGER GAME ENGINE
+        onSelectRaceBetting({
+            track: selectedTrack,
+            finalRaceGrid,
+            betAmount,
+            winnerName
+        });
+
+    } catch (err: any) {
+        console.error(err);
+        toast.error(`Transaction Failed: Cancelled or Error`, { id: 'betTx' });
+    } finally {
+        setIsProcessing(false);
+    }
   };
 
   return (
@@ -213,10 +258,10 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
             <div className="flex flex-col items-center gap-4">
                  <button
                     onClick={handleFinalStart}
-                    disabled={(!selectedCharacter && !isBetOnSelf) || !betAmount}
+                    disabled={(!selectedCharacter && !isBetOnSelf) || !betAmount || isProcessing}
                     className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center border-4 border-[#233e63] disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed"
                 >
-                    START RACE!
+                    {isProcessing ? "PROCESSING..." : "START RACE!"}
                 </button>
                 <button onClick={() => setCurrentView('track-select')} className="pixel-font text-sm text-black pixel-border bg-[#e7f2eb]">Back</button>
             </div>
