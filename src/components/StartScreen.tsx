@@ -111,6 +111,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
 
     // Dummy winner determination: randomly select a winner for the simulation
     const winnerName = finalRaceGrid[Math.floor(Math.random() * finalRaceGrid.length)].name;
+    console.log("🎯 [Next.js] Selected Winner (Backend Simulation):", winnerName);
 
     onSelectRaceBetting({
         track: selectedTrack,

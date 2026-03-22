@@ -230,6 +230,7 @@ class Game {
   async loadRacerAssets(data) {
     const finalRaceGrid = data.finalRaceGrid;
     const winnerName = data.winnerName;
+    console.log("🏁 [Game Engine] Received predetermined winner:", winnerName);
 
     this.racers = [];
     const racerPromises = finalRaceGrid.map((racerData, index) => {
