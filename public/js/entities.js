@@ -59,8 +59,27 @@ export class Racer {
   update(trackSpeed, dt, track) {
     if (this.finished) return;
     
+    // Check current provisional distance
+    const currentDistance = (track.totalScroll + (this.yPosOnScreen - this.startY)) * 1.95;
+    const distanceLeft = FINISH_DISTANCE - currentDistance;
+    
     // Add oscillation bonus
-    const bonus = Math.sin(Date.now() * 0.002 * this.oscillationFrequency + this.sinOffset) * 10;
+    let bonus = Math.sin(Date.now() * 0.002 * this.oscillationFrequency + this.sinOffset) * 10;
+    
+    // --- RIGGING LOGIC (HALUS & NATURAL) ---
+    if (this.isWinner) {
+        if (distanceLeft < 6000) {
+            // Winner gets a smooth "Second Wind" momentum for the final stretch
+            this.baseSpeed = Math.max(this.baseSpeed, 1.5); 
+        }
+    } else {
+        if (distanceLeft < 4000) {
+            // Losers experience "Engine Fatigue" (lose top speed naturally)
+            this.baseSpeed = Math.min(this.baseSpeed, 0.2);
+            // Cap positive random leaps so they don't accidentally cross first
+            bonus = Math.min(bonus, 0); 
+        }
+    }
     
     // Target speed with bonus
     this.targetSpeed = this.baseSpeed + bonus;
@@ -78,10 +97,10 @@ export class Racer {
     this.x = this.startX + (this.progress * this.diagonalRatio);
     
     // Calculate total distance using track scroll as master odometer
-    const totalDistance = (track.totalScroll + (this.yPosOnScreen - this.startY)) * 1.95;
+    const finalDistance = (track.totalScroll + (this.yPosOnScreen - this.startY)) * 1.95;
     
     // Check if racer crossed finish line using track odometer
-    if (totalDistance >= FINISH_DISTANCE && !this.finished) {
+    if (finalDistance >= FINISH_DISTANCE && !this.finished) {
       this.finished = true;
       this.finishTime = Date.now();
     }
