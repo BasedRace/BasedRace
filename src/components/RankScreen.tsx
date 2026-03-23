@@ -44,7 +44,7 @@ export const RankScreen = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-center px-4 pt-[140px] pb-[100px] overflow-y-auto space-y-4">
-      <h2 className="pixel-font text-2xl md:text-3xl text-yellow-400 mb-2 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] text-center">
+      <h2 className="pixel-font text-2xl md:text-3xl text-yellow-400 text-center border-4 border-[#233e63] bg-[#233e63] px-2" style={{ marginBottom: '10px' }}>
         LEADERBOARD
       </h2>
       
@@ -52,7 +52,7 @@ export const RankScreen = () => {
         {leaderboard.map((racer, index) => {
           const globalRank = ((currentPage - 1) * 20) + index;
           // Standard retro button look
-          let bgClass = "bg-[#e7f2eb] border-[#233e63] text-[#0f10f4] shadow-lg shadow-[#8a6d00]";
+          let bgClass = "bg-[#e7f2eb] border-[#233e63] text-black shadow-lg shadow-[#8a6d00]";
           
           // Special styles for Top 3 (using explicit hex for Tailwind JIT safety)
           if (globalRank === 0) bgClass = "bg-[#fde047] border-[#ca8a04] text-black shadow-[4px_4px_0_0_#b45309]";
@@ -83,11 +83,11 @@ export const RankScreen = () => {
                 </div>
                 
                 {/* Name & Title */}
-                <div className="flex flex-col max-w-[100px] sm:max-w-[150px] md:max-w-[250px]">
+                <div className="flex flex-col max-w-[200px] sm:max-w-[150px] md:max-w-[250px]">
                   <span className="pixel-font text-[10px] sm:text-xs md:text-sm text-black whitespace-normal break-words leading-tight">
                     {racer.username || `Player #${racer.fid}`}
                   </span>
-                  <span className={`pixel-font text-[10px] mt-1 ${racer.is_minted ? 'text-purple-600' : 'text-current opacity-70'}`}>
+                  <span className={`pixel-font text-[10px] mt-2 ${racer.is_minted ? 'text-purple-600' : 'text-current opacity-70'}`}>
                     {racer.is_minted ? 'OG Racer' : 'Racer'}
                   </span>
                 </div>
@@ -96,9 +96,9 @@ export const RankScreen = () => {
               {/* Right side: EXP, Wins, Rank */}
               <div className="flex flex-row items-center gap-3 md:gap-6">
                 {/* Stats */}
-                <div className="flex flex-col items-end">
+                <div className="flex flex-col items-start" style={{ marginRight: '30px' }}>
                   <span className="pixel-font text-[10px] md:text-xs">Wins: {racer.wins || 0}</span>
-                  <span className="pixel-font text-[10px] md:text-sm mt-1">EXP: {racer.exp || 0}</span>
+                  <span className="pixel-font text-[10px] md:text-sm mt-2">EXP: {racer.exp || 0}</span>
                 </div>
                 
                 {/* Rank */}
@@ -121,13 +121,13 @@ export const RankScreen = () => {
           <button 
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1 || loading}
-            className="w-10 h-10 bg-yellow-500 text-black flex items-center justify-center border-2 border-black active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
+            className="w-10 h-10 bg-yellow-500 text-[#0f10f4] flex items-center justify-center border-2 border-black active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
             style={{ width: '44px', height: '44px' }}
           >
             {"<"}
           </button>
           
-          <div className="pixel-font text-[#0f10f4] text-xs text-center leading-tight">
+          <div className="pixel-font text-black text-xs text-center leading-tight">
             <br/>
             <span className="text-lg">{currentPage}</span>
           </div>
@@ -135,7 +135,7 @@ export const RankScreen = () => {
           <button 
             onClick={() => setCurrentPage(prev => prev + 1)}
             disabled={!hasMore || loading}
-            className="w-10 h-10 bg-yellow-500 text-black flex items-center justify-center border-2 border-black active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
+            className="w-10 h-10 bg-yellow-500 text-[#0f10f4] flex items-center justify-center border-2 border-black active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
             style={{ width: '44px', height: '44px' }}
           >
             {">"}
