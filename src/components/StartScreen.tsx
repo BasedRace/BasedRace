@@ -227,7 +227,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
         </div>
       ) : ( // betting view
         <div className="min-h-full w-full flex flex-col items-center justify-center p-4">
-          <h2 className="pixel-font border-4 border-[#233e63] text-lg text-black bg-[#233e63] px-2 mb-2">SELECT CHARACTER</h2>
+          <h2 className="pixel-font border-4 border-[#233e63] text-lg text-black bg-[#233e63] px-2 mb-2" style={{ marginBottom: '10px' }}>SELECT CHARACTER</h2>
           <div className="flex flex-row gap-4 mb-4">
             {CHARACTERS_CONFIG.map(char => (
               <div
@@ -240,7 +240,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
             ))}
           </div>
 
-          <h2 className="pixel-font border-4 border-[#233e63] text-lg text-black bg-[#233e63] px-2 mb-2">YOUR RACER</h2>
+          <h2 className="pixel-font border-4 border-[#233e63] text-lg text-black bg-[#233e63] px-2 mb-2" style={{ marginBottom: '10px', marginTop: '10px' }}>YOUR RACER</h2>
           <div
             onClick={handleBetOnSelfSelect}
             className={`pixel-border bg-[#e7f2eb] flex items-center justify-center w-[70px] h-[70px] mb-4 relative ${isBetOnSelf ? 'ring-4 ring-yellow-400' : ''} ${!isMinted ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
@@ -252,8 +252,8 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
             )}
           </div>
 
-          <h2 className="pixel-font border-4 border-[#233e63] text-lg text-black bg-[#233e63] px-2 mb-2">PLACE A BET</h2>
-          <div className="flex flex-row gap-4 mb-6">
+          <h2 className="pixel-font border-4 border-[#233e63] text-lg text-black bg-[#233e63] px-2 mb-2" style={{ marginBottom: '10px', marginTop: '10px' }}>PLACE A BET</h2>
+          <div className="flex flex-row gap-4 mb-6" style={{ marginBottom: '10px' }}>
             {BET_OPTIONS.map(option => (
               <div
                 key={option.value}
@@ -270,6 +270,7 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
               onClick={handleFinalStart}
               disabled={(!selectedCharacter && !isBetOnSelf) || !betAmount || isProcessing}
               className="pixel-font pixel-border w-[300px] h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-base active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center border-4 border-[#233e63] disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed"
+              style={{ marginBottom: '10px' }}
             >
               {isProcessing ? "PROCESSING..." : "START RACE!"}
             </button>
