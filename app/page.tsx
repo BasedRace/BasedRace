@@ -210,7 +210,8 @@ export default function Home() {
 
   const handleShareWin = async () => {
     const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
-    const text = `I just won ${winAmount} $RACE at Based Racer! 🏎️💨\n\nCome and race with me in the Based Race miniapp !\n${appUrl}`;
+    const formattedAmount = winAmount.toLocaleString('en-US').replace(/,/g, '.');
+    const text = `I just won ${formattedAmount} $RACE at Based Racer! 🏎️💨\nCome and race with me in the Based Race miniapp !\n\n${appUrl}`;
     
     try {
       await (sdk.actions as any).composeCast({
@@ -304,10 +305,10 @@ export default function Home() {
 
       {/* WIN SHARE MODAL */}
       {showWinSharePopup && (
-        <div className="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999] bg-black/80 flex flex-col items-center justify-center p-4">
           <div className="bg-[#e7f2eb] border-4 border-[#233e63] p-6 w-[340px] flex flex-col items-center gap-6 pixel-border">
             <h2 className="pixel-font text-2xl text-yellow-500 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] text-center w-full">VICTORY!</h2>
-            <p className="pixel-font text-sm text-black text-center w-full leading-relaxed">You've won {winAmount} $RACE!</p>
+            <p className="pixel-font text-sm text-black text-center w-full leading-relaxed">You've won {winAmount.toLocaleString('en-US').replace(/,/g, '.')} $RACE!</p>
             <button
               onClick={handleShareWin}
               className="pixel-font pixel-border w-full h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-[10px] sm:text-xs animate-bounce hover:animate-none active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center leading-tight"
