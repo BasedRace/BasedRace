@@ -65,9 +65,18 @@ export const RankScreen = () => {
               {/* Left side: Avatar & Info */}
               <div className="flex flex-row items-center gap-3 md:gap-4">
                 {/* Profile Image */}
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-300 border-2 border-black flex-shrink-0 relative overflow-hidden flex items-center justify-center">
+                <div 
+                  className="bg-gray-300 border-2 border-black flex-shrink-0 relative overflow-hidden flex items-center justify-center"
+                  style={{ width: '45px', height: '45px' }}
+                >
                   {(racer.pfp_url || racer.image_url) ? (
-                    <img src={racer.pfp_url || racer.image_url} alt={racer.username || `Racer ${racer.fid}`} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                    <img 
+                      src={racer.pfp_url || racer.image_url} 
+                      alt={racer.username || `Racer ${racer.fid}`} 
+                      className="object-cover" 
+                      crossOrigin="anonymous" 
+                      style={{ width: '100%', height: '100%' }}
+                    />
                   ) : (
                     <span className="pixel-font text-xs text-gray-500">?</span>
                   )}
