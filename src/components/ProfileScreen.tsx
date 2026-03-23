@@ -66,7 +66,7 @@ export const ProfileScreen = ({ user, nftImageUrl, is_minted, onMint, onShare }:
                 className="bg-yellow-500 h-full"
                 style={{ 
                     width: `${expPercentage}%`,
-                    boxShadow: '0 0 8px #f59e0b'
+                    boxShadow: 'inset rgb(245, 158, 11) 0px 0px 20px 20px'
                 }}
             ></div>
             </div>

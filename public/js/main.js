@@ -26,35 +26,8 @@ class Game {
     this.racers = [];
     this.countdownValue = 3;
     this.isAssetsLoaded = false;
-    this.audioContext = null;
-    this.musicGain = null;
-    this.sfxGain = null;
 
     window.gameInstance = this;
-
-    // A single user interaction is required to unlock audio in browsers.
-    const onInteraction = () => {
-      if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.musicGain = this.audioContext.createGain();
-        this.sfxGain = this.audioContext.createGain();
-        this.musicGain.connect(this.audioContext.destination);
-        this.sfxGain.connect(this.audioContext.destination);
-      }
-
-      if (this.audioContext.state === 'suspended') {
-        this.audioContext.resume().then(() => {
-          if (!Object.keys(this.musicSources).length) {
-            // this.playMusic('menumusic', true, 0.5);
-          }
-        });
-      }
-      window.removeEventListener('click', onInteraction);
-      window.removeEventListener('keydown', onInteraction);
-    };
-
-    window.addEventListener('click', onInteraction);
-    window.addEventListener('keydown', onInteraction);
 
     window.addEventListener('message', (event) => {
       if (event.data.type === 'startRace') {
@@ -71,18 +44,6 @@ class Game {
 
     this.state = 'loading';
     this.stopAllSounds();
-    
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      this.musicGain = this.audioContext.createGain();
-      this.sfxGain = this.audioContext.createGain();
-      this.musicGain.connect(this.audioContext.destination);
-      this.sfxGain.connect(this.audioContext.destination);
-    }
-    
-    if (this.audioContext.state === 'suspended') {
-        this.audioContext.resume();
-    }
     
     // Show a loading message while assets are being fetched
     this.renderer.drawLoading();
@@ -104,65 +65,50 @@ class Game {
 
   async loadSounds() {
     const audioAssetNames = ['beep.mp3', 'start_go.mp3', 'engine_loop.mp3', 'victory.mp3', 'ingamemusic.mp3'];
-    const audioPromises = audioAssetNames.map(fileName => {
-        return fetch(`/assets/sounds/${fileName}`)
-            .then(response => response.arrayBuffer())
-            .then(arrayBuffer => this.audioContext.decodeAudioData(arrayBuffer))
-            .then(audioBuffer => {
-                const name = fileName.split('.')[0];
-                if (name.includes('music')) {
-                    this.music[name] = audioBuffer;
-                } else {
-                    this.sounds[name] = audioBuffer;
-                }
-            }).catch(error => console.error(`Failed to load audio: ${fileName}`, error));
+    audioAssetNames.forEach(fileName => {
+        const name = fileName.split('.')[0];
+        const audio = new Audio(`/assets/sounds/${fileName}`);
+        audio.preload = 'auto'; // HTML5 Audio Preload
+        if (name.includes('music')) {
+            this.music[name] = audio;
+        } else {
+            this.sounds[name] = audio;
+        }
     });
-    await Promise.all(audioPromises);
   }
 
-  playSound(bufferName, loop = false, volume = 1.0, startTime = 0) {
-    if (this.sounds[bufferName] && this.audioContext && this.audioContext.state === 'running') {
-        const source = this.audioContext.createBufferSource();
-        source.buffer = this.sounds[bufferName];
-        source.loop = loop;
-
-        const gainNode = this.audioContext.createGain();
-        gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+  playSound(bufferName, loop = false, volume = 1.0) {
+    if (this.sounds[bufferName]) {
+        // Clone node for overlapping SFX (like multiple beeps)
+        const audio = this.sounds[bufferName].cloneNode();
+        audio.loop = loop;
+        audio.volume = volume;
+        audio.play().catch(e => console.log('SFX block:', e));
         
-        source.connect(gainNode);
-        gainNode.connect(this.sfxGain);
-        
-        source.start(this.audioContext.currentTime + startTime);
-        this.soundSources[bufferName] = source;
+        // Track the actively loopable sounds so we can stop them (like engine_loop)
+        if (loop || bufferName === 'engine_loop') {
+            this.soundSources[bufferName] = audio;
+        }
     }
   }
 
   playMusic(bufferName, loop = true, volume = 0.5) {
-    if (!this.music[bufferName] || !this.audioContext || this.audioContext.state !== 'running') {
-      return;
+    if (this.music[bufferName]) {
+        this.fadeOutMusic(0); // Stop old music instantly
+        const audio = this.music[bufferName];
+        audio.loop = loop;
+        audio.volume = volume;
+        audio.currentTime = 0;
+        audio.play().catch(e => console.log('Music block:', e));
+        this.musicSources[bufferName] = audio;
     }
-
-    for (const name in this.musicSources) {
-      if (this.musicSources.hasOwnProperty(name)) {
-        try { this.musicSources[name].stop(); } catch(e) { /* ignore */ }
-      }
-    }
-    this.musicSources = {};
-
-    const source = this.audioContext.createBufferSource();
-    source.buffer = this.music[bufferName];
-    source.loop = loop;
-    
-    this.musicGain.gain.setValueAtTime(volume, this.audioContext.currentTime);
-    source.connect(this.musicGain);
-    source.start();
-    
-    this.musicSources[bufferName] = source;
   }
 
   stopSound(bufferName) {
     if (this.soundSources[bufferName]) {
-      try { this.soundSources[bufferName].stop(); } catch(e) { /* ignore */ }
+      try {
+        this.soundSources[bufferName].pause();
+      } catch(e) {}
       delete this.soundSources[bufferName];
     }
   }
@@ -175,20 +121,23 @@ class Game {
     }
     for (const musicName in this.musicSources) {
       if (this.musicSources.hasOwnProperty(musicName)) {
-        try { this.musicSources[musicName].stop(); } catch(e) { /* ignore */ }
+        try { 
+            this.musicSources[musicName].pause(); 
+        } catch(e) {}
       }
     }
     this.musicSources = {};
   }
 
   fadeOutMusic(duration = 2) {
-    if (!this.musicGain) return;
-    this.musicGain.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + duration);
-  }
-  
-  fadeInMusic(duration = 2, volume = 0.5) {
-    if (!this.musicGain) return;
-    this.musicGain.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + duration);
+    for (const musicName in this.musicSources) {
+      if (this.musicSources.hasOwnProperty(musicName)) {
+        try { 
+            this.musicSources[musicName].pause(); 
+        } catch(e) {}
+      }
+    }
+    this.musicSources = {};
   }
 
   async loadUIAssets() {
@@ -293,8 +242,13 @@ class Game {
             this.playSound('beep', false, 0.6);
         } else if (this.countdownValue === 1) { // Stage 1 (Green)
             this.playSound('start_go', false, 0.9);
-            const startGoDuration = this.sounds.start_go.duration;
-            this.playSound('engine_loop', true, 0.6, startGoDuration - 0.3);
+            // Delay engine loop slightly using standard JS timeout, fallback to 1s if duration NaN
+            const delayMs = (this.sounds.start_go.duration ? (this.sounds.start_go.duration - 0.3) : 0.7) * 1000;
+            setTimeout(() => {
+                if (this.state === 'countdown' || this.state === 'racing') {
+                   this.playSound('engine_loop', true, 0.6);
+                }
+            }, delayMs);
         } else if (this.countdownValue < 0) {
             this.state = 'racing';
             this.playMusic('ingamemusic', true, 0.4);

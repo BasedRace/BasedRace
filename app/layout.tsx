@@ -46,7 +46,20 @@ export default function RootLayout({
         <AudioProvider>
           <Providers>
             {children}
-            <Toaster richColors position="top-center" />
+            <Toaster 
+              position="top-center" 
+              visibleToasts={1}
+              toastOptions={{
+                className: 'pixel-font pixel-border w-[300px] min-h-[50px] text-center pixel-btn bg-[#e7f2eb] text-[#0f10f4] text-base shadow-lg shadow-[#8a6d00] flex items-center justify-center border-4 border-[#233e63] !rounded-none',
+                style: {
+                  background: '#e7f2eb',
+                  color: '#0f10f4',
+                  border: '4px solid #233e63',
+                  borderRadius: '0px',
+                  boxShadow: '0 10px 15px -3px rgba(138, 109, 0, 0.6)'
+                }
+              }}
+            />
           </Providers>
         </AudioProvider>
       </body>

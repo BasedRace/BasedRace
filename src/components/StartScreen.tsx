@@ -155,7 +155,6 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
         // SECURITY FIX: DETERMINE WINNER ONLY AFTER TRANSACTION CONFIRMS
         const randomWinnerIndex = Math.floor(Math.random() * finalRaceGrid.length);
         const winnerName = finalRaceGrid[randomWinnerIndex].name;
-        console.log(`[SIMULATION] Race outcome rolled. The winner will be:`, winnerName);
 
         // TRIGGER GAME ENGINE
         onSelectRaceBetting({
