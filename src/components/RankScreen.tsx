@@ -43,9 +43,9 @@ export const RankScreen = () => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col items-center p-4 overflow-y-auto pb-24 space-y-4">
+    <div className="w-full h-full flex flex-col items-center px-4 pt-[140px] pb-[100px] overflow-y-auto space-y-4">
       <h2 className="pixel-font text-2xl md:text-3xl text-yellow-400 mb-2 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] text-center">
-        GLOBAL LEADERBOARD
+        LEADERBOARD
       </h2>
       
       <div className="w-full max-w-2xl flex flex-col gap-3">
@@ -54,10 +54,10 @@ export const RankScreen = () => {
           // Standard retro button look
           let bgClass = "bg-[#e7f2eb] border-[#233e63] text-[#0f10f4] shadow-lg shadow-[#8a6d00]";
           
-          // Special styles for Top 3
-          if (globalRank === 0) bgClass = "bg-yellow-300 border-yellow-600 text-black shadow-[4px_4px_0_0_#b45309]";
-          else if (globalRank === 1) bgClass = "bg-gray-200 border-gray-500 text-black shadow-[4px_4px_0_0_#4b5563]";
-          else if (globalRank === 2) bgClass = "bg-orange-200 border-orange-700 text-black shadow-[4px_4px_0_0_#c2410c]";
+          // Special styles for Top 3 (using explicit hex for Tailwind JIT safety)
+          if (globalRank === 0) bgClass = "bg-[#fde047] border-[#ca8a04] text-black shadow-[4px_4px_0_0_#b45309]";
+          else if (globalRank === 1) bgClass = "bg-[#e5e7eb] border-[#6b7280] text-black shadow-[4px_4px_0_0_#4b5563]";
+          else if (globalRank === 2) bgClass = "bg-[#fed7aa] border-[#c2410c] text-black shadow-[4px_4px_0_0_#c2410c]";
           
           return (
             <div key={racer.fid} className={`w-full pixel-border p-3 flex flex-row items-center justify-between border-4 ${bgClass}`}>
@@ -83,8 +83,8 @@ export const RankScreen = () => {
                 </div>
                 
                 {/* Name & Title */}
-                <div className="flex flex-col">
-                  <span className="pixel-font text-xs md:text-sm truncate w-[80px] sm:w-[120px] md:w-[200px]">
+                <div className="flex flex-col max-w-[100px] sm:max-w-[150px] md:max-w-[250px]">
+                  <span className="pixel-font text-[10px] sm:text-xs md:text-sm text-black whitespace-normal break-words leading-tight">
                     {racer.username || `Player #${racer.fid}`}
                   </span>
                   <span className={`pixel-font text-[10px] mt-1 ${racer.is_minted ? 'text-purple-600' : 'text-current opacity-70'}`}>
@@ -97,12 +97,12 @@ export const RankScreen = () => {
               <div className="flex flex-row items-center gap-3 md:gap-6">
                 {/* Stats */}
                 <div className="flex flex-col items-end">
-                  <span className="pixel-font text-[10px] md:text-xs">W: {racer.wins || 0}</span>
-                  <span className="pixel-font text-[10px] md:text-sm font-bold mt-1">XP: {racer.exp || 0}</span>
+                  <span className="pixel-font text-[10px] md:text-xs">Wins: {racer.wins || 0}</span>
+                  <span className="pixel-font text-[10px] md:text-sm mt-1">EXP: {racer.exp || 0}</span>
                 </div>
                 
                 {/* Rank */}
-                <div className={`pixel-font text-xl md:text-3xl font-bold ml-1 md:ml-2 w-10 md:w-16 text-right ${globalRank === 0 ? 'text-yellow-800' : ''}`}>
+                <div className={`pixel-font text-xl md:text-3xl ml-1 md:ml-2 w-10 md:w-16 text-right ${globalRank === 0 ? 'text-yellow-800' : ''}`}>
                   #{globalRank + 1}
                 </div>
               </div>
@@ -117,24 +117,26 @@ export const RankScreen = () => {
         )}
 
         {/* Pagination Controls */}
-        <div className="flex flex-row items-center justify-between w-full h-[60px] bg-[#e7f2eb] px-4 border-4 border-[#233e63] mt-4 shadow-lg shadow-[#8a6d00]">
+        <div className="flex flex-row items-center justify-between w-full h-[60px] mt-4 shadow-lg">
           <button 
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1 || loading}
             className="w-10 h-10 bg-yellow-500 text-black flex items-center justify-center border-2 border-black active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
+            style={{ width: '44px', height: '44px' }}
           >
             {"<"}
           </button>
           
           <div className="pixel-font text-[#0f10f4] text-xs text-center leading-tight">
-            PAGE<br/>
-            <span className="text-lg font-bold">{currentPage}</span>
+            <br/>
+            <span className="text-lg">{currentPage}</span>
           </div>
           
           <button 
             onClick={() => setCurrentPage(prev => prev + 1)}
             disabled={!hasMore || loading}
             className="w-10 h-10 bg-yellow-500 text-black flex items-center justify-center border-2 border-black active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
+            style={{ width: '44px', height: '44px' }}
           >
             {">"}
           </button>
