@@ -16,6 +16,11 @@ export const GameScreen = ({ raceData }: { raceData?: any }) => {
 
     if (iframe) {
       iframe.addEventListener('load', handleLoad);
+      
+      // If it's already mounted persistently and raceData arrives, fire immediately
+      if (raceData && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'startRace', data: raceData }, '*');
+      }
     }
 
     return () => {

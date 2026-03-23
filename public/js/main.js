@@ -57,7 +57,18 @@ class Game {
     window.addEventListener('keydown', onInteraction);
 
     window.addEventListener('message', (event) => {
-      if (event.data.type === 'startRace') {
+      if (event.data.type === 'unlockAudio') {
+        if (!this.audioContext) {
+          this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          this.musicGain = this.audioContext.createGain();
+          this.sfxGain = this.audioContext.createGain();
+          this.musicGain.connect(this.audioContext.destination);
+          this.sfxGain.connect(this.audioContext.destination);
+        }
+        if (this.audioContext.state === 'suspended') {
+          this.audioContext.resume().catch(e => console.warn('Silently failed early unlock:', e));
+        }
+      } else if (event.data.type === 'startRace') {
         this.initGameSequence(event.data.data);
       }
     });
@@ -78,10 +89,6 @@ class Game {
       this.sfxGain = this.audioContext.createGain();
       this.musicGain.connect(this.audioContext.destination);
       this.sfxGain.connect(this.audioContext.destination);
-    }
-
-    if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(e => console.warn('AudioContext resume blocked:', e));
     }
 
     // Show a loading message while assets are being fetched

@@ -264,10 +264,10 @@ const renderActiveView = () => {
         />
       );
     case 'game':
-      return <GameScreen raceData={raceData} />;
+      return null; // Persistent iframe rendered below
     case 'start':
       switch (startSubView) {
-        case 'tournament': return <GameScreen />;
+        case 'tournament': return null; // Persistent iframe rendered below
         case 'menu':
         default:
           return (
@@ -296,12 +296,24 @@ const renderActiveView = () => {
   }
 };
 
-return (
-  <main className="w-full h-[100dvh] bg-black relative flex flex-col overflow-hidden">
-    <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover -z-10" unoptimized />
-    <div className="flex-1 w-full overflow-y-auto relative z-10">
-      {renderActiveView()}
-    </div>
+  const handleGlobalClick = () => {
+    const iframe = document.querySelector('iframe');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'unlockAudio' }, '*');
+    }
+  };
+
+  return (
+    <main onClick={handleGlobalClick} className="w-full h-[100dvh] bg-black relative flex flex-col overflow-hidden">
+      <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover -z-10" unoptimized />
+      <div className="flex-1 w-full overflow-y-auto relative z-10">
+        {renderActiveView()}
+      </div>
+      
+      {/* Hidden iframe always mounted to preserve audio context unlock */}
+      <div style={{ display: activeView === 'game' ? 'block' : 'none', position: 'absolute', inset: 0, zIndex: 20 }}>
+        <GameScreen raceData={raceData} />
+      </div>
     {activeView !== 'game' && <NavBar activeView={activeView as OriginalNavView} onNavigate={handleNavigate} />}
 
     {/* WIN SHARE MODAL */}
