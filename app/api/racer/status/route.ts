@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const fid = parseInt(searchParams.get('fid') || '', 10);
+    const pfpUrl = searchParams.get('pfpUrl');
 
     if (isNaN(fid)) {
       console.error('Missing or invalid FID for /api/racer/status');
@@ -20,15 +21,20 @@ export async function GET(req: NextRequest) {
 
     console.log(`Fetching data for FID: ${fid}`);
 
-    // TAMBAHKAN 'image_url', 'tier', dan 'exp' di dalam .select()
     const { data, error } = await supabaseAdmin.from('racers')
-      .select('is_minted, image_url, tier, exp') 
+      .select('is_minted, image_url, tier, exp, pfp_url') 
       .eq('fid', fid)
       .single();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Supabase fetch error:', error);
       throw new Error(`Failed to fetch status: ${error.message}`);
+    }
+
+    // Auto-update PFP for old users on login
+    if (data && pfpUrl && data.pfp_url !== pfpUrl) {
+      supabaseAdmin.from('racers').update({ pfp_url: pfpUrl }).eq('fid', fid)
+        .then(() => console.log(`Auto-updated missing PFP for FID ${fid}`));
     }
 
     const isMinted = data ? data.is_minted : false;

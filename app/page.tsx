@@ -68,7 +68,8 @@ export default function Home() {
             walletAddress: connectedWalletAddress,
           };
 
-          const response = await fetch(`/api/racer/status?fid=${profile.fid}`);
+          const encodedPfp = encodeURIComponent(profile.pfpUrl || '');
+          const response = await fetch(`/api/racer/status?fid=${profile.fid}&pfpUrl=${encodedPfp}`);
           if (response.ok) {
             const data = await response.json();
             setIsMinted(data.isMinted);

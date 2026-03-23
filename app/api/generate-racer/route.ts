@@ -168,6 +168,7 @@ export async function POST(req: NextRequest) {
       fid,
       username,
       image_url: publicUrl,
+      pfp_url: pfpUrl,
     });
 
     if (insertError) {
