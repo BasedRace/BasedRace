@@ -8,20 +8,20 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Keamanan Sederhana: Wajibkan kata sandi admin
+    // 1. Simple Security: Admin secret is required
     const adminSecret = req.headers.get('x-admin-secret');
     if (adminSecret !== process.env.ADMIN_SECRET) {
-      return NextResponse.json({ error: 'Akses Ditolak (Unauthorized)' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized Access' }, { status: 401 });
     }
 
     const payloadBody = await req.json();
     const { title, textBody, targetUrl, notificationId } = payloadBody;
 
     if (!title || !textBody || !targetUrl) {
-      return NextResponse.json({ error: 'Parameter title, textBody, atau targetUrl hilang!' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing title, textBody, or targetUrl parameters!' }, { status: 400 });
     }
 
-    // 2. Tarik semua token dari Supabase yang mengizinkan notifikasi
+    // 2. Fetch all tokens from Supabase that have notifications enabled
     const { data: users, error } = await supabaseAdmin
       .from('racers')
       .select('notification_token, notification_url')
@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
       .not('notification_token', 'is', null);
 
     if (error || !users) {
-      throw new Error(error?.message || 'Gagal menarik data token dari Supabase');
+      throw new Error(error?.message || 'Failed to fetch tokens from Supabase');
     }
 
-    // 3. Kelompokkan token berdasarkan URL tujuannya (Warpcast dsb.)
+    // 3. Group tokens by target URL (Warpcast, etc.)
     const urlGroups: Record<string, string[]> = {};
     for (const user of users) {
       const { notification_token, notification_url } = user;
@@ -47,10 +47,10 @@ export async function POST(req: NextRequest) {
     let totalSent = 0;
     let failedBatches = 0;
     
-    // Pastikan satu ID notifikasi stabil agar Farcaster tidak menduplikasi jika dikirim ulang
+    // Ensure stable notification ID to avoid Farcaster deduplicating/resending
     const stableNotificationId = notificationId || `broadcast-${Date.now()}`;
 
-    // 4. Kirim notifikasi dengan metode pecahan maksimal 100 token per tembakan (Sesuai Aturan Farcaster)
+    // 4. Send notifications using the 100 token batch method (Farcaster Rules)
     for (const [url, tokens] of Object.entries(urlGroups)) {
       for (let i = 0; i < tokens.length; i += 100) {
         const batchTokens = tokens.slice(i, i + 100);
@@ -73,17 +73,17 @@ export async function POST(req: NextRequest) {
         
         if (response.ok) {
            totalSent += batchTokens.length;
-           console.log(`✅ Broadcast batch sukses ke ${url}:`, result);
+           console.log(`✅ Successful broadcast batch to ${url}:`, result);
         } else {
            failedBatches++;
-           console.error(`❌ Broadcast batch gagal ke ${url}:`, result);
+           console.error(`❌ Failed broadcast batch to ${url}:`, result);
         }
       }
     }
 
     return NextResponse.json({ 
         success: true, 
-        message: `Siaran Selesai. Sukses menjangkau ${totalSent} token. Kegagalan API: ${failedBatches}`, 
+        message: `Broadcast Complete. Successfully reached ${totalSent} tokens. API Failures: ${failedBatches}`, 
         notificationId: stableNotificationId 
     });
 

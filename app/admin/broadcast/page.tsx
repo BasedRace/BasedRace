@@ -22,11 +22,11 @@ export default function AdminBroadcastPage() {
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !body || !targetUrl) {
-      setStatus({ type: 'error', message: 'Tolong lengkapi Title, Body, dan Target URL.' });
+      setStatus({ type: 'error', message: 'Please provide Title, Body, and Target URL.' });
       return;
     }
 
-    setStatus({ type: 'loading', message: 'Sedang memproses siaran...' });
+    setStatus({ type: 'loading', message: 'Processing broadcast...' });
 
     try {
       const response = await fetch('/api/admin/broadcast', {
@@ -46,15 +46,15 @@ export default function AdminBroadcastPage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setStatus({ type: 'success', message: data.message || 'Siaran Berhasil Dimulai! ✅' });
+        setStatus({ type: 'success', message: data.message || 'Broadcast deployed successfully! ✅' });
         setTitle('');
         setBody('');
         setNotificationId('');
       } else {
-        setStatus({ type: 'error', message: data.error || 'Terjadi kesalahan saat menyiarkan ❌' });
+        setStatus({ type: 'error', message: data.error || 'An error occurred during broadcast ❌' });
       }
     } catch (error: any) {
-      setStatus({ type: 'error', message: error.message || 'Gagal terhubung ke API peladen ❌' });
+      setStatus({ type: 'error', message: error.message || 'Failed to connect to the server API ❌' });
     }
   };
 
@@ -63,12 +63,12 @@ export default function AdminBroadcastPage() {
       <div className="min-h-screen bg-black flex items-center justify-center p-4 relative z-50">
         <form onSubmit={handleLogin} className="bg-[#233e63] p-8 pb-10 border-4 border-yellow-500 shadow-[6px_6px_0_0_#99b1c5] max-w-sm w-full flex flex-col gap-6">
           <h1 className="pixel-font text-xl text-yellow-500 text-center drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">ADMIN RADAR 📡</h1>
-          <p className="text-white text-xs text-center pb-2">Otentikasi Peladen Khusus Broadcast Farcaster</p>
+          <p className="text-white text-xs text-center pb-2">Farcaster Broadcast Server Authentication</p>
           <input 
             type="password" 
             value={secret} 
             onChange={(e) => setSecret(e.target.value)} 
-            placeholder="Ketik Secret Key Admin..." 
+            placeholder="Enter Admin Secret Key..." 
             className="p-3 bg-gray-900 text-yellow-500 border-2 border-white focus:border-yellow-500 focus:outline-none pixel-font text-[10px]"
           />
           <button type="submit" className="bg-yellow-500 text-black border-4 border-black hover:border-white pixel-font py-3 hover:bg-yellow-400 active:translate-y-1 transition-all">CONNECT</button>
@@ -83,7 +83,7 @@ export default function AdminBroadcastPage() {
         <button onClick={() => setIsAuthenticated(false)} className="absolute top-4 right-4 text-xs text-red-600 font-bold hover:underline pixel-font active:translate-y-1">TERMINATE</button>
         
         <h1 className="pixel-font text-2xl text-center text-[#233e63] mb-4 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)]">BROADCAST CENTER 📡</h1>
-        <p className="text-gray-700 text-sm mb-2 text-center border-b-2 border-[#233e63] pb-4">Tulis pesan massal Anda di layar monitor ini. Klik Broadcast dan pesan akan melesat masuk ke lonceng Farcaster seluruh pemain gawai/desktop (*Batas maksimal notifikasi Warpcast adalah 100/hari per user*).</p>
+        <p className="text-gray-700 text-sm mb-2 text-center border-b-2 border-[#233e63] pb-4">Draft your mass message here. Click Broadcast and the message will be sent to all users who have enabled Farcaster notifications for the mini app (*Warpcast allows a maximum of 100 notifications/day per user*).</p>
 
         {status.message && (
           <div className={`p-4 border-2 text-sm font-bold pixel-font leading-relaxed ${
@@ -97,32 +97,32 @@ export default function AdminBroadcastPage() {
 
         <form onSubmit={handleBroadcast} className="flex flex-col gap-5 mt-4">
           <div className="flex flex-col gap-2">
-            <label className="font-bold text-black pixel-font text-[10px]">TITLE (Maks. 32 Karakter)</label>
+            <label className="font-bold text-black pixel-font text-[10px]">TITLE (Max 32 Characters)</label>
             <input 
               maxLength={32}
               type="text" 
               value={title} 
               onChange={(e) => setTitle(e.target.value)} 
-              placeholder="Contoh: 🏎️ JALUR BARU DIBUKA!" 
+              placeholder="e.g. 🏎️ NEW TRACK UNLOCKED!" 
               className="p-3 bg-white text-black border-2 border-gray-400 focus:border-[#233e63] focus:outline-none focus:ring-2 focus:ring-[#99b1c5]"
               required
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="font-bold text-black pixel-font text-[10px]">BODY PUSH NOTIFICATION (Maks. 128 Karakter)</label>
+            <label className="font-bold text-black pixel-font text-[10px]">PUSH NOTIFICATION BODY (Max 128 Characters)</label>
             <textarea 
               maxLength={128}
               value={body} 
               onChange={(e) => setBody(e.target.value)} 
-              placeholder="Contoh: Ayo masuk dan mainkan mode Tournament pertama kita. Ada hadiah ratusan ribu dolar Race menantimu malam ini!" 
+              placeholder="e.g. Come and play our first Tournament mode. Hundreds of thousands of $RACE in prizes await you tonight!" 
               className="p-3 bg-white text-black border-2 border-gray-400 focus:border-[#233e63] focus:outline-none focus:ring-2 focus:ring-[#99b1c5] min-h-[100px] resize-none"
               required
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="font-bold text-black pixel-font text-[10px]">TARGET URL (Link ke tujuan)</label>
+            <label className="font-bold text-black pixel-font text-[10px]">TARGET URL (Link destination)</label>
             <input 
               type="url" 
               value={targetUrl} 
@@ -134,7 +134,7 @@ export default function AdminBroadcastPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="font-bold text-gray-500 pixel-font text-[8px] sm:text-[10px]">ID PENGIRIMAN (Opsional, Biarkan kosong u/ Instan)</label>
+            <label className="font-bold text-gray-500 pixel-font text-[8px] sm:text-[10px]">DELIVERY ID (Optional, leave empty for instant)</label>
             <input 
               type="text" 
               value={notificationId} 
