@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     console.log(`Fetching data for FID: ${fid}`);
 
     const { data, error } = await supabaseAdmin.from('racers')
-      .select('is_minted, image_url, tier, exp, pfp_url') 
+      .select('is_minted, image_url, tier, exp, pfp_url, wins') 
       .eq('fid', fid)
       .single();
 
@@ -41,11 +41,12 @@ export async function GET(req: NextRequest) {
     const imageUrl = data ? data.image_url : null; // Ambil image_url jika data ada
     const tier = data ? data.tier : 'N/A';
     const exp = data ? data.exp : 0;
+    const wins = data ? data.wins : 0;
 
-    console.log(`Status for FID ${fid}: isMinted=${isMinted}, imageUrl=${imageUrl}, tier=${tier}, exp=${exp}`);
+    console.log(`Status for FID ${fid}: isMinted=${isMinted}, imageUrl=${imageUrl}, tier=${tier}, exp=${exp}, wins=${wins}`);
 
-    // Kembalikan isMinted, imageUrl, tier, dan exp agar bisa dipakai frontend
-    return NextResponse.json({ isMinted, imageUrl, tier, exp });
+    // Kembalikan data lengkap agar bisa dipakai frontend
+    return NextResponse.json({ isMinted, imageUrl, tier, exp, wins });
 
   } catch (error) {
     console.error('Error in /api/racer/status:', error);
