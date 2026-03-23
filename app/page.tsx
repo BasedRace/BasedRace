@@ -45,6 +45,8 @@ export default function Home() {
   const [nftImageUrl, setNftImageUrl] = useState<string | null>(null);
   const [isRacing, setIsRacing] = useState<boolean>(false);
   const [raceData, setRaceData] = useState<any>(null);
+  const [showWinSharePopup, setShowWinSharePopup] = useState<boolean>(false);
+  const [winAmount, setWinAmount] = useState<number>(0);
   const { fadeOutMainMusic, fadeInMainMusic } = useAudio();
 
   const { address: connectedWalletAddress, isConnected } = useAccount();
@@ -128,6 +130,12 @@ export default function Home() {
                 // Refresh memory status so ProfileScreen updates automatically
                 setUser(prev => prev ? { ...prev, exp: data.exp, wins: data.wins } : prev);
                 toast.success(`Successfully recorded +${data.expGained} EXP!`);
+
+                if (isWin) {
+                   const bet = raceData?.betAmount ? parseInt(raceData.betAmount.toString(), 10) : 0;
+                   setWinAmount(bet * 2); // default 2x multiplier
+                   setShowWinSharePopup(true);
+                }
              }
           } catch(e) {
              console.error("Failed to resolve race:", e);
@@ -138,7 +146,7 @@ export default function Home() {
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [user]); // Attached 'user' so the function knows the latest FID
+  }, [user, raceData]); // attached 'raceData' to avoid stale closure
 
   // Handle Transaction Results
   useEffect(() => {
@@ -197,6 +205,21 @@ export default function Home() {
           toast.error("Failed to open share composer.");
         }
       }
+    }
+  };
+
+  const handleShareWin = async () => {
+    const appUrl = "https://farcaster.xyz/miniapps/pwIRBx_gHP9e/based-race";
+    const text = `I just won ${winAmount} $RACE at Based Racer! 🏎️💨\n\nCome and race with me in the Based Race miniapp !\n${appUrl}`;
+    
+    try {
+      await (sdk.actions as any).composeCast({
+        text: text,
+      });
+      setShowWinSharePopup(false);
+    } catch (error) {
+      console.error("Failed to compose cast:", error);
+      toast.error("Failed to open share composer.");
     }
   };
 
@@ -278,6 +301,29 @@ export default function Home() {
         {renderActiveView()}
       </div>
       {activeView !== 'game' && <NavBar activeView={activeView as OriginalNavView} onNavigate={handleNavigate} />}
+
+      {/* WIN SHARE MODAL */}
+      {showWinSharePopup && (
+        <div className="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4">
+          <div className="bg-[#e7f2eb] border-4 border-[#233e63] p-6 w-[340px] flex flex-col items-center gap-6 pixel-border">
+            <h2 className="pixel-font text-2xl text-yellow-500 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] text-center w-full">VICTORY!</h2>
+            <p className="pixel-font text-sm text-black text-center w-full leading-relaxed">You've won {winAmount} $RACE!</p>
+            <button
+              onClick={handleShareWin}
+              className="pixel-font pixel-border w-full h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-[10px] sm:text-xs animate-bounce hover:animate-none active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center leading-tight"
+            >
+              Share Winning Race
+            </button>
+            <button
+              onClick={() => setShowWinSharePopup(false)}
+              className="pixel-font text-xs text-gray-500 mt-2 hover:text-black transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }
