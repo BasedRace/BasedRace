@@ -80,6 +80,10 @@ class Game {
       this.sfxGain.connect(this.audioContext.destination);
     }
 
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(e => console.warn('AudioContext resume blocked:', e));
+    }
+
     // Show a loading message while assets are being fetched
     this.renderer.drawLoading();
 
@@ -290,7 +294,7 @@ class Game {
       } else if (this.countdownValue === 1) { // Stage 1 (Green)
         this.playSound('start_go', false, 0.9);
         const startGoDuration = this.sounds.start_go.duration;
-        this.playSound('engine_loop', true, 0.7, startGoDuration - 0.3);
+        this.playSound('engine_loop', true, 0.85, startGoDuration - 0.3);
       } else if (this.countdownValue < 0) {
         this.state = 'racing';
         this.playMusic('ingamemusic', true, 0.4);
