@@ -56,7 +56,7 @@ export const RankScreen = () => {
           
           // Special styles for Top 3 (using explicit hex for Tailwind JIT safety)
           if (globalRank === 0) bgClass = "bg-[#fde047] border-[#ca8a04] text-black shadow-[4px_4px_0_0_#b45309]";
-          else if (globalRank === 1) bgClass = "bg-[#e5e7eb] border-[#6b7280] text-black shadow-[4px_4px_0_0_#4b5563]";
+          else if (globalRank === 1) bgClass = "bg-[#99b1c5] border-[#4b5563] text-black shadow-[4px_4px_0_0_#4b5563]";
           else if (globalRank === 2) bgClass = "bg-[#fed7aa] border-[#c2410c] text-black shadow-[4px_4px_0_0_#c2410c]";
           
           return (
@@ -96,9 +96,15 @@ export const RankScreen = () => {
               {/* Right side: EXP, Wins, Rank */}
               <div className="flex flex-row items-center gap-3 md:gap-6">
                 {/* Stats */}
-                <div className="flex flex-col items-start" style={{ marginRight: '30px' }}>
-                  <span className="pixel-font text-[10px] md:text-xs">Wins: {racer.wins || 0}</span>
-                  <span className="pixel-font text-[10px] md:text-sm mt-2">EXP: {racer.exp || 0}</span>
+                <div className="flex flex-col w-[80px] md:w-[100px]" style={{ marginRight: '30px' }}>
+                  <div className="flex justify-between w-full">
+                    <span className="pixel-font text-[10px] md:text-xs">Wins:</span>
+                    <span className="pixel-font text-[10px] md:text-xs">{racer.wins || 0}</span>
+                  </div>
+                  <div className="flex justify-between w-full mt-2">
+                    <span className="pixel-font text-[10px] md:text-sm">EXP:</span>
+                    <span className="pixel-font text-[10px] md:text-sm">{racer.exp || 0}</span>
+                  </div>
                 </div>
                 
                 {/* Rank */}
