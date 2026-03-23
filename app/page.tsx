@@ -111,35 +111,35 @@ export default function Home() {
         if (user) {
           const isWin = event.data.isUserWinner;
           toast.info(isWin ? "🎉 You Won! Calculating EXP..." : "🏁 Race Finished! Calculating EXP...");
-          
-          try {
-             const res = await fetch('/api/racer/resolve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    fid: user.fid, 
-                    isWin,
-                    raceId: raceData?.raceId,
-                    winnerName: raceData?.winnerName
-                })
-             });
-             
-             if (res.ok) {
-                const data = await res.json();
-                
-                // Refresh memory status so ProfileScreen updates automatically
-                setUser(prev => prev ? { ...prev, exp: data.exp, wins: data.wins } : prev);
-                toast.success(`Successfully recorded +${data.expGained} EXP!`);
 
-                if (isWin) {
-                   const bet = raceData?.betAmount ? parseInt(raceData.betAmount.toString(), 10) : 0;
-                   setWinAmount(bet * 2); // default 2x multiplier
-                   setShowWinSharePopup(true);
-                }
-             }
-          } catch(e) {
-             console.error("Failed to resolve race:", e);
-             toast.error("Failed to save race results to server.");
+          try {
+            const res = await fetch('/api/racer/resolve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                fid: user.fid,
+                isWin,
+                raceId: raceData?.raceId,
+                winnerName: raceData?.winnerName
+              })
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+
+              // Refresh memory status so ProfileScreen updates automatically
+              setUser(prev => prev ? { ...prev, exp: data.exp, wins: data.wins } : prev);
+              toast.success(`Successfully recorded +${data.expGained} EXP!`);
+
+              if (isWin) {
+                const bet = raceData?.betAmount ? parseInt(raceData.betAmount.toString(), 10) : 0;
+                setWinAmount(bet * 2); // default 2x multiplier
+                setShowWinSharePopup(true);
+              }
+            }
+          } catch (e) {
+            console.error("Failed to resolve race:", e);
+            toast.error("Failed to save race results to server.");
           }
         }
       }
@@ -216,6 +216,7 @@ export default function Home() {
     try {
       await (sdk.actions as any).composeCast({
         text: text,
+        embeds: [appUrl],
       });
       setShowWinSharePopup(false);
     } catch (error) {
@@ -224,100 +225,102 @@ export default function Home() {
     }
   };
 
-  const handleOnChainMint = (metadataUrl: string) => {
-    if (!isConnected || !user?.walletAddress) return toast.error("Please connect your wallet first.");
-    if (isMinted) return toast.info("You have already minted your Based Racer!");
-    if (!metadataUrl) return toast.warning("Racer data not available. Please try again.");
-    if (isPending || isConfirming) return toast.info("A mint transaction is already in progress.");
+const handleOnChainMint = (metadataUrl: string) => {
+  if (!isConnected || !user?.walletAddress) return toast.error("Please connect your wallet first.");
+  if (isMinted) return toast.info("You have already minted your Based Racer!");
+  if (!metadataUrl) return toast.warning("Racer data not available. Please try again.");
+  if (isPending || isConfirming) return toast.info("A mint transaction is already in progress.");
 
-    writeContract({
-      address: CONTRACT_ADDRESS,
-      abi: BasedRaceNFTABI,
-      functionName: 'safeMint',
-      args: [user.walletAddress, metadataUrl],
-      value: MINT_FEE,
-    });
-  };
+  writeContract({
+    address: CONTRACT_ADDRESS,
+    abi: BasedRaceNFTABI,
+    functionName: 'safeMint',
+    args: [user.walletAddress, metadataUrl],
+    value: MINT_FEE,
+  });
+};
 
-  const handleRaceBetting = (data: any) => {
-    setRaceData(data);
-    setActiveView('game');
+const handleRaceBetting = (data: any) => {
+  setRaceData(data);
+  setActiveView('game');
+}
+
+if (gameState === 'loading') {
+  return <div className="w-screen h-screen bg-black" />;
+}
+
+if (!isConnected || !user) {
+  return <LoginScreen onLogin={handleConnect} />;
+}
+
+const renderActiveView = () => {
+  switch (activeView) {
+    case 'landing':
+      return (
+        <LandingPage
+          onAction={handleAction}
+          isMinted={isMinted}
+          nftImageUrl={isMinted ? nftImageUrl : null}
+        />
+      );
+    case 'game':
+      return <GameScreen raceData={raceData} />;
+    case 'start':
+      switch (startSubView) {
+        case 'tournament': return <GameScreen />;
+        case 'menu':
+        default:
+          return (
+            <StartScreen
+              onSelectTournament={() => setStartSubView('tournament')}
+              onSelectRaceBetting={handleRaceBetting}
+              isMinted={isMinted}
+              nftImageUrl={nftImageUrl}
+            />
+          );
+      }
+    case 'profile': return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted} onShare={handleAction} />;
+    case 'mint':
+      return (
+        <MintingScreen
+          user={user}
+          onBack={() => setActiveView('profile')}
+          onMint={handleOnChainMint}
+          setGeneratedMetadataUrl={setGeneratedMetadataUrl}
+          generatedMetadataUrl={generatedMetadataUrl}
+        />
+      );
+    case 'garage': return <GarageScreen />;
+    case 'rank': return <RankScreen />;
+    default: return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted} onShare={handleAction} />;
   }
+};
 
-  if (gameState === 'loading') {
-    return <div className="w-screen h-screen bg-black" />;
-  }
+return (
+  <main className="w-full h-[100dvh] bg-black relative flex flex-col overflow-hidden">
+    <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover -z-10" unoptimized />
+    <div className="flex-1 w-full overflow-y-auto relative z-10">
+      {renderActiveView()}
+    </div>
+    {activeView !== 'game' && <NavBar activeView={activeView as OriginalNavView} onNavigate={handleNavigate} />}
 
-  if (!isConnected || !user) {
-    return <LoginScreen onLogin={handleConnect} />;
-  }
-
-  const renderActiveView = () => {
-    switch (activeView) {
-      case 'landing':
-        return (
-          <LandingPage
-            onAction={handleAction}
-            isMinted={isMinted}
-            nftImageUrl={isMinted ? nftImageUrl : null}
-          />
-        );
-      case 'game':
-        return <GameScreen raceData={raceData} />;
-      case 'start':
-        switch (startSubView) {
-          case 'tournament': return <GameScreen />;
-          case 'menu':
-          default:
-            return (
-              <StartScreen
-                onSelectTournament={() => setStartSubView('tournament')}
-                onSelectRaceBetting={handleRaceBetting}
-                isMinted={isMinted}
-                nftImageUrl={nftImageUrl}
-              />
-            );
-        }
-      case 'profile': return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted} onShare={handleAction} />;
-      case 'mint':
-        return (
-          <MintingScreen
-            user={user}
-            onBack={() => setActiveView('profile')}
-            onMint={handleOnChainMint}
-            setGeneratedMetadataUrl={setGeneratedMetadataUrl}
-            generatedMetadataUrl={generatedMetadataUrl}
-          />
-        );
-      case 'garage': return <GarageScreen />;
-      case 'rank': return <RankScreen />;
-      default: return <ProfileScreen user={user} nftImageUrl={nftImageUrl} onMint={() => setActiveView('mint')} is_minted={isMinted} onShare={handleAction} />;
-    }
-  };
-
-  return (
-    <main className="w-full h-[100dvh] bg-black relative flex flex-col overflow-hidden">
-      <Image src="/ui/mainmenu.webp" alt="Main Menu" fill priority className="object-cover -z-10" unoptimized />
-      <div className="flex-1 w-full overflow-y-auto relative z-10">
-        {renderActiveView()}
-      </div>
-      {activeView !== 'game' && <NavBar activeView={activeView as OriginalNavView} onNavigate={handleNavigate} />}
-
-      {/* WIN SHARE MODAL */}
-      {showWinSharePopup && (
-        <div className="fixed inset-0 z-[999] bg-black/80 flex flex-col items-center justify-center p-4">
-          <div className="bg-[#e7f2eb] border-4 border-[#233e63] p-6 w-[340px] flex flex-col items-center gap-6 pixel-border">
+    {/* WIN SHARE MODAL */}
+    {showWinSharePopup && (
+      <div className="fixed inset-0 z-[999] bg-black/80 flex flex-col items-center justify-center p-4">
+          <div className="bg-[#e7f2eb] border-4 border-[#233e63] p-6 w-[340px] flex flex-col items-center gap-6 pixel-border" style={{ marginLeft: '25px', marginTop: '250px' }}>
             <h2 className="pixel-font text-2xl text-yellow-500 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] text-center w-full">VICTORY!</h2>
             <p className="pixel-font text-sm text-black text-center w-full leading-relaxed">You've won {winAmount.toLocaleString('en-US').replace(/,/g, '.')} $RACE!</p>
             <button
               onClick={handleShareWin}
               className="pixel-font pixel-border w-full h-[50px] text-center pixel-btn transition-all duration-300 bg-[#e7f2eb] text-[#0f10f4] text-[10px] sm:text-xs animate-bounce hover:animate-none active:translate-y-1 active:shadow-none shadow-lg shadow-[#8a6d00] flex items-center justify-center leading-tight"
+              style={{ width: '254px', marginTop: '10px' }}
             >
               Share Winning Race
             </button>
             <button
               onClick={() => setShowWinSharePopup(false)}
-              className="pixel-font text-xs text-gray-500 mt-2 hover:text-black transition-colors"
+              className="pixel-font text-xs text-gray-500 hover:text-black transition-colors"
+              style={{ marginTop: '20px' }}
             >
               Close
             </button>
@@ -325,13 +328,13 @@ export default function Home() {
         </div>
       )}
 
-      <style jsx global>{`
+    <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .pixel-font { font-family: 'Press Start 2P', cursive; image-rendering: pixelated; }
         .pixel-border { box-shadow: 4px 0 0 0 #233e63, -4px 0 0 0 #233e63, 0 4px 0 0 #233e63, 0 -4px 0 0 #233e63, 6px 0 0 0 #99b1c5, -6px 0 0 0 #99b1c5, 0 6px 0 0 #99b1c5, 0 -6px 0 0 #99b1c5; }
         .pixel-btn { box-shadow: 6px 6px 0 0 #233e63, 8px 8px 0 0 #99b1c5; }
         .pixel-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 #233e63, 2px 2px 0 0 #99b1c5; }
       `}</style>
-    </main>
-  );
+  </main>
+);
 }
