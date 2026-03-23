@@ -71,7 +71,15 @@ export default function Home() {
           };
 
           const encodedPfp = encodeURIComponent(profile.pfpUrl || '');
-          const response = await fetch(`/api/racer/status?fid=${profile.fid}&pfpUrl=${encodedPfp}`);
+          const notificationToken = (context as any).client?.notificationDetails?.token || (context as any).user?.notificationDetails?.token || '';
+          const notificationUrl = (context as any).client?.notificationDetails?.url || (context as any).user?.notificationDetails?.url || '';
+          
+          let url = `/api/racer/status?fid=${profile.fid}&pfpUrl=${encodedPfp}`;
+          if (notificationToken && notificationUrl) {
+            url += `&notificationToken=${encodeURIComponent(notificationToken)}&notificationUrl=${encodeURIComponent(notificationUrl)}`;
+          }
+
+          const response = await fetch(url);
           if (response.ok) {
             const data = await response.json();
             setIsMinted(data.isMinted);
