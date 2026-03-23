@@ -83,11 +83,11 @@ export const RankScreen = () => {
                 </div>
                 
                 {/* Name & Title */}
-                <div className="flex flex-col gap-[6px] max-w-[200px] sm:max-w-[150px] md:max-w-[250px]">
-                  <span className="pixel-font text-[10px] sm:text-xs md:text-sm text-black whitespace-normal break-words leading-tight block">
+                <div className="flex flex-col flex-1 min-w-0" style={{ maxWidth: '140px' }}>
+                  <span className="pixel-font text-[10px] sm:text-xs md:text-sm text-black truncate block w-full" style={{ marginBottom: '6px' }}>
                     {racer.username || `Player #${racer.fid}`}
                   </span>
-                  <span className={`pixel-font text-[10px] block ${racer.is_minted ? 'text-purple-600' : 'text-current opacity-70'}`}>
+                  <span className={`pixel-font text-[10px] block truncate w-full ${racer.is_minted ? 'text-purple-600' : 'text-current opacity-70'}`}>
                     {racer.is_minted ? 'OG Racer' : 'Racer'}
                   </span>
                 </div>
@@ -96,8 +96,8 @@ export const RankScreen = () => {
               {/* Right side: EXP, Wins, Rank */}
               <div className="flex flex-row items-center gap-3 md:gap-6">
                 {/* Stats */}
-                <div className="flex flex-col gap-2 w-[80px] md:w-[100px]" style={{ marginRight: '30px' }}>
-                  <div className="flex justify-between w-full">
+                <div className="flex flex-col w-[80px] md:w-[100px] flex-shrink-0" style={{ marginRight: '30px' }}>
+                  <div className="flex justify-between w-full" style={{ marginBottom: '12px' }}>
                     <span className="pixel-font text-[10px] md:text-xs">Wins:</span>
                     <span className="pixel-font text-[10px] md:text-xs">{racer.wins || 0}</span>
                   </div>
