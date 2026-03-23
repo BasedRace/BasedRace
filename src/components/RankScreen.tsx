@@ -83,11 +83,11 @@ export const RankScreen = () => {
                 </div>
                 
                 {/* Name & Title */}
-                <div className="flex flex-col max-w-[200px] sm:max-w-[150px] md:max-w-[250px]">
-                  <span className="pixel-font text-[10px] sm:text-xs md:text-sm text-black whitespace-normal break-words leading-tight">
+                <div className="flex flex-col gap-[6px] max-w-[200px] sm:max-w-[150px] md:max-w-[250px]">
+                  <span className="pixel-font text-[10px] sm:text-xs md:text-sm text-black whitespace-normal break-words leading-tight block">
                     {racer.username || `Player #${racer.fid}`}
                   </span>
-                  <span className={`pixel-font text-[10px] mt-2 ${racer.is_minted ? 'text-purple-600' : 'text-current opacity-70'}`}>
+                  <span className={`pixel-font text-[10px] block ${racer.is_minted ? 'text-purple-600' : 'text-current opacity-70'}`}>
                     {racer.is_minted ? 'OG Racer' : 'Racer'}
                   </span>
                 </div>
@@ -96,12 +96,12 @@ export const RankScreen = () => {
               {/* Right side: EXP, Wins, Rank */}
               <div className="flex flex-row items-center gap-3 md:gap-6">
                 {/* Stats */}
-                <div className="flex flex-col w-[80px] md:w-[100px]" style={{ marginRight: '30px' }}>
+                <div className="flex flex-col gap-2 w-[80px] md:w-[100px]" style={{ marginRight: '30px' }}>
                   <div className="flex justify-between w-full">
                     <span className="pixel-font text-[10px] md:text-xs">Wins:</span>
                     <span className="pixel-font text-[10px] md:text-xs">{racer.wins || 0}</span>
                   </div>
-                  <div className="flex justify-between w-full mt-2">
+                  <div className="flex justify-between w-full">
                     <span className="pixel-font text-[10px] md:text-sm">EXP:</span>
                     <span className="pixel-font text-[10px] md:text-sm">{racer.exp || 0}</span>
                   </div>
@@ -123,25 +123,24 @@ export const RankScreen = () => {
         )}
 
         {/* Pagination Controls */}
-        <div className="flex flex-row items-center justify-between w-full h-[60px] mt-4 shadow-lg">
+        <div className="flex flex-row items-center justify-between w-full h-[60px] shadow-lg" style={{ marginTop: '10px' }}>
           <button 
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1 || loading}
-            className="w-10 h-10 bg-yellow-500 text-[#0f10f4] flex items-center justify-center border-2 border-black active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
+            className="w-10 h-10 bg-yellow-500 text-[#0f10f4] flex items-center justify-center border-4 border-[#233e63] active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
             style={{ width: '44px', height: '44px' }}
           >
             {"<"}
           </button>
           
-          <div className="pixel-font text-black text-xs text-center leading-tight">
-            <br/>
-            <span className="text-lg">{currentPage}</span>
+          <div className="pixel-font text-black text-lg text-center leading-tight border-2 border-[#233e63] bg-[#e7f2eb] px-4 flex items-center justify-center" style={{ height: '44px', minWidth: '44px' }}>
+            {currentPage}
           </div>
           
           <button 
             onClick={() => setCurrentPage(prev => prev + 1)}
             disabled={!hasMore || loading}
-            className="w-10 h-10 bg-yellow-500 text-[#0f10f4] flex items-center justify-center border-2 border-black active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
+            className="w-10 h-10 bg-yellow-500 text-[#0f10f4] flex items-center justify-center border-4 border-[#233e63] active:translate-y-1 hover:bg-yellow-400 pixel-font transition-all disabled:opacity-50 disabled:active:translate-y-0"
             style={{ width: '44px', height: '44px' }}
           >
             {">"}
