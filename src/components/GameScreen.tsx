@@ -32,6 +32,7 @@ export const GameScreen = ({ raceData }: { raceData?: any }) => {
         src="/index.html"
         style={{ width: '100%', height: '100%', border: 0 }}
         title="Based Race Game"
+        allow="autoplay"
         sandbox="allow-scripts allow-same-origin"
       />
     </div>

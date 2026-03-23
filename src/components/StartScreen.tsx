@@ -115,10 +115,12 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
     }
 
     finalRaceGrid = shuffle(racers);
-
-    // Dummy winner determination: randomly select a winner for the simulation
-    const winnerName = finalRaceGrid[Math.floor(Math.random() * finalRaceGrid.length)].name;
-    console.log("🎯 [Next.js] Selected Winner (Backend Simulation):", winnerName);
+        
+    let playerSelectionLabel = isBetOnSelf ? 'USER' : selectedCharacter;
+    if (!playerSelectionLabel) {
+        toast.error("Silakan pilih pembalap terlebih dahulu!", { id: 'betTx' });
+        return;
+    }
 
     try {
         setIsProcessing(true);
@@ -145,10 +147,15 @@ export const StartScreen = ({ onSelectTournament, onSelectRaceBetting, isMinted,
             address: BETTING_CONTRACT_ADDRESS,
             abi: BETTING_ABI,
             functionName: 'placeBet',
-            args: [raceId, winnerName, amountWei]
+            args: [raceId, playerSelectionLabel, amountWei]
         });
 
         toast.success("Success! Bet locked, preparing to start race!", { id: 'betTx' });
+
+        // SECURITY FIX: DETERMINE WINNER ONLY AFTER TRANSACTION CONFIRMS
+        const randomWinnerIndex = Math.floor(Math.random() * finalRaceGrid.length);
+        const winnerName = finalRaceGrid[randomWinnerIndex].name;
+        console.log(`[SIMULATION] Race outcome rolled. The winner will be:`, winnerName);
 
         // TRIGGER GAME ENGINE
         onSelectRaceBetting({

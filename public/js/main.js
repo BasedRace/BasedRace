@@ -80,6 +80,10 @@ class Game {
       this.sfxGain.connect(this.audioContext.destination);
     }
     
+    if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+    }
+    
     // Show a loading message while assets are being fetched
     this.renderer.drawLoading();
 
@@ -293,8 +297,7 @@ class Game {
             this.playSound('engine_loop', true, 0.6, startGoDuration - 0.3);
         } else if (this.countdownValue < 0) {
             this.state = 'racing';
-            this.playMusic('ingamemusic', true, 0);
-            this.fadeInMusic(1, 0.5);
+            this.playMusic('ingamemusic', true, 0.4);
             clearInterval(this.countdownInterval);
         }
     }, 1500); // Slower 1.5s countdown
